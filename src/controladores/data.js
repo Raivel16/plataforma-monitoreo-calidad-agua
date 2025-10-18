@@ -1,9 +1,9 @@
 import { preprocesarDato } from "../utils/preprocesarDato.js";
 
 // modelos
-import { SensoresModelo } from "../modelos/sensores.js";
+import { dataModelo } from "../modelos/data.js";
 
-export class SensoresControlador {
+export class dataControlador {
   static async recibirDatos(req, res, io) {
     try {
       // Lógica para obtener datos de sensores
@@ -13,7 +13,7 @@ export class SensoresControlador {
       const datoLimpio = preprocesarDato(datoBruto);
 
       // guardar en la BD
-      const lectura = await SensoresModelo.guardarLectura(datoLimpio);
+      const lectura = await dataModelo.guardarLectura(datoLimpio);
 
       // Emitir por socket al dashboard
       io.emit("nuevaLectura", lectura);

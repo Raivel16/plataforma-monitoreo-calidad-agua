@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { sensoresRouter } from "./api/sensores.js";
+import { dataRouter } from "./api/data.js";
 
 export const apiRouter = (io) => {
   const router = Router();
@@ -9,7 +9,7 @@ export const apiRouter = (io) => {
   });
 
   // Montar el sub-router de sensores en /sensores
-  router.use("/sensores", sensoresRouter(io));
+  router.use("/data", dataRouter(io));
 
   return router;
 };
