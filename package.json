@@ -2,11 +2,11 @@
   "name": "plataforma-monitoreo-calidad-agua",
   "version": "1.0.0",
   "description": "Plataforma de Monitoreo de Calidad de Agua. Proyecto para el curso de Diseño de Software.",
-  "main": "src/server.js",
+  "main": "server.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --watch src/server.js"
+    "dev": "node --watch server.js"
   },
   "repository": {
     "type": "git",
@@ -25,6 +25,12 @@
   },
   "homepage": "https://github.com/Raivel16/plataforma-monitoreo-calidad-agua#readme",
   "dependencies": {
+    "cors": "2.8.5",
     "express": "5.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.38.0",
+    "eslint": "^9.38.0",
+    "globals": "^16.4.0"
   }
 }
