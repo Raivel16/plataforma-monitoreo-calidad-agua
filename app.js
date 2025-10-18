@@ -26,5 +26,5 @@ app.use("/api", apiRoutes);
 
 // manejador de rutas no encontradas
 app.use((req, res) => {
-  res.status(404).json({ mensaje: "Recurso no encontrado" });
+  res.status(404).sendFile(path.join(__dirname, "src", "vistas", "404.html"));
 });
