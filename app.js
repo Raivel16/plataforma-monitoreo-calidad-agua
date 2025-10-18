@@ -2,13 +2,18 @@ import express from "express";
 import { corsMiddleware } from "./src/middlewares/cors.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import http from "http";
+import { Server } from "socket.io";
+import bodyParser from "body-parser";
 
-import { apiRoutes } from "./src/rutas/index.js";
+import { apiRouter } from "./src/rutas/index.js";
 
-export const app = express();
+const app = express();
+export const server = http.createServer(app);
+const io = new Server(server);
 
 //middlewares
-app.use(express.json());
+app.use(bodyParser.json());
 app.use(corsMiddleware());
 
 // desabilitando cabecera X-Powered-By
@@ -22,7 +27,7 @@ const __dirname = path.dirname(__filename);
 app.use("/", express.static(path.join(__dirname, "src", "vistas")));
 
 // rutas api
-app.use("/api", apiRoutes);
+app.use("/api", apiRouter(io));
 
 // manejador de rutas no encontradas
 app.use((req, res) => {

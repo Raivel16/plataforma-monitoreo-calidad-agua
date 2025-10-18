@@ -1,0 +1,11 @@
+### Envio datos sensores
+POST http://localhost:3000/api/sensores/
+Content-Type: application/json
+
+{
+  "idSensor": "SEN01",
+  "tipo": "ph",
+  "valor": 7.2,
+  "unidad": "pH",
+  "timestamp": "2025-10-17T16:45:22Z"
+}
