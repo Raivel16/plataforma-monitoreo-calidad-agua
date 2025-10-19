@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { dataRouter } from "./api/data.js";
 import { sensoresRouter } from "./api/sensores.js";
+import { prediccionesRouter } from "./api/predicciones.js";
+import { anomaliasRouter } from "./api/anomalias.js";
 
 export const apiRouter = (io) => {
   const router = Router();
@@ -13,6 +15,8 @@ export const apiRouter = (io) => {
   router.use("/data", dataRouter(io));
 
   router.use("/sensores", sensoresRouter);
+  router.use("/predicciones", prediccionesRouter);
+  router.use("/anomalias", anomaliasRouter);
 
   return router;
 };

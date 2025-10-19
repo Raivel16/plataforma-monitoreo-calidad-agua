@@ -50,3 +50,29 @@ Content-Type: application/json
 DELETE http://localhost:3000/api/sensores/2
 
 ##_________________________________________________
+
+
+##_____API PREDICCIONES_______________________________
+### Obtener predicciones
+GET http://localhost:3000/api/predicciones/historial
+
+### Crear una nueva predicción
+POST http://localhost:3000/api/predicciones/
+Content-Type: application/json
+
+{
+  "ubicacion": "Ubicación de la predicción 2 "
+}
+
+### Obtener precisión de las predicciones
+GET http://localhost:3000/api/predicciones/precision
+
+##_________________________________________________
+
+
+
+##_____API ANOMALIAS_______________________________
+### Obtener anomalías detectadas
+GET http://localhost:3000/api/anomalias/
+
+##_________________________________________________
