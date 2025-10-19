@@ -1,3 +1,5 @@
+##_____API DATA________________________________
+
 ### Envio datos sensores
 POST http://localhost:3000/api/data/
 Content-Type: application/json
@@ -9,3 +11,42 @@ Content-Type: application/json
   "unidad": "pH",
   "timestamp": "2025-10-17T16:45:22Z"
 }
+
+### obtener datos de sensores
+GET http://localhost:3000/api/data/
+
+##_________________________________________________
+
+
+
+##_____API SENSORES________________________________
+
+### Obtener info de un sensor específico
+GET http://localhost:3000/api/sensores/
+
+### Crear un nuevo sensor
+POST http://localhost:3000/api/sensores/
+Content-Type: application/json
+
+{
+  "id": 4,
+  "tipo": "Nuevo Sensor",
+  "unidad": "m/s"
+}
+
+### Obtener info de un sensor por ID
+GET http://localhost:3000/api/sensores/4
+
+### Actualizar info de un sensor existente
+PATCH  http://localhost:3000/api/sensores/4
+Content-Type: application/json
+
+{
+  "tipo": "Sensor Actualizado 2",
+  "unidad": "m/s"
+}
+
+### Eliminar un sensor
+DELETE http://localhost:3000/api/sensores/2
+
+##_________________________________________________

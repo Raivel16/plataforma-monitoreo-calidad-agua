@@ -26,7 +26,7 @@ async function enviarDatos() {
       tipo: sensor.tipo,
       valor,
       unidad: sensor.unidad,
-      fecha: new Date().toISOString(),
+      timestamp: Date.now(),
     };
 
     try {

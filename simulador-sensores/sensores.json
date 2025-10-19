@@ -1,0 +1,5 @@
+[
+  { "id": 1, "tipo": "pH", "unidad": "pH" },
+  { "id": 2, "tipo": "Turbidez", "unidad": "NTU" },
+  { "id": 3, "tipo": "Temperatura", "unidad": "°C" }
+]

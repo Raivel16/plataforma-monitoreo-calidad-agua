@@ -18,7 +18,11 @@ export class SensoresControlador {
     // Lógica para obtener un sensor por su ID
     const { id } = req.params;
     const sensor = await SensorModelo.obtenerPorId({ id });
-    res.json(sensor);
+    if (sensor) {
+      res.json(sensor);
+    } else {
+      res.status(404).send("Sensor no encontrado");
+    }
   }
 
   static async actualizarSensor(req, res) {
@@ -26,7 +30,12 @@ export class SensoresControlador {
     const { id } = req.params;
     const sensorInfo = req.body;
     const sensorActualizado = await SensorModelo.actualizar({ id, sensorInfo });
-    res.json(sensorActualizado);
+
+    if (sensorActualizado) {
+      res.json(sensorActualizado);
+    } else {
+      res.status(404).send("Sensor no encontrado");
+    }
   }
 
   static async eliminarSensor(req, res) {
