@@ -8,5 +8,7 @@ export const dataRouter = (io) => {
     dataControlador.recibirDatos(req, res, io)
   );
 
+  dataRouter.get("/", dataControlador.obtenerDatos);
+
   return dataRouter;
 };

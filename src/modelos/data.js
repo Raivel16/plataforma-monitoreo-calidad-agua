@@ -4,4 +4,11 @@ export class dataModelo {
     console.log("Guardando lectura en la base de datos:", dato);
     return { id: Date.now(), ...dato };
   }
+
+  static async obtenerLecturas() {
+    // Simulación de obtención de datos desde la base de datos
+    const datos = [];
+    console.log("Obteniendo lecturas desde la base de datos");
+    return datos;
+  }
 }

@@ -26,4 +26,14 @@ export class dataControlador {
         .json({ error: "Error al procesar los datos de sensores" });
     }
   }
+
+  static async obtenerDatos(req, res) {
+    try {
+      const datos = await dataModelo.obtenerLecturas();
+      res.status(200).json({ datos });
+    } catch (error) {
+      console.error("Error al obtener datos de sensores:", error);
+      res.status(500).json({ error: "Error al obtener los datos de sensores" });
+    }
+  }
 }
