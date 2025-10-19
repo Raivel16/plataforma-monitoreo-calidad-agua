@@ -1,14 +1,14 @@
 import { Router } from "express";
-import { dataControlador } from "../../controladores/data.js";
+import { DataControlador } from "../../controladores/data.js";
 
 export const dataRouter = (io) => {
   const dataRouter = Router();
 
   dataRouter.post("/", (req, res) =>
-    dataControlador.recibirDatos(req, res, io)
+    DataControlador.recibirDatos(req, res, io)
   );
 
-  dataRouter.get("/", dataControlador.obtenerDatos);
+  dataRouter.get("/", DataControlador.obtenerDatos);
 
   return dataRouter;
 };

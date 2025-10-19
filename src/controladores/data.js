@@ -1,9 +1,9 @@
 import { preprocesarDato } from "../utils/preprocesarDato.js";
 
 // modelos
-import { dataModelo } from "../modelos/data.js";
+import { DataModelo } from "../modelos/data.js";
 
-export class dataControlador {
+export class DataControlador {
   static async recibirDatos(req, res, io) {
     try {
       // Lógica para obtener datos de sensores
@@ -13,7 +13,7 @@ export class dataControlador {
       const datoLimpio = preprocesarDato(datoBruto);
 
       // guardar en la BD
-      const lectura = await dataModelo.guardarLectura(datoLimpio);
+      const lectura = await DataModelo.guardarLectura({ dato: datoLimpio });
 
       // Emitir por socket al dashboard
       io.emit("nuevaLectura", lectura);
@@ -29,7 +29,7 @@ export class dataControlador {
 
   static async obtenerDatos(req, res) {
     try {
-      const datos = await dataModelo.obtenerLecturas();
+      const datos = await DataModelo.obtenerLecturas();
       res.status(200).json({ datos });
     } catch (error) {
       console.error("Error al obtener datos de sensores:", error);
