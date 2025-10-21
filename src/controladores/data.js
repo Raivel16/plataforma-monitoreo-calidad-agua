@@ -10,10 +10,10 @@ export class DataControlador {
       const datoBruto = req.body;
 
       // Preprocesamiento básico (validar y normalizar)
-      const datoLimpio = preprocesarDato(datoBruto);
+      const datoProcesado = preprocesarDato(datoBruto);
 
       // guardar en la BD
-      const lectura = await DataModelo.guardarLectura({ dato: datoLimpio });
+      const lectura = await DataModelo.guardarLectura({ dato: datoProcesado });
 
       // Emitir por socket al dashboard
       io.emit("nuevaLectura", lectura);
