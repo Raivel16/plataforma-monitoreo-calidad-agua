@@ -1,6 +1,6 @@
 import { preprocesarDato } from "../utils/preprocesarDato.js";
 
-// modelos
+// mode
 import { DataModelo } from "../modelos/data.js";
 
 export class DataControlador {
