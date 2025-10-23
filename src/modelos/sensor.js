@@ -1,10 +1,11 @@
 import sensores  from '../../simulador-sensores/sensores.json' with { type: 'json' };
+import { Sensor } from "../config/db_local.js";
 
 export class SensorModelo {
   // Aquí irían los métodos para interactuar con la base de datos de sensores
   static async obtenerTodos() {
     // Lógica para obtener todos los sensores de la base de datos
-    return sensores;
+    return Sensor.find();
   }
 
   static async crear({ sensorInfo }) {

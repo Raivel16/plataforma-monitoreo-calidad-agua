@@ -1,16 +1,13 @@
 import axios from 'axios';
+import sensores from './sensores.json' with { type: "json" };
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const PORT = process.env.PORT ?? 3000
 
 // Configura el endpoint al que enviará los datos
 const API_URL = `http://localhost:${PORT}/api/data`;
-
-// Simulamos 3 sensores diferentes
-const sensores = [
-  { id: 1, tipo: 'pH', unidad: 'pH', min: 6.5, max: 8.5 },
-  { id: 2, tipo: 'Turbidez', unidad: 'NTU', min: 0, max: 10 },
-  { id: 3, tipo: 'Temperatura', unidad: '°C', min: 15, max: 30 },
-];
 
 // Función para generar un valor aleatorio dentro del rango
 function generarValor(min, max) {
@@ -22,21 +19,20 @@ async function enviarDatos() {
   for (const sensor of sensores) {
     const valor = generarValor(sensor.min, sensor.max);
     const data = {
-      sensorId: sensor.id,
-      tipo: sensor.tipo,
+      SensorID: sensor.id,
       valor,
-      unidad: sensor.unidad,
-      timestamp: Date.now(),
+      TimestampEnvio: new Date().toISOString(),
     };
 
     try {
       await axios.post(API_URL, data);
-      console.log(`✅ Enviado: ${sensor.tipo} -> ${valor} ${sensor.unidad}`);
+      console.log(`✅ Enviado: ${sensor.ParametroID} -> ${valor} ${sensor.unidad}`);
     } catch (error) {
-      console.error(`❌ Error enviando ${sensor.tipo}:`, error.message);
+      console.error(`❌ Error enviando ${sensor.ParametroID}:`, error.message);
     }
   }
 }
 
-// Envía datos cada 5 segundos
-setInterval(enviarDatos, 5000);
+// Envía datos cada 10 segundos
+setInterval(enviarDatos, 10000);
+

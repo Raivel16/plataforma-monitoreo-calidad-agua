@@ -15,6 +15,8 @@ Content-Type: application/json
 ### obtener datos de sensores
 GET http://localhost:3000/api/data/
 
+
+
 ##_________________________________________________
 
 
@@ -29,10 +31,16 @@ POST http://localhost:3000/api/sensores/
 Content-Type: application/json
 
 {
-  "id": 4,
-  "tipo": "Nuevo Sensor",
-  "unidad": "m/s"
-}
+    "tipo": "turbidez",
+    "unidad": "NTU",
+    "ubicacion": "Huancayo",
+    "latitud": -12.080,
+    "longitud": -75.250,
+    "modelo": "TB-200",
+    "fabricante": "HydroSense",
+    "descripcion": "Sensor óptico para medir la turbidez del agua",
+    "activo": true
+  }
 
 ### Obtener info de un sensor por ID
 GET http://localhost:3000/api/sensores/4

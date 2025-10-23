@@ -1,7 +1,5 @@
 [
-  { "id": 1, "tipo": "pH", "unidad": "pH" },
-  { "id": 2, "tipo": "Turbidez", "unidad": "NTU" },
-  { "id": 3, "tipo": "Temperatura", "unidad": "°C" }
+  { "id": 1, "ParametroID": 1, "min": 6.5, "max": 8.5 },
+  { "id": 2, "ParametroID": 2, "min": 0, "max": 10 },
+  { "id": 3, "ParametroID": 5, "min": 15, "max": 30 }
 ]
-
-

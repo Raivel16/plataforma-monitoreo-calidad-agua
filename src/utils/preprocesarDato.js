@@ -24,13 +24,16 @@ export function preprocesarDato(dato) {
   // 5️⃣ Normalizar (escala 0 a 1)
   const valorNormalizado = (valorProcesado - min) / (max - min);
 
+  // quitar campo valor
+  const { valor: _, ...restoDato } = dato;
+
   // 6️⃣ Devolver un nuevo objeto con todos los campos relevantes
   return {
-    ...dato,
-    valor_original: valorOriginal,
-    valor_procesado: valorProcesado,
-    normalizado: valorNormalizado,
-    estado,
-    timestamp: new Date().toISOString(),
+    ...restoDato,
+    Valor_original: valorOriginal,
+    Valor_procesado: valorProcesado,
+    Valor_normalizado: valorNormalizado,
+    Estado: estado,
+    TimestampRegistro: new Date().toISOString(),
   };
 }

@@ -1,4 +1,5 @@
 import { SensorModelo } from "../modelos/sensor.js";
+import { validarDatosSensor } from "../schemas/sensor.js";
 
 export class SensoresControlador {
   static async obtenerSensores(req, res) {
@@ -9,7 +10,15 @@ export class SensoresControlador {
 
   static async crearSensor(req, res) {
     // Lógica para crear un nuevo sensor
-    const sensorInfo = req.body;
+    const sensorInfo = validarDatosSensor(req.body);
+
+    if (!sensorInfo.success) {
+      return res
+        .status(400)
+        .json({ mensaje: "Datos inválidos", error: sensorInfo.error });
+    }
+
+
     const nuevoSensor = await SensorModelo.crear({ sensorInfo });
     res.status(201).json(nuevoSensor);
   }
