@@ -1,0 +1,38 @@
+[
+  {
+    "IdSensor": 1,
+    "tipo": "ph",
+    "unidad": "pH",
+    "ubicacion": "Huancayo",
+    "latitud": -12.065,
+    "longitud": -75.210,
+    "modelo": "PH-450",
+    "fabricante": "AquaTech",
+    "descripcion": "Sensor de pH para monitoreo de agua superficial",
+    "activo": true
+  },
+  {
+    "IdSensor": 2,
+    "tipo": "turbidez",
+    "unidad": "NTU",
+    "ubicacion": "Chilca",
+    "latitud": -12.080,
+    "longitud": -75.250,
+    "modelo": "TB-200",
+    "fabricante": "HydroSense",
+    "descripcion": "Sensor óptico para medir la turbidez del agua",
+    "activo": true
+  },
+  {
+    "IdSensor": 3,
+    "tipo": "temperatura",
+    "unidad": "°C",
+    "ubicacion": "El Tambo",
+    "latitud": -12.065,
+    "longitud": -75.205,
+    "modelo": "TMP-100",
+    "fabricante": "EnviroTech",
+    "descripcion": "Sensor de temperatura sumergible para control térmico del agua",
+    "activo": true
+  }
+]

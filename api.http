@@ -1,0 +1,86 @@
+##_____API DATA________________________________
+
+### Envio datos sensores
+POST http://localhost:3000/api/data/
+Content-Type: application/json
+
+{
+  "idSensor": "SEN01",
+  "tipo": "ph",
+  "valor": 7.2,
+  "unidad": "pH",
+  "timestamp": "2025-10-17T16:45:22Z"
+}
+
+### obtener datos de sensores
+GET http://localhost:3000/api/data/
+
+
+
+##_________________________________________________
+
+
+
+##_____API SENSORES________________________________
+
+### Obtener info de un sensor específico
+GET http://localhost:3000/api/sensores/
+
+### Crear un nuevo sensor
+POST http://localhost:3000/api/sensores/
+Content-Type: application/json
+
+{
+    "tipo": "turbidez",
+    "unidad": "NTU",
+    "ubicacion": "Huancayo",
+    "latitud": -12.080,
+    "longitud": -75.250,
+    "modelo": "TB-200",
+    "fabricante": "HydroSense",
+    "descripcion": "Sensor óptico para medir la turbidez del agua",
+    "activo": true
+  }
+
+### Obtener info de un sensor por ID
+GET http://localhost:3000/api/sensores/4
+
+### Actualizar info de un sensor existente
+PATCH  http://localhost:3000/api/sensores/4
+Content-Type: application/json
+
+{
+  "tipo": "Sensor Actualizado 2",
+  "unidad": "m/s"
+}
+
+### Eliminar un sensor
+DELETE http://localhost:3000/api/sensores/2
+
+##_________________________________________________
+
+
+##_____API PREDICCIONES_______________________________
+### Obtener predicciones
+GET http://localhost:3000/api/predicciones/historial
+
+### Crear una nueva predicción
+POST http://localhost:3000/api/predicciones/
+Content-Type: application/json
+
+{
+  "ubicacion": "Ubicación de la predicción 2 "
+}
+
+### Obtener precisión de las predicciones
+GET http://localhost:3000/api/predicciones/precision
+
+##_________________________________________________
+
+
+
+##_____API ANOMALIAS_______________________________
+### Obtener anomalías detectadas
+GET http://localhost:3000/api/anomalias/
+
+##_________________________________________________
