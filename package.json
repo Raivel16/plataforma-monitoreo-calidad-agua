@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node --watch server.js",
-    "simulador": "node simulador-sensores/simulador.js",
+    "simulador:sensores": "node simuladores/sensores.js",
     "test-conexion-db": "node pruebas/test-conection-db.js"
   },
   "repository": {
@@ -40,6 +40,7 @@
     "axios": "1.12.2",
     "db-local": "3.1.0",
     "eslint": "9.38.0",
-    "globals": "16.4.0"
+    "globals": "16.4.0",
+    "morgan": "^1.10.1"
   }
 }

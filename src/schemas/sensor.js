@@ -1,51 +1,34 @@
 import z from "zod";
 
-const sensorSchema = z.object({
-  tipo: z.string(z.enum(["ph", "temperatura", "turbidez", "oxigeno"]), {
-    required_error: "El tipo es requerido",
-    invalid_type_error:
-      "El tipo debe ser uno de: ph, temperatura, turbidez, oxigeno",
-  }),
-  unidad: z.string(
-    z.enum(["ph", "°C", "NTU", "%"], {
-      required_error: "La unidad es requerida",
-      invalid_type_error: "La unidad debe ser uno de: ph, °C, NTU, %",
-    })
-  ),
-  ubicacion: z.string({
-    required_error: "La ubicación es requerida",
-    invalid_type_error: "La ubicación debe ser una cadena",
-  }),
-  latitud: z
-    .number({
-      required_error: "La latitud es requerida",
-      invalid_type_error: "La latitud debe ser un número",
-    })
+export const sensorSchema = z.object({
+  Nombre: z
+    .string({ required_error: "El nombre del sensor es obligatorio" })
+    .min(1)
+    .max(100),
+  Modelo: z
+    .string({ required_error: "El modelo es obligatorio" })
+    .min(1)
+    .max(50),
+  Fabricante: z
+    .string({ required_error: "El fabricante es obligatorio" })
+    .min(1)
+    .max(100),
+  Latitud: z
+    .number({ required_error: "La latitud es obligatoria" })
     .min(-90)
     .max(90),
-  longitud: z
-    .number({
-      required_error: "La longitud es requerida",
-      invalid_type_error: "La longitud debe ser un número",
-    })
+  Longitud: z
+    .number({ required_error: "La longitud es obligatoria" })
     .min(-180)
     .max(180),
-  modelo: z.string({
-    required_error: "El modelo es requerido",
-    invalid_type_error: "El modelo debe ser una cadena",
-  }),
-  fabricante: z.string({
-    required_error: "El fabricante es requerido",
-    invalid_type_error: "El fabricante debe ser una cadena",
-  }),
-  descripcion: z.string().default(""),
-  activo: z.boolean().default(true),
+  Descripcion: z.string().max(255).optional(),
+  EstadoOperativo: z.boolean().default(true),
 });
 
 export const validarDatosSensor = (input) => {
   return sensorSchema.safeParse(input);
 };
 
-export const validarPartialDatosSensor = (input) => {
+export const validarParcialDatosSensor = (input) => {
   return sensorSchema.partial().safeParse(input);
 };
