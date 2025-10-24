@@ -25,3 +25,7 @@ usuariosRouter.post("/login", (req, res) => {
 usuariosRouter.get("/:id/alertas", (req, res) => {
   res.send(`Obtener alertas para el usuario con ID ${req.params.id}`);
 });
+
+usuariosRouter.post("/logout", (req, res) => {
+  res.send("Cerrar sesión del usuario");
+});
