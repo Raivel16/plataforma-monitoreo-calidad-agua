@@ -11,6 +11,7 @@ import { rolesRouter } from "./api/roles.js";
 import { sensoresRouter } from "./api/sensores.js";
 import { umbralesAlertasRouter } from "./api/umbralesAlertas.js";
 import { usuariosRouter } from "./api/usuarios.js";
+import { authRouter } from "./api/auth.js";
 
 export const apiRouter = (io) => {
   const router = Router();
@@ -30,6 +31,7 @@ export const apiRouter = (io) => {
   router.use("/sensores", sensoresRouter);
   router.use("/umbrales", umbralesAlertasRouter);
   router.use("/usuarios", usuariosRouter);
+  router.use("/auth", authRouter);
 
   return router;
 };

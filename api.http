@@ -1,6 +1,35 @@
 @api = http://localhost:3000/api
 @json = application/json
 
+
+
+### LOGIN
+POST {{api}}/auth/login
+Content-Type: {{json}}
+
+{
+  "NombreUsuario": "admin",
+  "Contrasena": "admin123"
+}
+
+### Register
+POST {{api}}/auth/register
+Content-Type: {{json}}
+
+{
+  "RolID": 3,
+  "NombreUsuario": "nuevoUsuario",
+  "Contrasena": "password123",
+  "RepetirContrasena": "password123",
+  "Correo": "micorreo@ejemplo.com"
+}
+
+
+
+
+
+
+
 ############################################
 # 🧍‍♂️ USUARIOS
 ############################################
@@ -272,6 +301,9 @@ Content-Type: {{json}}
 ### Eliminar umbral
 DELETE {{api}}/umbrales/1
 
+
+### Verificar funcionamiento
+GET {{api}}/estado
 
 ############################################
 # 🌡️ SENSORES

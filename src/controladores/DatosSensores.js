@@ -3,6 +3,7 @@ import { preprocesarDato } from "../utils/preprocesarDato.js";
 // src/controladores/datosSensoresControlador.js
 import { DatoSensorModelo } from "../modelos/DatoSensor.js";
 import { validarDatosDatoSensor } from "../schemas/datoSensor.js";
+import { formatZodError } from "../utils/formatZodError.js";
 
 export class DatosSensoresControlador {
   // GET /api/datos
@@ -57,10 +58,8 @@ export class DatosSensoresControlador {
       });
 
       if (!lecturaValidada.success) {
-        return res.status(400).json({
-          error: "Datos inválidos",
-          detalles: lecturaValidada.error.errors,
-        });
+        const normalized = formatZodError(lecturaValidada.error);
+        return res.status(400).json({ error: normalized });
       }
 
       const resultado = await DatoSensorModelo.crear({

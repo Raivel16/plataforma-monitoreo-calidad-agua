@@ -19,13 +19,6 @@ usuariosRouter.patch("/:id", (req, res) => {
 usuariosRouter.delete("/:id", (req, res) => {
   res.send(`Eliminar usuario con ID ${req.params.id}`);
 });
-usuariosRouter.post("/login", (req, res) => {
-  res.send("Autenticar usuario");
-});
 usuariosRouter.get("/:id/alertas", (req, res) => {
   res.send(`Obtener alertas para el usuario con ID ${req.params.id}`);
-});
-
-usuariosRouter.post("/logout", (req, res) => {
-  res.send("Cerrar sesión del usuario");
 });

@@ -1,6 +1,15 @@
 import http from "http";
 import { Server } from "socket.io";
 import app, { configurarRutas } from "./src/app.js";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+if (!process.env.SECRET_JWT_KEY) {
+  console.warn(
+    "⚠️  WARNING: SECRET_JWT_KEY no está definido en el entorno. El login con JWT fallará. Añade SECRET_JWT_KEY a tu .env para desarrollo."
+  );
+}
 
 const server = http.createServer(app);
 

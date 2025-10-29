@@ -1,5 +1,6 @@
 import { PrediccionModelo } from "../modelos/prediccion.js";
 import { validarDatosPrediccion } from "../schemas/prediccion.js";
+import { formatZodError } from "../utils/formatZodError.js";
 
 export class PrediccionesControlador {
   static async listarPredicciones(req, res) {
@@ -31,10 +32,10 @@ export class PrediccionesControlador {
     // Lógica para crear una predicción
     const SensorID = validarDatosPrediccion(req.body);
     if (!SensorID.success) {
-      return res.status(400).json({
-        mensaje: "Datos de predicción inválidos",
-        errores: SensorID.error.errors,
-      });
+      const normalized = formatZodError(SensorID.error);
+      return res
+        .status(400)
+        .json({ mensaje: "Datos de predicción inválidos", error: normalized });
     }
 
     // Aquí iría la lógica para guardar la predicción en la base de datos
@@ -66,11 +67,13 @@ export class PrediccionesControlador {
 
   static async calcularPrecision(req, res) {
     // Lógica para obtener la precisión de las predicciones
-    const {SensorID} = req.body;
+    const { SensorID } = req.body;
     if (!SensorID) {
       return res
         .status(400)
-        .json({ mensaje: "El SensorID es obligatorio para calcular la precisión" });
+        .json({
+          mensaje: "El SensorID es obligatorio para calcular la precisión",
+        });
     }
 
     const precision = await PrediccionModelo.calcularPrecision({ SensorID });

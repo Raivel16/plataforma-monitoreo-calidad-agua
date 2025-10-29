@@ -4,6 +4,7 @@ import {
   validarDatosSensor,
   validarParcialDatosSensor,
 } from "../schemas/sensor.js";
+import { formatZodError } from "../utils/formatZodError.js";
 
 export class SensoresControlador {
   // GET /api/sensores
@@ -40,9 +41,8 @@ export class SensoresControlador {
       const nuevoSensor = validarDatosSensor(req.body);
 
       if (!nuevoSensor.success) {
-        return res
-          .status(400)
-          .json({ mensaje: "Datos inválidos", error: nuevoSensor.error });
+        const normalized = formatZodError(nuevoSensor.error);
+        return res.status(400).json({ error: normalized });
       }
 
       const sensorCreado = await SensorModelo.crear({ ...nuevoSensor.data });
@@ -60,9 +60,8 @@ export class SensoresControlador {
       const datosActualizados = validarParcialDatosSensor(req.body);
 
       if (!datosActualizados.success) {
-        return res
-          .status(400)
-          .json({ mensaje: "Datos inválidos", error: datosActualizados.error });
+        const normalized = formatZodError(datosActualizados.error);
+        return res.status(400).json({ error: normalized });
       }
 
       const sensor = await SensorModelo.actualizar({
