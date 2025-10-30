@@ -1,7 +1,6 @@
 -- ==============================================================================
--- SCRIPT DE CREACIÓN DE BASE DE DATOS PARA EL PROYECTO ANA - JUNÍN
--- Base de Datos: MonitoreoAguaJunin
--- Motor: Microsoft SQL Server
+-- SCRIPT DE CREACIÓN DE BASE DE DATOS: MonitoreoAguaJunin
+-- BASADO EN EL DIAGRAMA ENTIDAD-RELACIÓN FINAL
 -- ==============================================================================
 
 -- 1. Crear la Base de Datos (Si no existe)
@@ -24,13 +23,14 @@ CREATE TABLE Roles (
     NombreRol VARCHAR(50) NOT NULL UNIQUE
 );
 
--- 2.2. TABLA USUARIOS (HU011 - Acceso Seguro)
+-- 2.2. TABLA USUARIOS (Incluye campo Correo)
 CREATE TABLE Usuarios (
     UsuarioID INT PRIMARY KEY IDENTITY(1,1),
     RolID INT NOT NULL FOREIGN KEY REFERENCES Roles(RolID),
     NombreUsuario VARCHAR(100) NOT NULL UNIQUE,
-    ContrasenaHash VARCHAR(255) NOT NULL, -- Almacenamiento hasheado (HU023)
-    Activo BIT NOT NULL DEFAULT 1 -- 1=Activo, 0=Inactivo
+    ContrasenaHash VARCHAR(255) NOT NULL,
+    Correo VARCHAR(150) NOT NULL UNIQUE, -- Nuevo atributo del DER
+    Activo BIT NOT NULL DEFAULT 1
 );
 
 -- 2.3. TABLA PARAMETROS
@@ -44,7 +44,7 @@ CREATE TABLE Parametros (
 -- 3. CREACIÓN DE TABLAS DE MONITOREO Y DATOS
 -- ==============================================================================
 
--- 3.1. TABLA SENSORES (Modificada)
+-- 3.1. TABLA SENSORES
 CREATE TABLE Sensores (
     SensorID INT PRIMARY KEY IDENTITY(1,1),
     Nombre VARCHAR(100) NOT NULL,
@@ -54,78 +54,90 @@ CREATE TABLE Sensores (
     Latitud DECIMAL(9,6) NOT NULL,
     Longitud DECIMAL(9,6) NOT NULL,
     Descripcion VARCHAR(255),
-    EstadoOperativo BIT NOT NULL DEFAULT 1 -- 1=Activo, 0=Inactivo/Error (Booleano)
+    EstadoOperativo BIT NOT NULL DEFAULT 1
 );
 
--- 3.2. TABLA DATOSSENSORES (Modificada de Lecturas - HU003, HU002)
+-- 3.2. TABLA DATOSSENSORES (Tabla de Hechos)
 CREATE TABLE DatosSensores (
     DatoID BIGINT PRIMARY KEY IDENTITY(1,1),
     SensorID INT NOT NULL FOREIGN KEY REFERENCES Sensores(SensorID),
     ParametroID INT NOT NULL FOREIGN KEY REFERENCES Parametros(ParametroID),
-    Timestamp DATETIME2 NOT NULL, -- Momento en que se tomó o recibió (Metadato Crítico)
+    Timestamp DATETIME2 NOT NULL, -- Momento en que se tomó o recibió
+    TimestampEnvio DATETIME2, -- Momento en que se envió el dato (Nuevo del DER)
     
     Valor_original DECIMAL(10,4),
     Valor_procesado DECIMAL(10,4),
-    Valor_normalizado DECIMAL(10,4), -- Para el Motor de IA
+    Valor_normalizado DECIMAL(10,4),
+    EsAtipico BIT NOT NULL DEFAULT 0,
     
-    -- Simulación de ENUM con VARCHAR y restricción CHECK
     Estado VARCHAR(20) NOT NULL DEFAULT 'crudo' 
         CHECK (Estado IN ('crudo', 'procesado', 'descartado')),
     
-    -- Índice para optimizar consultas por sensor y tiempo
-    INDEX IX_SensorTimestamp NONCLUSTERED (SensorID, Timestamp)
+    INDEX IX_SensorParamTime NONCLUSTERED (SensorID, ParametroID, Timestamp)
 );
 
 -- ==============================================================================
 -- 4. CREACIÓN DE TABLAS DE ALERTA Y PREDICCIÓN
 -- ==============================================================================
 
--- 4.1. TABLA UMBRALESALERTA (HU010 - Configuración de Alertas)
+-- 4.1. TABLA UMBRALESALERTA
 CREATE TABLE UmbralesAlerta (
     UmbralID INT PRIMARY KEY IDENTITY(1,1),
     ParametroID INT NOT NULL FOREIGN KEY REFERENCES Parametros(ParametroID),
-    ValorCritico DECIMAL(10,4) NOT NULL, -- Valor que dispara la alerta
-    TipoUmbral VARCHAR(10) NOT NULL CHECK (TipoUmbral IN ('MAXIMO', 'MINIMO')), -- Tipo de umbral
-    MensajeAlerta VARCHAR(255)
+    ValorCritico DECIMAL(10,4) NOT NULL,
+    TipoUmbral VARCHAR(10) NOT NULL CHECK (TipoUmbral IN ('MAXIMO', 'MINIMO')),
+    MensajeAlerta VARCHAR(255),
+    Activo BIT NOT NULL DEFAULT 1 -- Nuevo atributo del DER
 );
 
--- 4.2. TABLA REGISTROALERTAS (HU010, HU014 - Trazabilidad de Alertas)
+-- 4.2. TABLA REGISTROALERTAS
 CREATE TABLE RegistroAlertas (
     RegistroAlertaID BIGINT PRIMARY KEY IDENTITY(1,1),
     UmbralID INT NOT NULL FOREIGN KEY REFERENCES UmbralesAlerta(UmbralID),
     LecturaID BIGINT NOT NULL FOREIGN KEY REFERENCES DatosSensores(DatoID), -- Dato que causó la alerta
     FechaHoraAlerta DATETIME2 NOT NULL,
-    EstadoNotificacion VARCHAR(50) NOT NULL -- Ej: 'ENVIADO_ANA', 'ENVIADO_SATE', 'PENDIENTE'
+    EstadoNotificacion VARCHAR(50) NOT NULL 
 );
 
--- 4.3. TABLA PREDICCIONES (HU004, HU006 - Resultados de IA)
-CREATE TABLE Predicciones (
-    PrediccionID BIGINT PRIMARY KEY IDENTITY(1,1),
-    Ubicacion varchar(50) NOT NULL,
-    FechaHoraPrediccion DATETIME2 NOT NULL, -- Momento futuro de la predicción
-    ValorPredicho VARCHAR(50), -- Ej: 'BUENO', 'MALO'
-    ProbabilidadRiesgo DECIMAL(5,2) -- Probabilidad asociada al riesgo (0.00 a 100.00)
-);
-
-CREATE TABLE ANOMALIAS(
+-- 4.3. TABLA ANOMALIAS
+CREATE TABLE Anomalias(
     AnomaliaID BIGINT PRIMARY KEY IDENTITY(1,1),
     DatoID BIGINT NOT NULL FOREIGN KEY REFERENCES DatosSensores(DatoID),
     Tipo VARCHAR(50) NOT NULL,
     Descripcion VARCHAR(255),
     Fecha_Detectada DATETIME2 NOT NULL,
-    Estado BIT NOT NULL DEFAULT 1,
+    Estado BIT NOT NULL DEFAULT 1
+);
+
+-- 4.4. TABLA PREDICCIONES
+CREATE TABLE Predicciones (
+    PrediccionID BIGINT PRIMARY KEY IDENTITY(1,1),
+    SensorID INT NOT NULL FOREIGN KEY REFERENCES Sensores(SensorID),
+    FechaHoraPrediccion DATETIME2 NOT NULL,
+    ModeloUsado VARCHAR(50),
+    ValorPredicho VARCHAR(50),
+    ProbabilidadRiesgo DECIMAL(5,2)
+);
+
+-- 4.5. TABLA ALERTASUSUARIOS (Nueva tabla de relación Muchos a Muchos: Alertas y Usuarios)
+CREATE TABLE AlertasUsuarios (
+    AlertaUsuarioID BIGINT PRIMARY KEY IDENTITY(1,1),
+    RegistroAlertaID BIGINT NOT NULL FOREIGN KEY REFERENCES RegistroAlertas(RegistroAlertaID),
+    UsuarioID INT NOT NULL FOREIGN KEY REFERENCES Usuarios(UsuarioID),
+    FechaRevision DATETIME2, -- Momento en que el usuario revisó la alerta
+    EstadoRevision VARCHAR(50) NOT NULL DEFAULT 'PENDIENTE' 
 );
 
 -- ==============================================================================
--- 5. INSERCIÓN DE DATOS INICIALES (Mínimo para roles y parámetros)
+-- 5. INSERCIÓN DE DATOS INICIALES (Mínimo para el funcionamiento)
 -- ==============================================================================
 
--- Roles (HU011)
-INSERT INTO Roles (NombreRol) VALUES ('Gestor ANA'); -- 1
-INSERT INTO Roles (NombreRol) VALUES ('Investigador'); -- 2
-INSERT INTO Roles (NombreRol) VALUES ('Público General'); -- 3
+-- Roles
+INSERT INTO Roles (NombreRol) VALUES ('Gestor ANA'); 
+INSERT INTO Roles (NombreRol) VALUES ('Investigador'); 
+INSERT INTO Roles (NombreRol) VALUES ('Público General');
 
--- Parámetros (RF1.1)
+-- Parámetros
 INSERT INTO Parametros (NombreParametro, UnidadMedida) VALUES ('pH', 'Unidad');
 INSERT INTO Parametros (NombreParametro, UnidadMedida) VALUES ('Turbidez', 'NTU');
 INSERT INTO Parametros (NombreParametro, UnidadMedida) VALUES ('Oxígeno Disuelto', 'mg/L');
