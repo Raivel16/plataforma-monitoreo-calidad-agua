@@ -1,0 +1,18 @@
+type: http_request
+model: http_request
+id: rq_zGxUNgs8XX
+createdAt: 2025-10-30T04:43:34.187850800
+updatedAt: 2025-10-30T04:55:47.006341300
+workspaceId: wk_TV6JMdJDX5
+folderId: fl_6cjp6zTSSU
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: DELETE
+name: Eliminar usuario
+sortPriority: 3000.0
+url: http://localhost:3000/api/usuarios/1
+urlParameters: []

@@ -44,10 +44,12 @@ POST {{api}}/usuarios
 Content-Type: {{json}}
 
 {
-  "nombre": "Raivel Lorenzo",
-  "correo": "raivel@ejemplo.com",
-  "password": "123456",
-  "rolId": 1
+  "RolID": 2,
+  "NombreUsuario": "usuario1",
+  "Contrasena": "password",
+  "RepetirContrasena": "password",
+  "Correo": "email",
+  "Activo": true,
 }
 
 ### Actualizar datos del usuario
@@ -61,17 +63,6 @@ Content-Type: {{json}}
 ### Eliminar usuario
 DELETE {{api}}/usuarios/1
 
-### Autenticar usuario (login)
-POST {{api}}/usuarios/login
-Content-Type: {{json}}
-
-{
-  "correo": "raivel@ejemplo.com",
-  "password": "123456"
-}
-
-### Obtener alertas asignadas o revisadas por usuario
-GET {{api}}/usuarios/1/alertas
 
 
 ############################################
