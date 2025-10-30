@@ -7,7 +7,7 @@ dotenv.config(); // Carga las variables del archivo .env
 const dbConfig = {
   user: "app_backend_user",
   password: "back3nd*user",
-  server: "localhost", // nombre de tu servidor
+  server: "localhost\\MSSQLSERVER1", // nombre de tu servidor
   database: "MonitoreoAguaJunin", // reemplaza con el nombre real
   options: {
     encrypt: false, // poner true si usas Azure o SSL
@@ -26,4 +26,3 @@ export async function getConnection() {
     throw err;
   }
 }
-getConnection();

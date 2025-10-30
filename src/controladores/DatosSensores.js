@@ -9,7 +9,7 @@ export class DatosSensoresControlador {
   // GET /api/datos
   static async obtenerTodos(req, res) {
     try {
-      const datos = await DatoSensorModelo.obtenerTodos();
+      const datos = await DatoSensorModelo.obtenerTodos({});
       res.json(datos);
     } catch (error) {
       console.error("Error al obtener datos de sensores:", error);
@@ -67,9 +67,7 @@ export class DatosSensoresControlador {
       });
 
       // Emitir evento en tiempo real al cliente conectado
-      io.emit("nueva-lectura", resultado);
-
-      console.log("✅ Lectura registrada:", resultado);
+      io.emit("nuevaLectura", resultado);
 
       res.status(201).json({
         mensaje: "Lectura registrada correctamente",
@@ -112,3 +110,4 @@ export class DatosSensoresControlador {
     }
   }
 }
+

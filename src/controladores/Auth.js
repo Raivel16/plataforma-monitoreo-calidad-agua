@@ -51,6 +51,7 @@ export class AuthControlador {
         })
         .json(user);
     } catch (error) {
+      console.log(error.message)
       return res
         .status(500)
         .json({ mensaje: "Error del servidor", error: error.message });
