@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Principal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top-bar">
+  <h1>Plataforma de Monitoreo del Agua - Junín</h1>
+
+  <div class="user-menu">
+    <button class="user-btn" id="userBtn">
+      <i class="fas fa-user"></i>
+      <span class="user-text">Zynnedine Carlos</span>
+      <span class="arrow">▼</span>
+    </button>
+
+    <div class="user-dropdown" id="userDropdown">
+      <ul>
+        <li id="changeAccount">Cambiar de cuenta</li>
+        <li id="logout">Cerrar sesión</li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<script src="scripts/main.js"></script>
+
+    <nav class="main-header">
+        <a href="#" data-section="DatSensor/IngesDat">DATOS SENSORES</a>
+        <a href="#" data-section="Predicciones/HistorialPredic.html">PREDICCIONES</a>
+        <a href="#" data-section="visualizacion.html">VISUALIZACIÓN</a>
+        <a href="#" data-section="usuarios.html">USUARIOS</a>
+        <a href="#" data-section="notificaciones.html">NOTIFICACIONES</a>
+        <a href="#" data-section="salir.html">SALIR</a>
+    </nav>
+
+    <div class="container">
+        <aside id="slider" class="slider">
+            <div class="slider-option">
+                <h2>Opciones</h2>
+                <button id="home-btn" class="menu-btn">&#9776;</button>
+            </div>
+
+        <ul id="listaOpciones"></ul>
+
+    </aside>
+
+        <main id="main-content" class="content">
+            <!-- Aquí el JS insertará dinámicamente el contenido -->
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
