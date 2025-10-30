@@ -71,8 +71,8 @@
           Rol
           <select name="rol" required>
             <option value="">Seleccionar...</option>
-            <option value="usuario">Usuario común</option>
-            <option value="investigador">Investigador</option>
+            <option value="3">Usuario común</option>
+            <option value="2">Investigador</option>
           </select>
         </label>
         <button type="submit">Crear cuenta</button>
@@ -196,8 +196,7 @@
 
       async function register(email, usuario, password, password_repeat, rol) {
         // mapear roles a RolID según convención del backend (ajusta si es necesario)
-        const roleMap = { usuario: 3, investigador: 2 };
-        const RolID = roleMap[rol] || 3;
+        const RolID = parseInt(rol);
         const payload = {
           RolID,
           NombreUsuario: usuario,

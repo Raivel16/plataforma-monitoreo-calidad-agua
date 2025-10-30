@@ -37,9 +37,51 @@ export const usuarioSchema = z
   });
 
 export const validarDatosUsuario = (input) => {
-  return usuarioSchema.safeParse(input);
+  const resultado = usuarioSchema.safeParse(input);
+
+  if (!resultado.success) {
+    const zodError = resultado.error;
+    const issues = zodError.issues || zodError.errors || [];
+
+    // Normalizamos el formato del error
+    const errores = issues.map((it) => ({
+      message: it.message,
+      path: it.path || [],
+    }));
+
+    return {
+      success: false,
+      error: { errors: errores },
+    };
+  }
+
+  return {
+    success: true,
+    data: resultado.data,
+  };
 };
 
 export const validarParcialDatosUsuario = (input) => {
-  return usuarioSchema.partial().safeParse(input);
+  const resultado = usuarioSchema.partial().safeParse(input);
+
+  if (!resultado.success) {
+    const zodError = resultado.error;
+    const issues = zodError.issues || zodError.errors || [];
+
+    // Normalizamos el formato del error
+    const errores = issues.map((it) => ({
+      message: it.message,
+      path: it.path || [],
+    }));
+
+    return {
+      success: false,
+      error: { errors: errores },
+    };
+  }
+
+  return {
+    success: true,
+    data: resultado.data,
+  };
 };

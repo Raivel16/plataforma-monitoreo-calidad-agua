@@ -1,13 +1,19 @@
 import jwt from "jsonwebtoken";
 
-import { validarDatosLogin } from "../schemas/auth.js";
 import { AuthModelo } from "../modelos/Auth.js";
+import { RolModelo } from "../modelos/Rol.js";
+
+import { validarDatosLogin } from "../schemas/auth.js";
 import { validarDatosUsuario } from "../schemas/usuario.js";
+
 import { formatZodError } from "../utils/formatZodError.js";
+import { procesarRegistroUsuario } from "../utils/procesarRegistroUsuario.js";
+
 
 import dotenv from "dotenv";
 
 dotenv.config();
+
 
 export class AuthControlador {
   static async login(req, res) {
@@ -52,47 +58,13 @@ export class AuthControlador {
   }
 
   static async register(req, res) {
-    const datosRegistro = validarDatosUsuario(req.body);
-    if (!datosRegistro.success) {
-      // Normalizar el error de Zod para devolver una estructura predecible
-      const zodError = datosRegistro.error;
-      // ZodError tiene `issues` (array) con { message, path, code }
-      const issues = zodError.issues || zodError.errors || [];
-      const errores = issues.map((it) => ({
-        message: it.message,
-        path: it.path || [],
-      }));
-      return res.status(400).json({ error: { errors: errores } });
-    }
-
-    const { RolID, NombreUsuario, Contrasena, Correo, Activo } =
-      datosRegistro.data;
-
-    // Aquí iría la lógica para registrar al nuevo usuario
-    try {
-      const nuevoUsuario = await AuthModelo.register({
-        RolID,
-        NombreUsuario,
-        Contrasena,
-        Correo,
-        Activo,
-      });
-      res.status(201).json(nuevoUsuario);
-    } catch (error) {
-      // Si el modelo lanzó error por nombre de usuario duplicado, devolver conflicto con mensaje claro
-      if (
-        error &&
-        typeof error.message === "string" &&
-        error.message.toLowerCase().includes("nombre de usuario")
-      ) {
-        return res.status(409).json({ mensaje: error.message });
-      }
-
-      // Fallback: devolver mensaje de error para que el frontend lo muestre
-      return res
-        .status(500)
-        .json({ mensaje: error.message || "Error del servidor" });
-    }
+    await procesarRegistroUsuario(
+      req,
+      res,
+      validarDatosUsuario,
+      RolModelo.obtenerPorIDRegistroUsuario.bind(RolModelo),
+      AuthModelo.register.bind(AuthModelo)
+    );
   }
 
   static logout(req, res) {

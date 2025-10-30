@@ -1,24 +1,11 @@
 import { Router } from "express";
+import { UsuarioControlador } from "../../controladores/Usuarios.js";
 
 export const usuariosRouter = Router();
 
 // Definir las rutas para usuarios
-usuariosRouter.get("/", (req, res) => {
-  res.send("Obtener todos los usuarios");
-});
-
-usuariosRouter.get("/:id", (req, res) => {
-  res.send(`Obtener usuario con ID ${req.params.id}`);
-});
-usuariosRouter.post("/", (req, res) => {
-  res.send("Crear nuevo usuario");
-});
-usuariosRouter.patch("/:id", (req, res) => {
-  res.send(`Actualizar usuario con ID ${req.params.id}`);
-});
-usuariosRouter.delete("/:id", (req, res) => {
-  res.send(`Eliminar usuario con ID ${req.params.id}`);
-});
-usuariosRouter.get("/:id/alertas", (req, res) => {
-  res.send(`Obtener alertas para el usuario con ID ${req.params.id}`);
-});
+usuariosRouter.get("/", UsuarioControlador.obtenerTodos);
+usuariosRouter.get("/:id", UsuarioControlador.obtenerPorId);
+usuariosRouter.post("/", UsuarioControlador.crear);
+usuariosRouter.patch("/:id", UsuarioControlador.actualizar);
+usuariosRouter.delete("/:id", UsuarioControlador.eliminar);

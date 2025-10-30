@@ -13,11 +13,13 @@ export class RolModelo {
     return this.roles;
   }
 
-  static async obtenerPorIDRegistroUsuario(RolID) {
-    return this.roles.find((rol) => rol.RolID === RolID && rol.RolID !== 1) || null;
+  static async obtenerPorIDRegistroUsuario({ RolID }) {
+    return (
+      this.roles.find((rol) => rol.RolID === RolID && rol.RolID !== 1) || null
+    );
   }
 
-  static async obtenerPorIDRegistroAdministrativo(RolID) {
+  static async obtenerPorIDRegistroAdministrativo({ RolID }) {
     return this.roles.find((rol) => rol.RolID === RolID) || null;
   }
 

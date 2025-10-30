@@ -2,8 +2,6 @@
 USE MonitoreoAguaJunin;
 GO
 
-
-
 -- Procedimiento de prueba de conexión
 CREATE PROCEDURE sp_TestConexion
 AS

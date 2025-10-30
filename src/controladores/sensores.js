@@ -1,5 +1,5 @@
-// src/controladores/sensoresControlador.js
 import { SensorModelo } from "../modelos/Sensor.js";
+
 import {
   validarDatosSensor,
   validarParcialDatosSensor,

@@ -1,22 +1,15 @@
 import bcrypt from "bcrypt";
+import { usuarios } from "./bd_local/usuarios.js";
 
 export class AuthModelo {
-  static usuarios = [
-    {
-      UsuarioID: 1,
-      RolID: 1,
-      NombreUsuario: "admin",
-      Contrasena:
-        "$2a$10$veZ8cibHpGfDLgmEAinXcu6gQDOg.5iU3B4C/DFfx4jm8dnuxsLEC", // "admin123"
-      Correo: "admin@example.com",
-      Activo: true,
-    },
-  ];
-
   static async login({ NombreUsuario, Contrasena }) {
     // Aquí iría la lógica para autenticar al usuario con NombreUsuario y Contrasena
 
-    const usuario = this.usuarios.find(
+    // Login (buscar el nombre)
+    // devolver el usuario
+    // select nombre usuario y la contreseña
+
+    const usuario = usuarios.find(
       (user) => user.NombreUsuario === NombreUsuario
     );
     if (!usuario) {
@@ -40,14 +33,15 @@ export class AuthModelo {
   }
 
   static async register({ RolID, NombreUsuario, Contrasena, Correo, Activo }) {
-    const usuarioExistente = this.usuarios.find(
+    // VerificarUsuario
+    const usuarioExistente = usuarios.find(
       (user) => user.NombreUsuario === NombreUsuario
     );
     if (usuarioExistente) {
       throw new Error("El nombre de usuario ya está en uso");
     }
 
-    const id = this.usuarios.length + 1;
+    const id = usuarios.length + 1;
     const hashedContrasena = await bcrypt.hash(Contrasena, 10);
 
     // Aquí iría la lógica para registrar al nuevo usuario
@@ -60,7 +54,8 @@ export class AuthModelo {
       Activo,
     };
 
-    this.usuarios.push(nuevoUsuario);
+    // insertarUsuario
+    usuarios.push(nuevoUsuario);
 
     // RolID nunca 1 porque es admin
     return {

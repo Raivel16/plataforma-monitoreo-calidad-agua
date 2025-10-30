@@ -1,0 +1,18 @@
+type: http_request
+model: http_request
+id: rq_P5Y8RtRxPQ
+createdAt: 2025-10-30T04:15:41.090737200
+updatedAt: 2025-10-30T04:45:38.283448
+workspaceId: wk_TV6JMdJDX5
+folderId: fl_6cjp6zTSSU
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: GET
+name: Obtener todos los usuarios
+sortPriority: 1000.0
+url: http://localhost:3000/api/usuarios
+urlParameters: []
