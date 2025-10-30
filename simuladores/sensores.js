@@ -7,7 +7,7 @@ dotenv.config();
 const PORT = process.env.PORT ?? 3000
 
 // Configura el endpoint al que enviará los datos
-const API_URL = `http://localhost:${PORT}/api/data`;
+const API_URL = `http://localhost:${PORT}/api/datos`;
 
 // Función para generar un valor aleatorio dentro del rango
 function generarValor(min, max) {
@@ -20,6 +20,7 @@ async function enviarDatos() {
     const valor = generarValor(sensor.min, sensor.max);
     const data = {
       SensorID: sensor.id,
+      ParametroID: sensor.ParametroID,
       valor,
       TimestampEnvio: new Date().toISOString(),
     };
@@ -33,6 +34,6 @@ async function enviarDatos() {
   }
 }
 
-// Envía datos cada 10 segundos
-setInterval(enviarDatos, 10000);
+// Envía datos cada 5 segundos
+setInterval(enviarDatos, 5000);
 

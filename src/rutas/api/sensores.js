@@ -1,14 +1,12 @@
 import { Router } from "express";
-import { SensoresControlador } from "../../controladores/sensores.js";
+import { SensoresControlador } from "../../controladores/Sensores.js";
 
 export const sensoresRouter = Router();
 
-sensoresRouter.get("/", SensoresControlador.obtenerSensores);
-
-sensoresRouter.post("/", SensoresControlador.crearSensor);
-
-sensoresRouter.get("/:id", SensoresControlador.obtenerSensorPorId);
-
-sensoresRouter.patch("/:id", SensoresControlador.actualizarSensor);
-
-sensoresRouter.delete("/:id", SensoresControlador.eliminarSensor);
+// Definir las rutas para sensores
+sensoresRouter.get("/", SensoresControlador.obtenerTodos);
+sensoresRouter.get("/:id", SensoresControlador.obtenerPorId);
+sensoresRouter.post("/", SensoresControlador.crear);
+sensoresRouter.patch("/:id", SensoresControlador.actualizar);
+sensoresRouter.patch("/:id/desactivar", SensoresControlador.desactivar);
+sensoresRouter.delete("/:id", SensoresControlador.eliminar);

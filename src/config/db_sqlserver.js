@@ -25,3 +25,4 @@ export async function getConnection() {
     throw err;
   }
 }
+getConnection();

@@ -1,56 +1,116 @@
-import { SensorModelo } from "../modelos/sensor.js";
-import { validarDatosSensor } from "../schemas/sensor.js";
+// src/controladores/sensoresControlador.js
+import { SensorModelo } from "../modelos/Sensor.js";
+import {
+  validarDatosSensor,
+  validarParcialDatosSensor,
+} from "../schemas/sensor.js";
+import { formatZodError } from "../utils/formatZodError.js";
 
 export class SensoresControlador {
-  static async obtenerSensores(req, res) {
-    // Lógica para obtener todos los sensores
-    const sensores = await SensorModelo.obtenerTodos();
-    res.json(sensores);
-  }
-
-  static async crearSensor(req, res) {
-    // Lógica para crear un nuevo sensor
-    const sensorInfo = validarDatosSensor(req.body);
-
-    if (!sensorInfo.success) {
-      return res
-        .status(400)
-        .json({ mensaje: "Datos inválidos", error: sensorInfo.error });
+  // GET /api/sensores
+  static async obtenerTodos(req, res) {
+    try {
+      const sensores = await SensorModelo.obtenerTodos();
+      res.json(sensores);
+    } catch (error) {
+      console.error("Error al obtener sensores:", error);
+      res.status(500).json({ error: "Error al obtener sensores" });
     }
-
-
-    const nuevoSensor = await SensorModelo.crear({ sensorInfo });
-    res.status(201).json(nuevoSensor);
   }
 
-  static async obtenerSensorPorId(req, res) {
-    // Lógica para obtener un sensor por su ID
-    const { id } = req.params;
-    const sensor = await SensorModelo.obtenerPorId({ id });
-    if (sensor) {
+  // GET /api/sensores/:id
+  static async obtenerPorId(req, res) {
+    try {
+      const { id } = req.params;
+      const sensor = await SensorModelo.obtenerPorId({ id });
+
+      if (!sensor) {
+        return res.status(404).json({ error: "Sensor no encontrado" });
+      }
+
       res.json(sensor);
-    } else {
-      res.status(404).send("Sensor no encontrado");
+    } catch (error) {
+      console.error("Error al obtener sensor:", error);
+      res.status(500).json({ error: "Error al obtener sensor" });
     }
   }
 
-  static async actualizarSensor(req, res) {
-    // Lógica para actualizar un sensor existente
-    const { id } = req.params;
-    const sensorInfo = req.body;
-    const sensorActualizado = await SensorModelo.actualizar({ id, sensorInfo });
+  // POST /api/sensores
+  static async crear(req, res) {
+    try {
+      const nuevoSensor = validarDatosSensor(req.body);
 
-    if (sensorActualizado) {
-      res.json(sensorActualizado);
-    } else {
-      res.status(404).send("Sensor no encontrado");
+      if (!nuevoSensor.success) {
+        const normalized = formatZodError(nuevoSensor.error);
+        return res.status(400).json({ error: normalized });
+      }
+
+      const sensorCreado = await SensorModelo.crear({ ...nuevoSensor.data });
+      res.status(201).json(sensorCreado);
+    } catch (error) {
+      console.error("Error al crear sensor:", error);
+      res.status(500).json({ error: "Error al registrar sensor" });
     }
   }
 
-  static async eliminarSensor(req, res) {
-    // Lógica para eliminar un sensor
-    const { id } = req.params;
-    await SensorModelo.eliminar({ id });
-    res.status(204).send();
+  // PATCH /api/sensores/:id
+  static async actualizar(req, res) {
+    try {
+      const { id } = req.params;
+      const datosActualizados = validarParcialDatosSensor(req.body);
+
+      if (!datosActualizados.success) {
+        const normalized = formatZodError(datosActualizados.error);
+        return res.status(400).json({ error: normalized });
+      }
+
+      const sensor = await SensorModelo.actualizar({
+        id,
+        datos: datosActualizados.data,
+      });
+
+      if (!sensor) {
+        return res.status(404).json({ error: "Sensor no encontrado" });
+      }
+
+      res.json({ mensaje: "Sensor actualizado correctamente", sensor });
+    } catch (error) {
+      console.error("Error al actualizar sensor:", error);
+      res.status(500).json({ error: "Error al actualizar sensor" });
+    }
+  }
+
+  // PATCH /api/sensores/:id/desactivar
+  static async desactivar(req, res) {
+    try {
+      const { id } = req.params;
+      const sensor = await SensorModelo.desactivar({ id });
+
+      if (!sensor) {
+        return res.status(404).json({ error: "Sensor no encontrado" });
+      }
+
+      res.json({ mensaje: "Sensor desactivado correctamente", sensor });
+    } catch (error) {
+      console.error("Error al desactivar sensor:", error);
+      res.status(500).json({ error: "Error al desactivar sensor" });
+    }
+  }
+
+  // DELETE /api/sensores/:id
+  static async eliminar(req, res) {
+    try {
+      const { id } = req.params;
+      const eliminado = await SensorModelo.eliminar({ id });
+
+      if (!eliminado) {
+        return res.status(404).json({ error: "Sensor no encontrado" });
+      }
+
+      res.json({ mensaje: "Sensor eliminado correctamente" });
+    } catch (error) {
+      console.error("Error al eliminar sensor:", error);
+      res.status(500).json({ error: "Error al eliminar sensor" });
+    }
   }
 }

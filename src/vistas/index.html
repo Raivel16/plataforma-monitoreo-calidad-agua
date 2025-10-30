@@ -1,11 +1,341 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Home</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Plataforma de Monitoreo</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 500px;
+        margin: 40px auto;
+        line-height: 1.5;
+      }
+      input,
+      select {
+        display: block;
+        margin-top: 6px;
+        padding: 6px;
+        width: 100%;
+      }
+      button {
+        margin-top: 10px;
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      section {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      .msg {
+        color: crimson;
+        margin-top: 8px;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
   </head>
   <body>
-    <h1>Home page</h1>
+    <h1>Plataforma de Monitoreo de Calidad de Agua</h1>
+
+    <!-- Sección visible solo si NO hay sesión -->
+    <section id="auth-section">
+      <h2>Iniciar sesión</h2>
+      <form id="login-form">
+        <label>Usuario <input type="text" name="usuario" required /></label>
+        <label
+          >Contraseña <input type="password" name="password" required
+        /></label>
+        <button type="submit">Entrar</button>
+        <a href="/visualizacion">Seguir como invitado</a>
+        <div id="login-msg" class="msg"></div>
+      </form>
+
+      <hr />
+
+      <h2>Registrarse</h2>
+      <form id="register-form">
+        <label>Email <input type="text" name="email" required /></label>
+        <label>Usuario <input type="text" name="usuario" required /></label>
+        <label
+          >Contraseña <input type="password" name="password" required
+        /></label>
+        <label
+          >Repetir Contraseña
+          <input type="password" name="password_repeat" required
+        /></label>
+        <label>
+          Rol
+          <select name="rol" required>
+            <option value="">Seleccionar...</option>
+            <option value="usuario">Usuario común</option>
+            <option value="investigador">Investigador</option>
+          </select>
+        </label>
+        <button type="submit">Crear cuenta</button>
+        <div id="register-msg" class="msg"></div>
+      </form>
+    </section>
+
+    <!-- Sección visible solo si hay sesión -->
+    <section id="user-section" class="hidden">
+      <h2>Logeado<span id="nombre-usuario"></span></h2>
+      <p>Rol: <strong id="rol-usuario"></strong></p>
+
+      <div id="acciones"></div>
+
+      <button
+        id="logout-btn"
+        style="margin-top: 20px; background: crimson; color: white"
+      >
+        Cerrar sesión
+      </button>
+    </section>
+
+    <script>
+      const authApi = "/api/auth";
+
+      /**
+       * Helper genérico para parsear respuestas del backend.
+       * - Intenta parsear JSON
+       * - Si res.ok devuelve data
+       * - Si no, normaliza errores (Zod / arrays / mensajes) y lanza { errores: [] } o { mensaje }
+       */
+      async function handleApiResponse(res) {
+        const ct = res.headers.get("content-type") || "";
+        let data = null;
+        if (ct.includes("application/json")) {
+          try {
+            data = await res.json();
+          } catch (e) {
+            // cuerpo mal formado
+            throw {
+              mensaje: `Respuesta JSON inválida del servidor (status ${res.status})`,
+            };
+          }
+        } else {
+          // si el backend no devuelve JSON, leer texto y devolver mensaje
+          const text = await res.text();
+          throw {
+            mensaje: `Respuesta inesperada del servidor: ${res.status} ${text}`,
+          };
+        }
+
+        if (res.ok) return data;
+
+        // Zod-normalized: { error: { errors: [ { message, path } ] } }
+        if (data && data.error && Array.isArray(data.error.errors)) {
+          const mensajes = data.error.errors.map(
+            (e) => e.message || JSON.stringify(e)
+          );
+          throw { errores: mensajes };
+        }
+
+        // caso: { error: [ ... ] }
+        if (data && Array.isArray(data.error)) {
+          const mensajes = data.error.map((e) => e.message || String(e));
+          throw { errores: mensajes };
+        }
+
+        // caso: { errores: [ ... ] }
+        if (data && Array.isArray(data.errores)) {
+          const mensajes = data.errores.map((e) =>
+            typeof e === "string" ? e : e.message || String(e)
+          );
+          throw { errores: mensajes };
+        }
+
+        // fallback a mensaje único
+        const msg =
+          data?.mensaje ||
+          data?.message ||
+          data?.error ||
+          "Error en la petición";
+        throw { mensaje: msg };
+      }
+
+      async function getSesion() {
+        try {
+          const res = await fetch(`${authApi}/session`, {
+            credentials: "same-origin",
+          });
+
+          if (res.status === 401) {
+            console.warn("⚠️ No tiene sesión activa");
+            return { logeado: false };
+          }
+
+          if (!res.ok) {
+            console.error("Error al obtener sesión:", res.status);
+            return { logeado: false };
+          }
+
+          return await res.json();
+        } catch (error) {
+          console.error("Error de conexión al obtener sesión:", error);
+          return { logeado: false };
+        }
+      }
+
+      async function login(usuario, password) {
+        // backend espera NombreUsuario y Contrasena
+        const res = await fetch(authApi + "/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            NombreUsuario: usuario,
+            Contrasena: password,
+          }),
+        });
+        return await handleApiResponse(res);
+      }
+
+      async function register(email, usuario, password, password_repeat, rol) {
+        // mapear roles a RolID según convención del backend (ajusta si es necesario)
+        const roleMap = { usuario: 3, investigador: 2 };
+        const RolID = roleMap[rol] || 3;
+        const payload = {
+          RolID,
+          NombreUsuario: usuario,
+          Contrasena: password,
+          RepetirContrasena: password_repeat,
+          Correo: email,
+          Activo: true,
+        };
+
+        const res = await fetch(authApi + "/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        });
+
+        return await handleApiResponse(res);
+      }
+
+      async function logout() {
+        await fetch(authApi + "/logout", {
+          method: "POST",
+          credentials: "same-origin",
+        });
+        window.location.reload();
+      }
+
+      function mostrarSesion({ UsuarioID, RolID, NombreUsuario }) {
+        document.getElementById("auth-section").classList.add("hidden");
+        const userSec = document.getElementById("user-section");
+        userSec.classList.remove("hidden");
+
+        document.getElementById("nombre-usuario").textContent = NombreUsuario;
+        document.getElementById("rol-usuario").textContent = RolID;
+
+        const acciones = document.getElementById("acciones");
+        acciones.innerHTML = "";
+
+        // Mostrar botones según el rol
+        if (RolID === 1) {
+          acciones.innerHTML += `<button >Panel Admin</button><br>`;
+          acciones.innerHTML += `<button>Zona de Investigación</button><br>`;
+          acciones.innerHTML += `<button >Zona de Usuarios</button>`;
+        } else if (rol === "investigador") {
+          acciones.innerHTML += `<button >Zona de Investigación</button><br>`;
+          acciones.innerHTML += `<button >Zona de Usuarios</button>`;
+        } else {
+          acciones.innerHTML += `<button >Zona de Usuarios</button>`;
+        }
+      }
+
+      async function ir(endpoint) {
+        const res = await fetch(endpoint);
+        const data = await res.json();
+        alert(JSON.stringify(data, null, 2));
+      }
+
+      // --- Manejadores de formularios ---
+      document
+        .getElementById("login-form")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const f = e.target;
+          const msg = document.getElementById("login-msg");
+          msg.textContent = "";
+          try {
+            const { UsuarioID, RolID, NombreUsuario } = await login(
+              f.usuario.value,
+              f.password.value
+            );
+
+            mostrarSesion({ UsuarioID, RolID, NombreUsuario });
+          } catch (err) {
+            // Manejar tanto Error (err.message) como objetos lanzados por handleApiResponse
+            if (err && err.errores) {
+              msg.textContent = Array.isArray(err.errores)
+                ? err.errores.join(" | ")
+                : String(err.errores);
+            } else {
+              msg.textContent = err.mensaje || err.message || String(err);
+            }
+            console.log(err);
+          }
+        });
+
+      document
+        .getElementById("register-form")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const f = e.target;
+          const msg = document.getElementById("register-msg");
+          msg.textContent = "";
+          try {
+            await register(
+              f.email.value,
+              f.usuario.value,
+              f.password.value,
+              f.password_repeat.value,
+              f.rol.value
+            );
+            msg.style.color = "green";
+            msg.textContent = "Cuenta creada con éxito. Ahora inicia sesión.";
+            f.reset();
+          } catch (err) {
+            //msg.textContent = //--> completar aca
+            //console.log(err.message);
+            msg.style.color = "crimson";
+
+            if (err.errores) {
+              if (Array.isArray(err.errores)) {
+                msg.textContent = err.errores
+                  .map((e) =>
+                    typeof e === "string" ? e : e.message || JSON.stringify(e)
+                  )
+                  .join(" | ");
+              } else {
+                msg.textContent = String(err.errores);
+              }
+            } else {
+              msg.textContent = err.mensaje || "Error inesperado.";
+            }
+
+            console.error(err);
+          }
+        });
+
+      document.getElementById("logout-btn").addEventListener("click", logout);
+
+      // --- Al cargar la página ---
+      (async () => {
+        const sesion = await getSesion();
+        if (sesion.logeado)
+          mostrarSesion({
+            UsuarioID: sesion.UsuarioID,
+            RolID: sesion.RolID,
+            NombreUsuario: sesion.NombreUsuario,
+          });
+      })();
+    </script>
   </body>
 </html>

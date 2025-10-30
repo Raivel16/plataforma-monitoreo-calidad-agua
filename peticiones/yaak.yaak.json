@@ -1,0 +1,201 @@
+{
+  "yaakVersion": "2025.7.0",
+  "yaakSchema": 4,
+  "timestamp": "2025-10-29T05:05:31.972713800",
+  "resources": {
+    "workspaces": [
+      {
+        "model": "workspace",
+        "id": "wk_TV6JMdJDX5",
+        "createdAt": "2025-10-22T00:20:52.668749900",
+        "updatedAt": "2025-10-22T00:20:52.668750900",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "Yaak",
+        "encryptionKeyChallenge": null,
+        "settingValidateCertificates": true,
+        "settingFollowRedirects": true,
+        "settingRequestTimeout": 0
+      }
+    ],
+    "environments": [],
+    "folders": [
+      {
+        "model": "folder",
+        "id": "fl_s6XHXmPBXz",
+        "createdAt": "2025-10-29T03:45:45.385615400",
+        "updatedAt": "2025-10-29T03:45:47.720739200",
+        "workspaceId": "wk_TV6JMdJDX5",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "Sensores",
+        "sortPriority": 1000.0
+      }
+    ],
+    "httpRequests": [
+      {
+        "model": "http_request",
+        "id": "rq_5pkXbfbNXg",
+        "createdAt": "2025-10-29T04:52:06.432306900",
+        "updatedAt": "2025-10-29T04:52:46.813685600",
+        "workspaceId": "wk_TV6JMdJDX5",
+        "folderId": "fl_s6XHXmPBXz",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": ""
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "DELETE",
+        "name": "Eliminar sensor",
+        "sortPriority": 3000.0012000000006,
+        "url": "http://localhost:3000/api/sensores/2",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_j5QfaXgrNg",
+        "createdAt": "2025-10-29T04:51:16.674244500",
+        "updatedAt": "2025-10-29T04:51:45.176769500",
+        "workspaceId": "wk_TV6JMdJDX5",
+        "folderId": "fl_s6XHXmPBXz",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"Modelo\": \"PHX20020\",\n  \"Fabricante\": \"Sensores SA\",\n  \"Latitud\": 12.3456,\n  \"Longitud\": 65.4321,\n  \"Descripcion\": \"Sensor actualizado para medir pH del agua\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "PATCH",
+        "name": "Desactivar sensor",
+        "sortPriority": 3000.0011000000004,
+        "url": "http://localhost:3000/api/sensores/3/desactivar",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_mr39AZiABK",
+        "createdAt": "2025-10-29T04:49:47.289918500",
+        "updatedAt": "2025-10-29T04:51:10.535257700",
+        "workspaceId": "wk_TV6JMdJDX5",
+        "folderId": "fl_s6XHXmPBXz",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"Modelo\": \"PHX20020\",\n  \"Fabricante\": \"Sensores SA\",\n  \"Latitud\": 12.3456,\n  \"Longitud\": 65.4321,\n  \"Descripcion\": \"Sensor actualizado para medir pH del agua\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "khehD0ggpD"
+          }
+        ],
+        "method": "PATCH",
+        "name": "Actualizar sensor",
+        "sortPriority": 3000.0,
+        "url": "http://localhost:3000/api/sensores/3",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_9iY9Y64Sm4",
+        "createdAt": "2025-10-29T03:47:11.105603300",
+        "updatedAt": "2025-10-29T04:51:10.532774",
+        "workspaceId": "wk_TV6JMdJDX5",
+        "folderId": "fl_s6XHXmPBXz",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"Nombre\": \"Sensor PH-01\",\n  \"Modelo\": \"PHX1000\",\n  \"Fabricante\": \"Sensores SA\",\n  \"Latitud\": 12.3456,\n  \"Longitud\": 65.4321,\n  \"Descripcion\": \"Sensor para medir pH del agua\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "WChx3xamGT"
+          }
+        ],
+        "method": "POST",
+        "name": "Registrar nuevo sensor",
+        "sortPriority": 2000.0,
+        "url": "http://localhost:3000/api/sensores",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_f7tTD5EnVH",
+        "createdAt": "2025-10-29T03:46:25.376872300",
+        "updatedAt": "2025-10-29T05:03:21.783974",
+        "workspaceId": "wk_TV6JMdJDX5",
+        "folderId": "fl_s6XHXmPBXz",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [
+          {
+            "enabled": false,
+            "name": "",
+            "value": "",
+            "id": "9vUWzcQkaR"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "8pCCndqnH5"
+          }
+        ],
+        "method": "GET",
+        "name": "Obtener Sensor",
+        "sortPriority": 1000.0,
+        "url": "http://localhost:3000/api/sensores/2",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_YNNkvW9mhy",
+        "createdAt": "2025-10-22T00:22:05.327431",
+        "updatedAt": "2025-10-29T04:52:34.144629200",
+        "workspaceId": "wk_TV6JMdJDX5",
+        "folderId": "fl_s6XHXmPBXz",
+        "authentication": {},
+        "authenticationType": "jwt",
+        "body": {},
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "nhFrwdIbGa"
+          }
+        ],
+        "method": "GET",
+        "name": "Listar Sensores",
+        "sortPriority": 333.3333333333333,
+        "url": "http://localhost:3000/api/sensores",
+        "urlParameters": []
+      }
+    ],
+    "grpcRequests": [],
+    "websocketRequests": []
+  }
+}
