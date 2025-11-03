@@ -37,6 +37,7 @@ export class AuthControlador {
           UsuarioID: user.UsuarioID,
           RolID: user.RolID,
           NombreUsuario: user.NombreUsuario,
+          Correo: user.Correo
         },
         process.env.SECRET_JWT_KEY,
         { expiresIn: "1h" }

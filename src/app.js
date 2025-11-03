@@ -25,6 +25,12 @@ app.use(morgan("dev"));
 
 // 📂 Rutas protegidas (deben montarse antes de servir archivos estáticos)
 app.use("/datos-sensores", verificarRol([1, 2]), (req, res) => {
+
+  // 🔹 Redirigir si falta la barra final (para que carguen bien los CSS/JS)
+  if (req.originalUrl === "/datos-sensores") {
+    return res.redirect(req.originalUrl + "/");
+  }
+  
   // Normalizamos la ruta para permitir /datos-sensores o /datos-sensores/*
   const requestedPath = req.path === "/" ? "/index.html" : req.path;
   const archivo = requestedPath.replace(/^\//, "");

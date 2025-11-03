@@ -17,6 +17,16 @@ export class DatosSensoresControlador {
     }
   }
 
+  static async obtenerUltimosRegistros(req, res) {
+    try {
+      const datos = await DatoSensorModelo.obtenerTodos({ ultimosDiez: true });
+      res.json(datos);
+    } catch (error) {
+      console.error("Error al obtener datos de sensores:", error);
+      res.status(500).json({ error: "Error al obtener datos de sensores" });
+    }
+  }
+
   // GET /api/datos/:id
   static async obtenerPorId(req, res) {
     try {
@@ -110,4 +120,3 @@ export class DatosSensoresControlador {
     }
   }
 }
-

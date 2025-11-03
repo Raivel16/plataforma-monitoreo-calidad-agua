@@ -5,6 +5,7 @@ export const datosSensoresRouter = (io) => {
   const datosSensoresRouter = Router();
   // Definir las rutas para datos de sensores
   datosSensoresRouter.get("/", DatosSensoresControlador.obtenerTodos);
+  datosSensoresRouter.get("/ultimos", DatosSensoresControlador.obtenerUltimosRegistros)
   datosSensoresRouter.get("/:id", DatosSensoresControlador.obtenerPorId);
   datosSensoresRouter.post("/", (req, res) =>
     DatosSensoresControlador.registrar(req, res, io)

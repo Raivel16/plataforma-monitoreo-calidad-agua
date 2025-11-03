@@ -4,6 +4,19 @@
     -- Motor: Microsoft SQL Server
     -- ==============================================================================
 
+IF EXISTS (SELECT name FROM sys.databases WHERE name = N'MonitoreoAguaJunin')
+BEGIN
+    ALTER DATABASE [MonitoreoAguaJunin] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE [MonitoreoAguaJunin];
+    PRINT '✅ Base de datos "MonitoreoAguaJunin" eliminada correctamente.';
+END
+ELSE
+BEGIN
+    PRINT 'ℹ️ La base de datos "MonitoreoAguaJunin" no existe.';
+END
+
+
+
     -- 1. Crear la Base de Datos (Si no existe)
     IF NOT EXISTS (SELECT name FROM master.dbo.sysdatabases WHERE name = N'MonitoreoAguaJunin')
     BEGIN
@@ -29,6 +42,7 @@
         UsuarioID INT PRIMARY KEY IDENTITY(1,1),
         RolID INT NOT NULL FOREIGN KEY REFERENCES Roles(RolID),
         NombreUsuario VARCHAR(100) NOT NULL UNIQUE,
+        Correo VARCHAR(150) NOT NULL UNIQUE, -- Nuevo campo: correo electrónico único
         ContrasenaHash VARCHAR(255) NOT NULL, -- Almacenamiento hasheado (HU023)
         Activo BIT NOT NULL DEFAULT 1 -- 1=Activo, 0=Inactivo
     );
@@ -144,3 +158,8 @@
     ('Estacion Laguna B', 'SEN-TURB-10', 'WaterTech', -11.990000, -76.950000, 'Sensor turbidez en laguna B', 1);
 
     GO
+
+
+-- Insertando Usuarios
+INSERT INTO Usuarios (RolID, NombreUsuario, Correo, ContrasenaHash, Activo) VALUES(1, 'admin', 'raivellorenzo.valiente@gmail.com', '$2a$10$veZ8cibHpGfDLgmEAinXcu6gQDOg.5iU3B4C/DFfx4jm8dnuxsLEC', 1)
+

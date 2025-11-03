@@ -7,7 +7,7 @@ dotenv.config(); // Carga las variables del archivo .env
 const dbConfig = {
   user: "app_backend_user",
   password: "back3nd*user",
-  server: "localhost\\MSSQLSERVER1", // nombre de tu servidor
+  server: "localhost", // nombre de tu servidor --> Cambiar por esto en la universidad "localhost\\MSSQLSERVER1"
   database: "MonitoreoAguaJunin", // reemplaza con el nombre real
   options: {
     encrypt: false, // poner true si usas Azure o SSL

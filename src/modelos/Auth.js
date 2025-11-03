@@ -1,35 +1,54 @@
 import bcrypt from "bcrypt";
 import { usuarios } from "./bd_local/usuarios.js";
 
+import { getConnection } from "../config/db_sqlserver.js";
+
 export class AuthModelo {
   static async login({ NombreUsuario, Contrasena }) {
     // Aquí iría la lógica para autenticar al usuario con NombreUsuario y Contrasena
 
-    // Login (buscar el nombre)
-    // devolver el usuario
-    // select nombre usuario y la contreseña
+    try {
+      const pool = await getConnection();
+      const request = pool.request();
 
-    const usuario = usuarios.find(
-      (user) => user.NombreUsuario === NombreUsuario
-    );
-    if (!usuario) {
-      return null;
+      // Pasar el parámetro al procedimiento almacenado
+      request.input("NombreUsuario", NombreUsuario);
+
+      // Ejecutar el procedimiento
+      const result = await request.execute("sp_AutenticarUsuario");
+
+      // Si no hay resultados, el usuario no existe
+      if (result.recordset.length === 0) {
+        return null;
+      }
+
+      const usuario = result.recordset[0];
+
+      // Verificar si el usuario está activo
+      if (!usuario.Activo) {
+        return null;
+      }
+
+      // Comparar contraseña con el hash almacenado
+      const esContrasenaValida = await bcrypt.compare(
+        Contrasena,
+        usuario.ContrasenaHash
+      );
+
+      if (!esContrasenaValida) {
+        return null;
+      }
+      // Devolver los datos del usuario autenticado
+      return {
+        UsuarioID: usuario.UsuarioID,
+        RolID: usuario.RolID,
+        NombreUsuario: usuario.NombreUsuario,
+        Correo: usuario.Correo,
+      };
+    } catch (error) {
+      console.error("Error durante la autenticación:", error);
+      throw error;
     }
-    const esContrasenaValida = await bcrypt.compare(
-      Contrasena,
-      usuario.Contrasena
-    );
-
-    if (!esContrasenaValida) {
-      return null;
-    }
-
-    return {
-      UsuarioID: usuario.UsuarioID,
-      RolID: usuario.RolID,
-      NombreUsuario: usuario.NombreUsuario,
-      Correo: usuario.Correo,
-    };
   }
 
   static async register({ RolID, NombreUsuario, Contrasena, Correo, Activo }) {

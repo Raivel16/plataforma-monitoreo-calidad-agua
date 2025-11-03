@@ -1,156 +1,160 @@
 <!DOCTYPE html>
 <html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel Principal</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="DatSensor.css" />
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Principal</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="DatSensor.css">
-
-  <script src="/socket.io/socket.io.js"></script>
-
+    <script src="/socket.io/socket.io.js"></script>
   </head>
 
-<body>
-
-  <header class="top-bar">
-    <h1>Plataforma de Monitoreo del Agua - Junín</h1>
-    <div class="user-menu">
-      <button class="user-btn" id="userBtn">
-        <i class="fas fa-user"></i>
-        <span class="user-text" id="nombreUsuario"></span>
-        <span class="arrow">▼</span>
-      </button>
-      <div class="user-dropdown" id="userDropdown">
-        <ul>
-          <li id="changeAccount">Cambiar de cuenta</li>
-          <li id="logout">Cerrar sesión</li>
-        </ul>
-      </div>
-    </div>
-  </header>
-
-  <nav class="main-header">
-    <a href="./DatSensor/IngesDat.html">DATOS SENSORES</a>
-    <a href="#">PREDICCIONES</a>
-    <a href="#">VISUALIZACIÓN</a>
-    <a href="#">USUARIOS</a>
-    <a href="#">NOTIFICACIONES</a>
-    <a href="#" id="logoutLink">SALIR</a>
-  </nav>
-
-  <div class="container">
-    <aside id="slider" class="slider">
-      <div class="slider-option">
-        <h2>Opciones</h2>
-        <button id="home-btn" class="menu-btn">&#9776;</button>
-      </div>
-      <ul id="listaOpciones"></ul>
-    </aside>
-
-    <main id="main-content" class="content">
-      <div class="contenedor-datos-sensores">
-        <h2>📊 Ingesta de Datos de Sensores</h2>
-        <div class="tabla-container">
-          <table id="tablaSensores">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>ID Sensor</th>
-                <th>ID Parámetro</th>
-                <th>Tiempo de Registro</th>
-                <th>Tiempo de Envío</th>
-                <th>Valor Original</th>
-                <th>Valor Procesado</th>
-                <th>Valor Normalizado</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td colspan="8" class="cargando">Cargando datos...</td></tr>
-            </tbody>
-          </table>
+  <body>
+    <header class="top-bar">
+      <h1>Plataforma de Monitoreo del Agua - Junín</h1>
+      <div class="user-menu">
+        <button class="user-btn" id="userBtn">
+          <i class="fas fa-user"></i>
+          <span class="user-text" id="nombreUsuario"></span>
+          <span class="arrow">▼</span>
+        </button>
+        <div class="user-dropdown" id="userDropdown">
+          <ul>
+            <li id="changeAccount">Cambiar de cuenta</li>
+            <li id="logout">Cerrar sesión</li>
+          </ul>
         </div>
       </div>
-    </main>
-  </div>
+    </header>
 
+    <nav class="main-header">
+      <a href="/datos-sensores">DATOS SENSORES</a>
+      <a href="#">PREDICCIONES</a>
+      <a href="#">VISUALIZACIÓN</a>
+      <a href="#">USUARIOS</a>
+      <a href="#">NOTIFICACIONES</a>
+      <a href="#" id="logoutLink">SALIR</a>
+    </nav>
 
-  <script>
-   const tbody = document.querySelector("#tablaSensores tbody");
-    
-    // 'data' almacenará un historial de las lecturas, lo cual es buena práctica
-    let data = [] 
-    
-    // ❌ HEMOS ELIMINADO EL BLOQUE 'if (!data.length)'
-    // Era redundante, ya que tu HTML ya incluye la fila "Cargando datos...".
+    <div class="container">
+      <aside id="slider" class="slider">
+        <div class="slider-option">
+          <h2>Opciones</h2>
+          <button id="home-btn" class="menu-btn">&#9776;</button>
+        </div>
+        <ul id="listaOpciones"></ul>
+      </aside>
 
-    // ✅ FUNCIÓN CORREGIDA
-    // La hemos renombrado para que sea más claro lo que hace:
-    // Ya no "carga" datos, sino "añade" una fila.
-    function agregarNuevaLectura(lectura) {
-      
-      // 1. Buscamos la fila "placeholder" (la que dice "Cargando...")
-      //    Usamos la clase 'cargando' que ya tenías en tu HTML.
-      const placeholderRow = tbody.querySelector(".cargando");
-      
-      // 2. Si la encontramos, la eliminamos.
-      //    Esto solo pasará con la *primera* lectura recibida.
-      if (placeholderRow) {
-        placeholderRow.remove();
+      <main id="main-content" class="content">
+        <div class="contenedor-datos-sensores">
+          <h2>📊 Ingesta de Datos de Sensores</h2>
+          <div class="tabla-container">
+            <table id="tablaSensores">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>ID Sensor</th>
+                  <th>ID Parámetro</th>
+                  <th>Tiempo de Registro</th>
+                  <th>Tiempo de Envío</th>
+                  <th>Valor Original</th>
+                  <th>Valor Procesado</th>
+                  <th>Valor Normalizado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="8" class="cargando">Cargando datos...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const tbody = document.querySelector("#tablaSensores tbody");
+      let data = [];
+
+      // ✅ Función para agregar una fila nueva
+      function agregarNuevaLectura(lectura) {
+        const placeholderRow = tbody.querySelector(".cargando");
+        if (placeholderRow) placeholderRow.remove();
+
+        data.unshift(lectura);
+        const nuevaFilaHTML = `
+          <tr>
+            <td>${lectura.DatoID ?? "-"}</td>
+            <td>${lectura.SensorID ?? "-"}</td>
+            <td>${lectura.ParametroID ?? "-"}</td>
+            <td>${lectura.TimestampRegistro ?? "-"}</td>
+            <td>${lectura.TimestampEnvio ?? "-"}</td>
+            <td>${lectura.Valor_original ?? "-"}</td>
+            <td>${lectura.Valor_procesado ?? "-"}</td>
+            <td>${lectura.Valor_normalizado ?? "-"}</td>
+          </tr>
+        `;
+        tbody.insertAdjacentHTML("afterbegin", nuevaFilaHTML);
       }
 
-      // 3. (Opcional) Guardamos la lectura en nuestro historial
-      data.unshift(lectura); // 'unshift' añade al inicio del array
-
-      // 4. Creamos el HTML para la *única fila nueva*.
-      //    Usamos el objeto 'lectura' directamente (¡sin .map!)
-      const nuevaFilaHTML = `
-        <tr>
-          <td>${lectura.DatoID ?? "-"}</td>
-          <td>${lectura.SensorID ?? "-"}</td>
-          <td>${lectura.ParametroID ?? "-"}</td>
-          <td>${lectura.TimestampRegistro ?? "-"}</td>
-          <td>${lectura.TimestampEnvio ?? "-"}</td>
-          <td>${lectura.Valor_original ?? "-"}</td>
-          <td>${lectura.Valor_procesado ?? "-"}</td>
-          <td>${lectura.Valor_normalizado ?? "-"}</td>
-        </tr>
-      `;
-
-      // 5. Insertamos la nueva fila al *principio* del 'tbody'.
-      //    Esto es mucho más eficiente que reemplazar todo el innerHTML.
-      tbody.insertAdjacentHTML('afterbegin', nuevaFilaHTML);
-    }
-
-    // --- Lógica del Socket ---
-
-    const socket = io("http://localhost:3000");
-
-    socket.on("nuevaLectura", (lectura) => {
-      console.log("Dato recibido:", lectura);
-      
-      // ✅ CORRECCIÓN DE LÓGICA Y TYPO:
-      // Verificamos que la lectura sea un objeto válido
-      if (lectura && typeof lectura === 'object' && !Array.isArray(lectura)) {
-        
-        // Llamamos a nuestra nueva función (y corregimos el typo 'ascargarDatosSensores')
-        agregarNuevaLectura(lectura);
-      
-      } else {
-        console.error("Dato inválido recibido, se esperaba un objeto:", lectura);
+      // ✅ Función para mostrar varios registros al inicio
+      function mostrarRegistrosIniciales(lista) {
+        const placeholderRow = tbody.querySelector(".cargando");
+        if (placeholderRow) placeholderRow.remove();
+        lista.reverse();
+        lista.forEach((lectura) => agregarNuevaLectura(lectura));
       }
-    });
 
-    // (Opcional: Manejar error de conexión para actualizar el 'placeholder')
-    socket.on('connect_error', () => {
-       const placeholder = tbody.querySelector(".cargando");
-       if (placeholder) {
-          placeholder.textContent = "Error de conexión con el servidor.";
-       }
-    });
-  </script>
+      // 🚀 1. Al cargar la página: obtener los últimos registros
+      window.addEventListener("DOMContentLoaded", async () => {
+        try {
+          const res = await fetch("http://localhost:3000/api/datos/ultimos");
+          if (!res.ok) throw new Error("Error al obtener los datos iniciales");
+          const registros = await res.json();
 
-</body>
+          if (Array.isArray(registros) && registros.length > 0) {
+            mostrarRegistrosIniciales(registros);
+          } else {
+            const placeholder = tbody.querySelector(".cargando");
+            if (placeholder)
+              placeholder.textContent = "No hay datos disponibles.";
+          }
+        } catch (error) {
+          console.error(error);
+          const placeholder = tbody.querySelector(".cargando");
+          if (placeholder)
+            placeholder.textContent =
+              "No se pueden obtener los datos en este momento.";
+        }
 
+        // 🚀 2. Luego se conecta al socket
+        const socket = io("http://localhost:3000");
+
+        socket.on("nuevaLectura", (lectura) => {
+          console.log("Dato recibido:", lectura);
+          if (
+            lectura &&
+            typeof lectura === "object" &&
+            !Array.isArray(lectura)
+          ) {
+            agregarNuevaLectura(lectura);
+          } else {
+            console.error("Dato inválido recibido:", lectura);
+          }
+        });
+
+        socket.on("connect_error", () => {
+          const placeholder = tbody.querySelector(".cargando");
+          if (placeholder) {
+            placeholder.textContent = "Error de conexión con el servidor.";
+          }
+        });
+      });
+    </script>
+  </body>
 </html>

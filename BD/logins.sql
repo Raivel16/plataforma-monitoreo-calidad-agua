@@ -1,14 +1,44 @@
-
-----
 USE master;
 GO
--- 1️ Crear el login (nivel servidor)
-EXEC sp_addlogin 'app_backend_user', 'back3nd*user'
--- 2️ Crear el usuario dentro de la base de datos
+
+-- 🔹 1. Eliminar el login si ya existe
+IF EXISTS (SELECT 1 FROM sys.server_principals WHERE name = N'app_backend_user')
+BEGIN
+    DROP LOGIN app_backend_user;
+    PRINT 'Login existente eliminado.';
+END
+GO
+
+-- 🔹 2. Crear el login
+CREATE LOGIN app_backend_user WITH PASSWORD = 'back3nd*user';
+PRINT 'Login creado correctamente.';
+GO
+
+-- 🔹 3. Cambiar a la base de datos destino
 USE MonitoreoAguaJunin;
 GO
-EXEC sp_grantdbaccess 'app_backend_user';
+
+-- 🔹 4. Eliminar el usuario si ya existe
+IF EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'app_backend_user')
+BEGIN
+    DROP USER app_backend_user;
+    PRINT 'Usuario existente eliminado.';
+END
 GO
--- 3️ Dar permiso solo para ejecutar procedimientos almacenados
+
+-- 🔹 5. Crear el usuario en la base de datos
+CREATE USER app_backend_user FOR LOGIN app_backend_user;
+PRINT 'Usuario creado correctamente.';
+GO
+
+-- 🔹 6. Dar permiso de ejecución de procedimientos almacenados
 GRANT EXECUTE TO app_backend_user;
+PRINT 'Permisos de ejecución otorgados.';
 GO
+
+-- Procedimiento de prueba de conexión
+CREATE OR ALTER PROCEDURE sp_TestConexion
+AS
+BEGIN
+  PRINT 'Conexión exitosa';
+END;
