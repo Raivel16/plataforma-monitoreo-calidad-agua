@@ -9,23 +9,76 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <link rel="stylesheet" href="DatSensor.css" />
-
     <script src="/socket.io/socket.io.js"></script>
+
+    <style>
+      /* Pequeñas reglas para asegurar el dropdown (no tocan tu CSS principal) */
+      .user-menu {
+        position: relative;
+        display: inline-block;
+      }
+      .user-dropdown {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 8px);
+        background: #ffffff;
+        border-radius: 6px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+        padding: 8px;
+        min-width: 200px;
+        z-index: 2000;
+        display: none;
+      }
+      .user-dropdown.active {
+        display: block;
+      }
+      .user-dropdown ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .user-dropdown li {
+        margin: 6px 0;
+      }
+      .user-dropdown button.dropdown-btn {
+        width: 100%;
+        background: transparent;
+        border: none;
+        text-align: left;
+        padding: 8px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      .user-dropdown button.dropdown-btn:hover {
+        background: rgba(0, 0, 0, 0.04);
+      }
+      .user-dropdown button.cerrar-sesion {
+        background-color: #c0392b;
+        color: white;
+      }
+      .user-dropdown button.cerrar-sesion:hover {
+        background-color: #a93226;
+      }
+    </style>
   </head>
 
   <body>
     <header class="top-bar">
       <h1>Plataforma de Monitoreo del Agua - Junín</h1>
       <div class="user-menu">
-        <button class="user-btn" id="userBtn">
+        <button
+          class="user-btn"
+          id="userBtn"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >
           <i class="fas fa-user"></i>
           <span class="user-text" id="nombreUsuario"></span>
           <span class="arrow">▼</span>
         </button>
-        <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown" id="userDropdown" role="menu">
           <ul>
-            <li id="changeAccount">Cambiar de cuenta</li>
-            <li id="logout">Cerrar sesión</li>
+            <!-- Aquí inyectamos los botones según el rol -->
           </ul>
         </div>
       </div>
@@ -47,6 +100,8 @@
           <button id="home-btn" class="menu-btn">&#9776;</button>
         </div>
         <ul id="listaOpciones"></ul>
+        <div id="acciones"></div>
+        <!-- lo dejamos aunque quede vacío -->
       </aside>
 
       <main id="main-content" class="content">
@@ -78,15 +133,32 @@
     </div>
 
     <script>
+      const authApi = "/api/auth";
       const tbody = document.querySelector("#tablaSensores tbody");
-      let data = [];
 
-      // ✅ Función para agregar una fila nueva
+      // --- Dropdown elements ---
+      const userBtn = document.getElementById("userBtn");
+      const userDropdown = document.getElementById("userDropdown");
+      const userDropdownList = userDropdown.querySelector("ul");
+
+      userBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isActive = userDropdown.classList.toggle("active");
+        userBtn.setAttribute("aria-expanded", isActive ? "true" : "false");
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!userDropdown.contains(e.target) && !userBtn.contains(e.target)) {
+          userDropdown.classList.remove("active");
+          userBtn.setAttribute("aria-expanded", "false");
+        }
+      });
+
+      // --- Lecturas tabla ---
       function agregarNuevaLectura(lectura) {
         const placeholderRow = tbody.querySelector(".cargando");
         if (placeholderRow) placeholderRow.remove();
 
-        data.unshift(lectura);
         const nuevaFilaHTML = `
           <tr>
             <td>${lectura.DatoID ?? "-"}</td>
@@ -102,59 +174,134 @@
         tbody.insertAdjacentHTML("afterbegin", nuevaFilaHTML);
       }
 
-      // ✅ Función para mostrar varios registros al inicio
       function mostrarRegistrosIniciales(lista) {
         const placeholderRow = tbody.querySelector(".cargando");
         if (placeholderRow) placeholderRow.remove();
-        lista.reverse();
-        lista.forEach((lectura) => agregarNuevaLectura(lectura));
+        lista.reverse().forEach(agregarNuevaLectura);
       }
 
-      // 🚀 1. Al cargar la página: obtener los últimos registros
-      window.addEventListener("DOMContentLoaded", async () => {
+      // --- Logout (tu función) ---
+      async function logout() {
+        await fetch(`${authApi}/logout`, {
+          method: "POST",
+          credentials: "same-origin",
+        });
+        window.location.reload();
+      }
+
+      // --- Mostrar sesión: inyecta botones en el dropdown (arriba a la derecha) ---
+      function mostrarSesion({ UsuarioID, RolID, NombreUsuario }) {
+        // nombre en header
+        const nombreEl = document.getElementById("nombreUsuario");
+        if (nombreEl) nombreEl.textContent = NombreUsuario ?? "Usuario";
+
+        // limpiar menú
+        userDropdownList.innerHTML = "";
+
+        // helpers para crear items
+        const pushBtn = (text, id = "", cls = "") => {
+          const li = document.createElement("li");
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = `dropdown-btn ${cls}`.trim();
+          if (id) btn.id = id;
+          btn.textContent = text;
+          li.appendChild(btn);
+          userDropdownList.appendChild(li);
+          return btn;
+        };
+
+        /*// opciones según rol
+        if (RolID === 1) {
+          pushBtn("Panel Administrativo", "btnPanelAdmin");
+          pushBtn("Zona de Investigación", "btnZonaInvestigacion");
+          pushBtn("Zona de Usuarios", "btnZonaUsuarios");
+        } else if (RolID === 2) {
+          pushBtn("Zona de Investigación", "btnZonaInvestigacion");
+          pushBtn("Zona de Usuarios", "btnZonaUsuarios");
+        } else {
+          pushBtn("Zona de Usuarios", "btnZonaUsuarios");
+        }*/
+
+        // siempre cerrar sesión al final (estilado)
+        const btnCerrar = pushBtn(
+          "Cerrar sesión",
+          "btnCerrarSesion",
+          "cerrar-sesion"
+        );
+        btnCerrar.addEventListener("click", async () => {
+          await logout();
+        });
+
+        // Opcional: asignar navegación a botones (ejemplo)
+        const panelAdminBtn = document.getElementById("btnPanelAdmin");
+        if (panelAdminBtn)
+          panelAdminBtn.addEventListener("click", () => {
+            window.location.href = "/admin"; // ajusta la ruta real
+          });
+        const zonaInvBtn = document.getElementById("btnZonaInvestigacion");
+        if (zonaInvBtn)
+          zonaInvBtn.addEventListener("click", () => {
+            window.location.href = "/investigacion"; // ajusta la ruta real
+          });
+        const zonaUsuariosBtn = document.getElementById("btnZonaUsuarios");
+        if (zonaUsuariosBtn)
+          zonaUsuariosBtn.addEventListener("click", () => {
+            window.location.href = "/usuarios"; // ajusta la ruta real
+          });
+      }
+
+      // --- Obtener sesión ---
+      async function getSesion() {
+        try {
+          const res = await fetch(`${authApi}/session`, {
+            credentials: "same-origin",
+          });
+
+          if (res.status === 401) return { logeado: false };
+          if (!res.ok) return { logeado: false };
+          return await res.json();
+        } catch (err) {
+          console.error("Error al obtener sesión:", err);
+          return { logeado: false };
+        }
+      }
+
+      // --- Inicialización ---
+      (async () => {
+        // mostrar sesión (rellena dropdown)
+        const sesion = await getSesion();
+        if (sesion.logeado) mostrarSesion(sesion);
+
+        // cargar lecturas iniciales
         try {
           const res = await fetch("http://localhost:3000/api/datos/ultimos");
-          if (!res.ok) throw new Error("Error al obtener los datos iniciales");
+          if (!res.ok) throw new Error("falló");
           const registros = await res.json();
-
-          if (Array.isArray(registros) && registros.length > 0) {
+          if (Array.isArray(registros) && registros.length)
             mostrarRegistrosIniciales(registros);
-          } else {
-            const placeholder = tbody.querySelector(".cargando");
-            if (placeholder)
-              placeholder.textContent = "No hay datos disponibles.";
+          else {
+            const ph = tbody.querySelector(".cargando");
+            if (ph) ph.textContent = "No hay datos disponibles.";
           }
-        } catch (error) {
-          console.error(error);
-          const placeholder = tbody.querySelector(".cargando");
-          if (placeholder)
-            placeholder.textContent =
-              "No se pueden obtener los datos en este momento.";
+        } catch (err) {
+          const ph = tbody.querySelector(".cargando");
+          if (ph)
+            ph.textContent = "No se pueden obtener los datos en este momento.";
+          console.error(err);
         }
 
-        // 🚀 2. Luego se conecta al socket
+        // socket
         const socket = io("http://localhost:3000");
-
         socket.on("nuevaLectura", (lectura) => {
-          console.log("Dato recibido:", lectura);
-          if (
-            lectura &&
-            typeof lectura === "object" &&
-            !Array.isArray(lectura)
-          ) {
+          if (lectura && typeof lectura === "object" && !Array.isArray(lectura))
             agregarNuevaLectura(lectura);
-          } else {
-            console.error("Dato inválido recibido:", lectura);
-          }
         });
-
         socket.on("connect_error", () => {
-          const placeholder = tbody.querySelector(".cargando");
-          if (placeholder) {
-            placeholder.textContent = "Error de conexión con el servidor.";
-          }
+          const ph = tbody.querySelector(".cargando");
+          if (ph) ph.textContent = "Error de conexión con el servidor.";
         });
-      });
+      })();
     </script>
   </body>
 </html>
