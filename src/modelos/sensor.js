@@ -1,3 +1,6 @@
+import { getConnection } from "../config/db_sqlserver.js";
+import sql from "mssql";
+
 export class SensorModelo {
   static sensores = [
     {
@@ -32,12 +35,35 @@ export class SensorModelo {
     },
   ];
 
+  static async obtenerDatos({ EstadoOperativo = null, SensorID = null }) {
+    try {
+      const pool = await getConnection();
+      const request = pool.request();
+
+      if (EstadoOperativo) {
+        request.input("EstadoOperativo_Filtro", sql.Bit, EstadoOperativo);
+      }
+      if (SensorID) {
+        request.input("SensorID", sql.Int, SensorID);
+      }
+
+      const result = await request.execute("sp_ObtenerSensores");
+
+      return result.recordset;
+    } catch (error) {
+      console.error("❌ Error al obtener sensores:", error);
+      throw error;
+    }
+  }
+
   static async obtenerTodos() {
-    return this.sensores;
+    const result = await this.obtenerDatos({});
+    return result;
   }
 
   static async obtenerPorId({ id }) {
-    return this.sensores.find((s) => s.SensorID === Number(id));
+    const result = await this.obtenerDatos({ SensorID: id });
+    return result;
   }
 
   static async crear({
@@ -63,6 +89,8 @@ export class SensorModelo {
     return nuevoSensor;
   }
 
+
+  
   static async actualizar({ id, datos }) {
     const idx = this.sensores.findIndex((s) => s.SensorID === Number(id));
     if (idx === -1) return null;

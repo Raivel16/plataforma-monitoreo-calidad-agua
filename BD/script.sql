@@ -153,9 +153,9 @@ END
     -- Nota: ParametroID: 1=pH, 2=Turbidez, 3=Oxígeno Disuelto, 4=Conductividad, 5=Temperatura
     INSERT INTO Sensores (Nombre, Modelo, Fabricante, Latitud, Longitud, Descripcion, EstadoOperativo)
     VALUES
-    ('Estacion Río A - Puente Norte',  'SEN-PH-100', 'Acme Sensors', -11.987654, -76.945321, 'Sensor pH en puente norte', 1),
-    ('Estacion Río A - Puente Sur', 'SEN-TMP-200', 'Acme Sensors', -11.988000, -76.946000, 'Sensor temperatura en puente sur', 1),
-    ('Estacion Laguna B', 'SEN-TURB-10', 'WaterTech', -11.990000, -76.950000, 'Sensor turbidez en laguna B', 1);
+    ('Sensor 1 - Río Mantaro',  'SEN-PH-100', 'Acme Sensors', -12.055690, -75.239195, 'Sensor en Puente Los Angeles', 1),
+    ('Sensor 2 - Río Mantaro', 'SEN-TMP-200', 'Acme Sensors', -12.081649, -75.235253, 'Sensor en Puente Max Hongler (Comuneros)', 1),
+    ('Sensor 1 - Río Shullcas', 'SEN-TURB-10', 'WaterTech', -12.047401, -75.200818, 'Sensor en puente en la Avenida San Gustin', 1);
 
     GO
 

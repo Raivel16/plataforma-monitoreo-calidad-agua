@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_f7tTD5EnVH
 createdAt: 2025-10-29T03:46:25.376872300
-updatedAt: 2025-10-29T05:03:21.783974
+updatedAt: 2025-11-08T17:45:48.114364100
 workspaceId: wk_TV6JMdJDX5
 folderId: fl_s6XHXmPBXz
 authentication: {}
@@ -22,5 +22,5 @@ headers:
 method: GET
 name: Obtener Sensor
 sortPriority: 1000.0
-url: http://localhost:3000/api/sensores/2
+url: http://localhost:3000/api/sensores/3
 urlParameters: []

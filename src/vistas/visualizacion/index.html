@@ -1,11 +1,101 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Visualización</title>
-</head>
-<body>
-    <h1>Visualización</h1>
-</body>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+
+      #map {
+        height: 70vh;
+        width: 80%;
+        margin: 20px auto;
+        border-radius: 8px;
+        border: 2px solid #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Visualización de Sensores</h1>
+    <div id="map"></div>
+
+    <script>
+      const mapas = [
+        {
+          nombre: "Huancayo",
+          coordenadas: [-12.0651, -75.2049],
+          nivelZoom: 13,
+        },
+        {
+          nombre: "Junín",
+          coordenadas: [-11.48, -74.98],
+          nivelZoom: 10,
+        },
+      ];
+
+      const indexMap = 0;
+
+      // Crear mapa centrado en Junín
+      const map = L.map("map").setView(
+        mapas[indexMap].coordenadas,
+        mapas[indexMap].nivelZoom
+      );
+
+      // Capa base (OpenStreetMap)
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+      }).addTo(map);
+
+      // 🔹 Función para obtener sensores desde el backend
+      async function cargarSensores() {
+        try {
+          const res = await fetch("/api/sensores/");
+          if (!res.ok) throw new Error("Error al obtener sensores");
+
+          const sensores = await res.json();
+
+          if (!Array.isArray(sensores) || sensores.length === 0) {
+            alert("No se encontraron sensores registrados.");
+            return;
+          }
+
+          sensores.forEach((s) => {
+            // Ajusta los nombres de las propiedades según tu backend
+            const { Nombre, Latitud, Longitud, CalidadAgua } = s;
+
+            // Define color según la calidad
+            const color =
+              CalidadAgua === "Buena"
+                ? "green"
+                : CalidadAgua === "Regular"
+                ? "orange"
+                : "red";
+
+            const marker = L.circleMarker([Latitud, Longitud], {
+              color,
+              radius: 10,
+              fillOpacity: 0.8,
+            }).addTo(map);
+
+            marker.bindPopup(`
+              <b>${Nombre}</b><br>
+              Calidad del agua: <b style="color:${color}">${CalidadAgua}</b>
+            `);
+          });
+        } catch (error) {
+          console.error("❌ Error al cargar sensores:", error);
+          alert("No se pudieron cargar los sensores. Revisa la consola.");
+        }
+      }
+
+      // 🔸 Cargar sensores al iniciar la página
+      cargarSensores();
+    </script>
+  </body>
 </html>

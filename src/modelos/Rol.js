@@ -9,14 +9,14 @@ export class RolModelo {
   static async obtenerRoles({ procedimiento, RolID = null }) {
     try {
       const pool = await getConnection();
-      const result = pool.request();
+      const request = pool.request();
 
       if (RolID) {
-        result.input("RolID", sql.Int, RolID);
+        request.input("RolID", sql.Int, RolID);
       }
-      const datos = await result.execute(procedimiento);
+      const result = await request.execute(procedimiento);
 
-      return datos.recordset;
+      return result.recordset;
     } catch (error) {
       console.log(error);
       throw error;
@@ -24,33 +24,33 @@ export class RolModelo {
   }
 
   static async obtenerTodosRegistroUsuario() {
-    const datos = await RolModelo.obtenerRoles({
+    const result = await RolModelo.obtenerRoles({
       procedimiento: "sp_ObtenerRolesRegistroUsuario",
     });
-    return datos;
+    return result;
   }
 
   static async obtenerTodosRegistroAdministrativo() {
-    const datos = await RolModelo.obtenerRoles({
+    const result = await RolModelo.obtenerRoles({
       procedimiento: "sp_ObtenerRolesRegistroAdministrativo",
     });
-    return datos;
+    return result;
   }
 
   static async obtenerPorIDRegistroUsuario({ RolID }) {
-    const datos = await RolModelo.obtenerRoles({
+    const result = await RolModelo.obtenerRoles({
       procedimiento: "sp_ObtenerRolesRegistroUsuario",
       RolID,
     });
-    return datos;
+    return result;
   }
 
   static async obtenerPorIDRegistroAdministrativo({ RolID }) {
-    const datos = await RolModelo.obtenerRoles({
+    const result = await RolModelo.obtenerRoles({
       procedimiento: "sp_ObtenerRolesRegistroAdministrativo",
       RolID,
     });
-    return datos;
+    return result;
   }
 
   static async crear({ NombreRol }) {

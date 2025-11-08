@@ -1,6 +1,5 @@
 import { PrediccionModelo } from "../modelos/prediccion.js";
-import { validarDatosPrediccion } from "../schemas/prediccion.js";
-import { formatZodError } from "../utils/formatZodError.js";
+import { ServicioIA } from "../servicios/ServicioIA.js";
 
 export class PrediccionesControlador {
   static async listarPredicciones(req, res) {
@@ -29,28 +28,25 @@ export class PrediccionesControlador {
   }
 
   static async generarPrediccion(req, res) {
-    // Lógica para crear una predicción
-    const SensorID = validarDatosPrediccion(req.body);
-    if (!SensorID.success) {
-      const normalized = formatZodError(SensorID.error);
-      return res
-        .status(400)
-        .json({ mensaje: "Datos de predicción inválidos", error: normalized });
-    }
+    try {
+      const { datosHistoricos } = req.body;
 
-    // Aquí iría la lógica para guardar la predicción en la base de datos
-    const nuevaPrediccion = await PrediccionModelo.generarPrediccion({
-      ...SensorID.data,
-    });
-
-    // Aquí iría la lógica para manejar la respuesta de la API y devolver la predicción creada
-    if (nuevaPrediccion) {
-      res.status(201).json({
-        mensaje: "Predicción creada exitosamente",
-        data: nuevaPrediccion,
+      const prediccion = await ServicioIA.generarPrediccion({
+        datosHistoricos,
       });
-    } else {
-      res.status(500).json({ mensaje: "Error al crear la predicción" });
+
+      res.status(200).json({
+        ok: true,
+        mensaje: "Predicción generada correctamente",
+        data: prediccion,
+      });
+    } catch (error) {
+      console.error("❌ Error en predicción:", error);
+      res.status(500).json({
+        ok: false,
+        mensaje: "Error al generar la predicción",
+        error: error.message,
+      });
     }
   }
 
@@ -69,11 +65,9 @@ export class PrediccionesControlador {
     // Lógica para obtener la precisión de las predicciones
     const { SensorID } = req.body;
     if (!SensorID) {
-      return res
-        .status(400)
-        .json({
-          mensaje: "El SensorID es obligatorio para calcular la precisión",
-        });
+      return res.status(400).json({
+        mensaje: "El SensorID es obligatorio para calcular la precisión",
+      });
     }
 
     const precision = await PrediccionModelo.calcularPrecision({ SensorID });

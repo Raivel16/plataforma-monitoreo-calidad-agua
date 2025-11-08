@@ -1,4 +1,4 @@
-import { ServicioIA } from "../servicios/Prediccion.js";
+import { ServicioIA } from "../servicios/ServicioIA.js";
 import { DatoSensorModelo } from "./DatoSensor.js";
 
 export class PrediccionModelo {

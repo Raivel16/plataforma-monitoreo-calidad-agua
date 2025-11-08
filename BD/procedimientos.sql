@@ -170,16 +170,53 @@ END
 GO
 
 -- 3. Procedimiento para obtener información de todos los sensores con filtro
-CREATE OR ALTER  PROCEDURE sp_ObtenerTodosSensores
+CREATE OR ALTER  PROCEDURE sp_ObtenerSensores
     @EstadoOperativo_Filtro BIT = NULL, -- NULL para todos, 1 para activos, 0 para inactivos
+    @SensorID INT = NULL -- NULL para todos
+AS
+BEGIN
+    IF @EstadoOperativo_Filtro IS NULL
+        IF @SensorID IS NULL
+            SELECT
+                SensorID, Nombre, Modelo, Fabricante, Latitud, Longitud, Descripcion, EstadoOperativo
+            FROM
+                Sensores
+        ELSE
+            SELECT
+                SensorID, Nombre, Modelo, Fabricante, Latitud, Longitud, Descripcion, EstadoOperativo
+            FROM
+                Sensores
+            WHERE
+                SensorID = @SensorID
+    ELSE IF 
+        IF @SensorID IS NULL
+            SELECT
+                SensorID, Nombre, Modelo, Fabricante, Latitud, Longitud, Descripcion, EstadoOperativo
+            FROM
+                Sensores
+            WHERE
+                EstadoOperativo = @EstadoOperativo_Filtro
+        ELSE
+            SELECT
+                SensorID, Nombre, Modelo, Fabricante, Latitud, Longitud, Descripcion, EstadoOperativo
+            FROM
+                Sensores
+            WHERE
+                SensorID = @SensorID AND EstadoOperativo = @EstadoOperativo_Filtro
+END
+GO
+
+-- 5. Procedimiento para obtener info de un sensor por el ID
+CREATE OR ALTER  PROCEDURE sp_ObtenerSensorPorID
+    @SensorID INT
 AS
 BEGIN
     SELECT
-        SensorID, Nombre, Modelo, Fabricante, Latitud, Longitud, EstadoOperativo
+        SensorID, Nombre, Modelo, Fabricante, Latitud, Longitud, Descripcion, EstadoOperativo
     FROM
         Sensores
     WHERE
-        (@EstadoOperativo_Filtro IS NULL OR EstadoOperativo = @EstadoOperativo_Filtro)
+        SensorID = @SensorID;
 END
 GO
 
@@ -200,19 +237,7 @@ BEGIN
 END
 GO
 
--- 5. Procedimiento para obtener info de un sensor por el ID
-CREATE OR ALTER  PROCEDURE sp_ObtenerSensorPorID
-    @SensorID INT
-AS
-BEGIN
-    SELECT
-        SensorID, Nombre, Tipo, Modelo, Fabricante, Latitud, Longitud, Descripcion, EstadoOperativo
-    FROM
-        Sensores
-    WHERE
-        SensorID = @SensorID;
-END
-GO
+
 
 -- 6. Procedimiento para actualizar info de un sensor existente a través del ID
 CREATE OR ALTER  PROCEDURE sp_ActualizarSensor

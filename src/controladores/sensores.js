@@ -11,7 +11,13 @@ export class SensoresControlador {
   static async obtenerTodos(req, res) {
     try {
       const sensores = await SensorModelo.obtenerTodos();
-      res.json(sensores);
+
+      const sensoresConCalidadAgua = sensores.map((s) => ({
+        ...s,
+        CalidadAgua: "Buena",
+      }));
+
+      res.json(sensoresConCalidadAgua);
     } catch (error) {
       console.error("Error al obtener sensores:", error);
       res.status(500).json({ error: "Error al obtener sensores" });
@@ -28,7 +34,12 @@ export class SensoresControlador {
         return res.status(404).json({ error: "Sensor no encontrado" });
       }
 
-      res.json(sensor);
+      const sensorConCalidadAgua = {
+        ...sensor,
+        CalidadAgua: "Buena",
+      };
+
+      res.json(sensorConCalidadAgua);
     } catch (error) {
       console.error("Error al obtener sensor:", error);
       res.status(500).json({ error: "Error al obtener sensor" });
