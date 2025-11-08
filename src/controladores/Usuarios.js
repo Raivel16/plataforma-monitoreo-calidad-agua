@@ -1,5 +1,4 @@
 import { RolModelo } from "../modelos/Rol.js";
-import { AuthModelo } from "../modelos/Auth.js";
 import { UsuarioModelo } from "../modelos/Usuario.js";
 
 import {
@@ -7,7 +6,9 @@ import {
   validarParcialDatosUsuario,
 } from "../schemas/usuario.js";
 
+
 import { procesarRegistroUsuario } from "../utils/procesarRegistroUsuario.js";
+
 
 function verificarRolID({ req, id }) {
   // Descomentar cuando se pruebe el fetch en la vista
@@ -49,13 +50,21 @@ export class UsuarioControlador {
     }
   }
 
-  static async crear(req, res) {
+  static async crearEnRegistroAdministrativo(req, res) {
     await procesarRegistroUsuario(
       req,
       res,
       validarDatosUsuario,
-      RolModelo.obtenerPorIDRegistroAdministrativo.bind(RolModelo),
-      AuthModelo.register.bind(AuthModelo)
+      RolModelo.obtenerPorIDRegistroAdministrativo.bind(RolModelo)
+    );
+  }
+
+  static async registroUsuario(req, res) {
+    await procesarRegistroUsuario(
+      req,
+      res,
+      validarDatosUsuario,
+      RolModelo.obtenerPorIDRegistroUsuario.bind(RolModelo)
     );
   }
 

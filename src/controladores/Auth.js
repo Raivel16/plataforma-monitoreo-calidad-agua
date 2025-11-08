@@ -1,13 +1,10 @@
 import jwt from "jsonwebtoken";
 
 import { AuthModelo } from "../modelos/Auth.js";
-import { RolModelo } from "../modelos/Rol.js";
 
 import { validarDatosLogin } from "../schemas/auth.js";
-import { validarDatosUsuario } from "../schemas/usuario.js";
 
 import { formatZodError } from "../utils/formatZodError.js";
-import { procesarRegistroUsuario } from "../utils/procesarRegistroUsuario.js";
 
 
 import dotenv from "dotenv";
@@ -59,15 +56,6 @@ export class AuthControlador {
     }
   }
 
-  static async register(req, res) {
-    await procesarRegistroUsuario(
-      req,
-      res,
-      validarDatosUsuario,
-      RolModelo.obtenerPorIDRegistroUsuario.bind(RolModelo),
-      AuthModelo.register.bind(AuthModelo)
-    );
-  }
 
   static logout(req, res) {
     res.clearCookie("access_token");

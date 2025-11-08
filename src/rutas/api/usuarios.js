@@ -6,6 +6,6 @@ export const usuariosRouter = Router();
 // Definir las rutas para usuarios
 usuariosRouter.get("/", UsuarioControlador.obtenerTodos);
 usuariosRouter.get("/:id", UsuarioControlador.obtenerPorId);
-usuariosRouter.post("/", UsuarioControlador.crear);
+usuariosRouter.post("/", UsuarioControlador.crearEnRegistroAdministrativo);
 usuariosRouter.patch("/:id", UsuarioControlador.actualizar);
 usuariosRouter.delete("/:id", UsuarioControlador.eliminar);

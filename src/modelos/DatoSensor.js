@@ -1,4 +1,4 @@
-import { getConnection } from "../config/db_sqlserver.js";
+import { getConnection, closeConnection } from "../config/db_sqlserver.js";
 import sql from "mssql";
 
 // src/modelos/DatosSensoresModelo.js
@@ -133,11 +133,11 @@ export class DatoSensorModelo {
         TimestampEnvio: this.TimestampEnvio,
         TimestampRegistro: this.TimestampRegistro,
       };
-
-      
     } catch (err) {
       console.error("❌ Error al ejecutar SP [sp_InsertarDatosSensor]:", err);
       throw new Error(`Error al crear el dato del sensor: ${err.message}`);
+    } finally {
+      await closeConnection(); // aseguras liberar recursos
     }
   }
 

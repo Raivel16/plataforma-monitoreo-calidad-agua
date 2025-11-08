@@ -1,7 +1,9 @@
+import { UsuarioModelo } from "../modelos/Usuario.js";
+
 /**
  * Función genérica para manejar el flujo de registro con validación Zod,
  * verificación de rol y registro en la base de datos.
- * 
+ *
  * @param {Object} req - Objeto Request de Express
  * @param {Object} res - Objeto Response de Express
  * @param {Function} validador - Función de validación (usa safeParse)
@@ -12,8 +14,7 @@ export const procesarRegistroUsuario = async (
   req,
   res,
   validador,
-  obtenerRol,
-  registrar
+  obtenerRol
 ) => {
   // 1️⃣ Validar los datos
   const datosRegistro = validador(req.body);
@@ -28,8 +29,7 @@ export const procesarRegistroUsuario = async (
     return res.status(400).json({ error: { errors: errores } });
   }
 
-  const { RolID, NombreUsuario, Contrasena, Correo, Activo } =
-    datosRegistro.data;
+  const { RolID } = datosRegistro.data;
 
   // 2️⃣ Verificar si el rol es válido
   const esRolValido = await obtenerRol({ RolID });
@@ -41,20 +41,18 @@ export const procesarRegistroUsuario = async (
 
   // 3️⃣ Intentar registrar
   try {
-    const nuevoUsuario = await registrar({
-      RolID,
-      NombreUsuario,
-      Contrasena,
-      Correo,
-      Activo,
-    });
-    return res.status(201).json(nuevoUsuario);
+    const nuevoUsuario = new UsuarioModelo(datosRegistro.data);
+
+    const nuevoUsuarioRegistrado = await nuevoUsuario.register();
+
+    return res.status(201).json(nuevoUsuarioRegistrado);
   } catch (error) {
     // Duplicado de nombre de usuario
     if (
       error &&
       typeof error.message === "string" &&
-      error.message.toLowerCase().includes("nombre de usuario")
+      (error.message.toLowerCase().includes("nombre de usuario") ||
+        error.message.toLowerCase().includes("correo electrónico"))
     ) {
       return res.status(409).json({ mensaje: error.message });
     }

@@ -81,6 +81,24 @@ BEGIN
 END
 GO
 
+CREATE PROCEDURE sp_VerificarUsuarioOCorreo
+  @NombreUsuario VARCHAR(100),
+  @Correo VARCHAR(150)
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  SELECT
+    CASE
+      WHEN EXISTS (SELECT 1 FROM Usuarios WHERE NombreUsuario = @NombreUsuario) THEN 'usuario'
+      WHEN EXISTS (SELECT 1 FROM Usuarios WHERE Correo = @Correo) THEN 'correo'
+      ELSE NULL
+    END AS Conflicto;
+END;
+
+
+
+
 -- 16. Procedimiento para insertar un Usuario (solo para administradores)
 CREATE OR ALTER  PROCEDURE sp_InsertarUsuario
     @RolID INT,
