@@ -1,4 +1,10 @@
 export class RolModelo {
+  constructor({ RolID = null, NombreRol = null } = {}) {
+    this.RolID = RolID;
+    this.NombreRol = NombreRol;
+  }
+
+  //
   static roles = [
     { RolID: 1, NombreRol: "Gestor ANA" },
     { RolID: 2, NombreRol: "Investigador" },

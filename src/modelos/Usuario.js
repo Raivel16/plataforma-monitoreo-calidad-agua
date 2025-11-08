@@ -1,6 +1,16 @@
 import { usuarios } from "./bd_local/usuarios.js";
 
 export class UsuarioModelo {
+  constructor({ UsuarioID = null, RolID = null, NombreUsuario = null, Correo = null, ContrasenaHash = null, Activo = null } = {}) {
+    this.UsuarioID = UsuarioID;
+    this.RolID = RolID;
+    this.NombreUsuario = NombreUsuario;
+    this.Correo = Correo;
+    this.ContrasenaHash = ContrasenaHash;
+    this.Activo = Activo;
+  }
+
+
   static async obtenerTodos() {
     return usuarios;
   }

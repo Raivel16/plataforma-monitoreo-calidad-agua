@@ -17,6 +17,28 @@ export class DatoSensorModelo {
     },
   ];
 
+  constructor({
+    DatoID = null,
+    SensorID = null,
+    ParametroID = null,
+    Valor_original = null,
+    Valor_procesado = null,
+    Valor_normalizado = null,
+    Estado = null,
+    TimestampEnvio = null,
+    TimestampRegistro = null,
+  } = {}) {
+    this.DatoID = DatoID;
+    this.SensorID = SensorID;
+    this.ParametroID = ParametroID;
+    this.Valor_original = Valor_original;
+    this.Valor_procesado = Valor_procesado;
+    this.Valor_normalizado = Valor_normalizado;
+    this.Estado = Estado;
+    this.TimestampEnvio = TimestampEnvio;
+    this.TimestampRegistro = TimestampRegistro;
+  }
+
   static async obtenerTodos({
     sensorID = null,
     parametroID = null,
@@ -54,17 +76,9 @@ export class DatoSensorModelo {
     return this.datos.find((d) => d.DatoID === Number(id));
   }
 
-  static async crear({
-    SensorID,
-    ParametroID,
-    Valor_original,
-    Valor_procesado,
-    Valor_normalizado,
-    Estado,
-    TimestampEnvio,
-  }) {
+  async crear() {
     // Generamos el timestamp de registro justo antes de la inserción
-    const TimestampRegistro = new Date();
+    this.TimestampRegistro = new Date();
 
     let pool;
 
@@ -75,14 +89,22 @@ export class DatoSensorModelo {
 
       // 2. Mapear los parámetros al SP
       //    (usando los valores recibidos y los defaults)
-      request.input("SensorID", sql.Int, SensorID);
-      request.input("ParametroID", sql.Int, ParametroID);
-      request.input("TimestampRegistro", sql.DateTime2, TimestampRegistro);
-      request.input("TimestampEnvio", sql.DateTime2, TimestampEnvio);
-      request.input("Valor_original", sql.Decimal(10, 4), Valor_original);
-      request.input("Valor_procesado", sql.Decimal(10, 4), Valor_procesado);
-      request.input("Valor_normalizado", sql.Decimal(10, 4), Valor_normalizado);
-      request.input("Estado", sql.VarChar(20), Estado);
+      request.input("SensorID", sql.Int, this.SensorID);
+      request.input("ParametroID", sql.Int, this.ParametroID);
+      request.input("TimestampRegistro", sql.DateTime2, this.TimestampRegistro);
+      request.input("TimestampEnvio", sql.DateTime2, this.TimestampEnvio);
+      request.input("Valor_original", sql.Decimal(10, 4), this.Valor_original);
+      request.input(
+        "Valor_procesado",
+        sql.Decimal(10, 4),
+        this.Valor_procesado
+      );
+      request.input(
+        "Valor_normalizado",
+        sql.Decimal(10, 4),
+        this.Valor_normalizado
+      );
+      request.input("Estado", sql.VarChar(20), this.Estado);
 
       // --- CAMBIOS AQUÍ ---
 
@@ -97,19 +119,22 @@ export class DatoSensorModelo {
         `✅ Registro insertado en la base de datos. ID: ${nuevoDatoID}`
       );
 
-      // 3. Devuelve el objeto completo, incluyendo el nuevo ID
+      this.DatoID = nuevoDatoID;
+      this.TimestampRegistro = this.TimestampRegistro.toISOString();
+      // // 3. Devuelve el objeto completo, incluyendo el nuevo ID
       return {
         DatoID: nuevoDatoID, // <-- ¡AQUÍ ESTÁ!
-        SensorID,
-        ParametroID,
-        Valor_original,
-        Valor_procesado,
-        Valor_normalizado,
-        Estado,
-        TimestampEnvio,
-        TimestampRegistro: TimestampRegistro.toISOString(),
+        SensorID: this.SensorID,
+        ParametroID: this.ParametroID,
+        Valor_original: this.Valor_original,
+        Valor_procesado: this.Valor_procesado,
+        Valor_normalizado: this.Valor_normalizado,
+        Estado: this.Estado,
+        TimestampEnvio: this.TimestampEnvio,
+        TimestampRegistro: this.TimestampRegistro,
       };
-      // --- FIN DE LOS CAMBIOS ---
+
+      
     } catch (err) {
       console.error("❌ Error al ejecutar SP [sp_InsertarDatosSensor]:", err);
       throw new Error(`Error al crear el dato del sensor: ${err.message}`);

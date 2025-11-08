@@ -72,9 +72,9 @@ export class DatosSensoresControlador {
         return res.status(400).json({ error: normalized });
       }
 
-      const resultado = await DatoSensorModelo.crear({
-        ...lecturaValidada.data,
-      });
+      const nuevoDato = new DatoSensorModelo(lecturaValidada.data);
+
+      const resultado = await nuevoDato.crear();
 
       // Emitir evento en tiempo real al cliente conectado
       io.emit("nuevaLectura", resultado);
