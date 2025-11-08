@@ -1,13 +1,18 @@
 import { Router } from "express";
+import { RolesControlador } from "../../controladores/Roles.js";
 
 export const rolesRouter = Router();
 
 // Definir las rutas para roles
-rolesRouter.get("/", (req, res) => {
-  res.send("Obtener todos los roles");
+rolesRouter.get("/", RolesControlador.obtenerTodosDesdeUsuario);
+rolesRouter.get("/admin", (req, res) => {
+  res.send("Obtener todos los roles desde el admin");
 });
 rolesRouter.get("/:id", (req, res) => {
-  res.send(`Obtener rol con ID ${req.params.id}`);
+  res.send(`Obtener rol con ID ${req.params.id} desde el usuario`);
+});
+rolesRouter.get("/admin/:id", (req, res) => {
+  res.send(`Obtener rol con ID ${req.params.id} desde el admin`);
 });
 rolesRouter.post("/", (req, res) => {
   res.send("Crear nuevo rol");

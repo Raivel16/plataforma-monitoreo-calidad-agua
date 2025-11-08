@@ -33,7 +33,11 @@ export const procesarRegistroUsuario = async (
 
   // 2️⃣ Verificar si el rol es válido
   const esRolValido = await obtenerRol({ RolID });
-  if (!esRolValido) {
+
+  console.log(esRolValido);
+
+
+  if (!esRolValido || esRolValido.length === 0) {
     return res
       .status(400)
       .json({ mensaje: "El RolID no pertenece a los permitidos" });

@@ -13,6 +13,11 @@ const dbConfig = {
     encrypt: false,
     trustServerCertificate: true,
   },
+  pool: {
+    max: 10, // máximo de conexiones activas
+    min: 0, // se pueden liberar todas si no hay uso
+    idleTimeoutMillis: 30000, // desconecta las que no se usan en 30s
+  },
 };
 
 // Obtiene una nueva conexión
@@ -27,23 +32,15 @@ export async function getConnection() {
   }
 }
 
-// Cierra la conexión activa (si existe)
-export async function closeConnection() {
-  try {
-    await sql.close();
-    console.log("🔒 Conexión a SQL Server cerrada correctamente");
-  } catch (err) {
-    console.error("⚠️ Error al cerrar la conexión SQL:", err);
-  }
-}
-
-// Cierra la conexión al terminar el proceso
+// Cierre limpio del pool cuando el servidor se apague
 process.on("SIGINT", async () => {
-  await closeConnection();
+  await sql.close();
+  console.log("🔒 Pool SQL cerrado correctamente (SIGINT)");
   process.exit(0);
 });
 
 process.on("SIGTERM", async () => {
-  await closeConnection();
+  await sql.close();
+  console.log("🔒 Pool SQL cerrado correctamente (SIGTERM)");
   process.exit(0);
 });

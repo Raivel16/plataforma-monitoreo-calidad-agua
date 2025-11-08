@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 
-import { getConnection, closeConnection } from "../config/db_sqlserver.js";
+import { getConnection } from "../config/db_sqlserver.js";
 import sql from "mssql";
 
 import { usuarios } from "./bd_local/usuarios.js";
@@ -52,8 +52,6 @@ export class UsuarioModelo {
       console.error("❌ Error en verificarDuplicados:", error.message);
       // Re-lanza el error para que el controlador decida cómo responder
       throw error;
-    } finally {
-      await closeConnection(); // aseguras liberar recursos
     }
   }
 
@@ -91,8 +89,6 @@ export class UsuarioModelo {
     } catch (error) {
       console.error("❌ Error al registrar usuario:", error);
       throw error;
-    } finally {
-      await closeConnection(); // aseguras liberar recursos
     }
   }
 

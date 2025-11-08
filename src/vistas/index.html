@@ -1,222 +1,68 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Iniciar Sesión</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="login-container">
-    <div class="welcome-section">
-      <h1>Plataforma<br>de Monitoreo<br>del Agua</h1>
-      <p>
-        Esta plataforma integra microservicios e inteligencia artificial para el monitoreo predictivo del agua en Junín.
-      </p>
-      <div class="social-icons">
-        <a href="#"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg" alt="Facebook"></a>
-        <a href="#"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitter.svg" alt="Twitter"></a>
-        <a href="#"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" alt="Instagram"></a>
-        <a href="#"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg" alt="YouTube"></a>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Iniciar Sesión</title>
+    <link rel="stylesheet" href="./static/style.css" />
+    <script type="module" src="./static/script.js"></script>
+  </head>
+  <body>
+    <div class="login-container">
+      <div class="welcome-section">
+        <h1>Plataforma<br />de Monitoreo<br />del Agua</h1>
+        <p>
+          Esta plataforma integra microservicios e inteligencia artificial para
+          el monitoreo predictivo del agua en Junín.
+        </p>
+        <div class="social-icons">
+          <a href="#"
+            ><img
+              src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg"
+              alt="Facebook"
+          /></a>
+          <a href="#"
+            ><img
+              src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitter.svg"
+              alt="Twitter"
+          /></a>
+          <a href="#"
+            ><img
+              src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg"
+              alt="Instagram"
+          /></a>
+          <a href="#"
+            ><img
+              src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg"
+              alt="YouTube"
+          /></a>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2>Iniciar Sesión</h2>
+        <input type="text" id="usuario" placeholder="Dirección de Email" />
+        <input type="password" id="contraseña" placeholder="Contraseña" />
+        <button id="btnLogin">Inicia sesión ahora</button>
+        <a href="#" class="forgot">¿Has olvidado tu contraseña?</a>
+        <div id="mensaje"></div>
+
+        <p class="terms">
+          Al hacer clic en "Iniciar sesión ahora", acepta nuestros <br />
+          <a href="#">Términos y condiciones</a> |
+          <a href="#">Política de privacidad</a>
+        </p>
+
+        <button
+          class="secondary-btn"
+          onclick="window.location.href='registrar.html'"
+        >
+          Regístrate aquí
+        </button>
+
+        <button class="secondary-btn" id="anonimoBtn">
+          Seguir como invitado
+        </button>
       </div>
     </div>
-
-    <div class="form-section">
-      <h2>Iniciar Sesión</h2>
-      <input type="text" id="usuario" placeholder="Dirección de Email">
-      <input type="password" id="contraseña" placeholder="Contraseña">
-      <button id="btnLogin">Inicia sesión ahora</button>
-      <a href="#" class="forgot">¿Has olvidado tu contraseña?</a>
-      <div id="mensaje"></div>
-
-      <p class="terms">
-        Al hacer clic en "Iniciar sesión ahora", acepta nuestros <br>
-        <a href="#">Términos y condiciones</a> | <a href="#">Política de privacidad</a>
-      </p>
-
-      <button class="secondary-btn" onclick="window.location.href='registrar.html'">
-        Regístrate aquí
-      </button>
-
-      <button class="secondary-btn" id="anonimoBtn">
-        Seguir como invitado
-      </button>
-    </div>
-  </div>
-
-  <!-- <script src="script.js"></script> -->
-
-  <script>
-    const authApi = "/api/auth";
-
-    /**
-     * Helper genérico para parsear respuestas del backend (de PÁGINA 2)
-     */
-    async function handleApiResponse(res) {
-      const ct = res.headers.get("content-type") || "";
-      let data = null;
-      if (ct.includes("application/json")) {
-        try {
-          data = await res.json();
-        } catch (e) {
-          throw {
-            mensaje: `Respuesta JSON inválida del servidor (status ${res.status})`,
-          };
-        }
-      } else {
-        const text = await res.text();
-        throw {
-          mensaje: `Respuesta inesperada del servidor: ${res.status} ${text}`,
-        };
-      }
-
-      if (res.ok) return data;
-
-      // Zod-normalized: { error: { errors: [ { message, path } ] } }
-      if (data && data.error && Array.isArray(data.error.errors)) {
-        const mensajes = data.error.errors.map(
-          (e) => e.message || JSON.stringify(e)
-        );
-        throw { errores: mensajes };
-      }
-      
-      // Otros formatos de error
-      if (data && Array.isArray(data.error)) {
-        const mensajes = data.error.map((e) => e.message || String(e));
-        throw { errores: mensajes };
-      }
-      if (data && Array.isArray(data.errores)) {
-        const mensajes = data.errores.map((e) =>
-          typeof e === "string" ? e : e.message || String(e)
-        );
-        throw { errores: mensajes };
-      }
-
-      const msg =
-        data?.mensaje ||
-        data?.message ||
-        data?.error ||
-        "Error en la petición";
-      throw { mensaje: msg };
-    }
-
-    /**
-     * Función de Login (de PÁGINA 2)
-     */
-    async function login(usuario, password) {
-      // backend espera NombreUsuario y Contrasena
-      const res = await fetch(authApi + "/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          NombreUsuario: usuario,
-          Contrasena: password,
-        }),
-      });
-      return await handleApiResponse(res);
-    }
-
-    /**
-     * Función para obtener sesión (de PÁGINA 2)
-     */
-    async function getSesion() {
-      try {
-        const res = await fetch(`${authApi}/session`, {
-          credentials: "same-origin",
-        });
-
-        if (res.status === 401) {
-          console.warn("⚠️ No tiene sesión activa");
-          return { logeado: false };
-        }
-        if (!res.ok) {
-          console.error("Error al obtener sesión:", res.status);
-          return { logeado: false };
-        }
-        return await res.json();
-      } catch (error) {
-        console.error("Error de conexión al obtener sesión:", error);
-        return { logeado: false };
-      }
-    }
-
-
-    // --- Lógica principal de la PÁGINA 1 (adaptada) ---
-    document.addEventListener("DOMContentLoaded", () => {
-      
-      const btnLogin = document.getElementById("btnLogin");
-      const anonimoBtn = document.getElementById("anonimoBtn");
-      const usuarioInput = document.getElementById("usuario");
-      const passInput = document.getElementById("contraseña");
-      const mensajeDiv = document.getElementById("mensaje");
-
-      // URL de redirección exitosa (la que usaba tu script original)
-      const redirectUrl = "./visualizacion";
-
-      // (MEJORA) Revisar si ya hay sesión al cargar la página
-      (async () => {
-        const sesion = await getSesion();
-        if (sesion.logeado) {
-          console.log("Usuario ya logueado, redirigiendo...");
-          window.location.href = redirectUrl;
-        }
-      })();
-
-
-      // Manejador del botón de Login
-      if (btnLogin) {
-        btnLogin.addEventListener("click", async () => {
-          
-          const usuario = usuarioInput.value.trim();
-          const contraseña = passInput.value.trim();
-          
-          if (!usuario || !contraseña) {
-            mensajeDiv.style.color = "crimson";
-            mensajeDiv.textContent = "⚠️ Por favor completa todos los campos.";
-            return;
-          }
-
-          mensajeDiv.style.color = "#333";
-          mensajeDiv.textContent = "Validando...";
-          btnLogin.disabled = true;
-
-          try {
-            // Llamamos a la función de login de la API
-            const datosUsuario = await login(usuario, contraseña);
-            
-            // Éxito
-            mensajeDiv.style.color = "green";
-            mensajeDiv.textContent = "✅ Inicio de sesión exitoso. Redirigiendo...";
-            
-            // Redirigir (igual que en tu script original)
-            setTimeout(() => {
-              window.location.href = redirectUrl;
-            }, 1000);
-
-          } catch (err) {
-            // Error (usando la lógica de PÁGINA 2)
-            mensajeDiv.style.color = "crimson";
-            if (err && err.errores) {
-              mensajeDiv.textContent = Array.isArray(err.errores)
-                ? err.errores.join(" | ")
-                : String(err.errores);
-            } else {
-              mensajeDiv.textContent = `❌ ${err.mensaje || err.message || "Usuario o contraseña incorrectos."}`;
-            }
-            console.error(err);
-            btnLogin.disabled = false;
-          }
-        });
-      }
-
-      // Botón "Seguir como invitado" (lógica original)
-      if (anonimoBtn) {
-        anonimoBtn.addEventListener("click", () => {
-          // Redirige a la zona de visualización general
-          window.location.href = "./visualizacion/";
-        });
-      }
-    });
-  </script>
-</body>
+  </body>
 </html>

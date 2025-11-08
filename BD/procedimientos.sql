@@ -128,7 +128,46 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE sp_ObtenerRolesRegistroAdministrativo
+@RolID INT = NULL
+AS
+BEGIN
+    IF @RolID IS NULL
+        SELECT
+            RolID, NombreRol
+        FROM
+            Roles
+    ELSE
+        SELECT
+            RolID, NombreRol
+        FROM
+            Roles
+        WHERE
+            RolID = @RolID
+END
 
+GO
+
+CREATE OR ALTER PROCEDURE sp_ObtenerRolesRegistroUsuario
+@RolID INT = NULL
+AS
+BEGIN
+        IF @RolID IS NULL
+            SELECT
+                RolID, NombreRol
+            FROM
+                Roles
+                WHERE RolID <> 1
+        ELSE
+            SELECT
+                RolID, NombreRol
+            FROM
+                Roles
+            WHERE
+                RolID = @RolID AND RolID <> 1
+END
+
+GO
 
 -- 3. Procedimiento para obtener información de todos los sensores con filtro
 CREATE OR ALTER  PROCEDURE sp_ObtenerTodosSensores

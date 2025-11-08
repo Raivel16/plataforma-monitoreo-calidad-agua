@@ -8,7 +8,7 @@
 body {
   height: 100vh;
   background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-              url(fondo-agua.jpg); /* 🔹 Ajusta a tu imagen de fondo */
+              url('fondo-agua.jpg'); /* 🔹 Ajusta a tu imagen de fondo */
   background-size: cover;
   background-position: center;
   display: flex;

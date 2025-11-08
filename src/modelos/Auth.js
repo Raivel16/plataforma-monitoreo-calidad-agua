@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 
-import { getConnection, closeConnection } from "../config/db_sqlserver.js";
+import { getConnection } from "../config/db_sqlserver.js";
 
 export class AuthModelo {
   static async login({ NombreUsuario, Contrasena }) {
@@ -47,8 +47,6 @@ export class AuthModelo {
     } catch (error) {
       console.error("Error durante la autenticación:", error);
       throw error;
-    } finally {
-      await closeConnection(); // aseguras liberar recursos
     }
   }
 }

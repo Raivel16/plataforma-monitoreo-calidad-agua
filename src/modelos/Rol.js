@@ -1,32 +1,56 @@
+import { getConnection } from "../config/db_sqlserver.js";
+import sql from "mssql";
+
 export class RolModelo {
   constructor({ RolID = null, NombreRol = null } = {}) {
     this.RolID = RolID;
     this.NombreRol = NombreRol;
   }
+  static async obtenerRoles({ procedimiento, RolID = null }) {
+    try {
+      const pool = await getConnection();
+      const result = pool.request();
 
-  //
-  static roles = [
-    { RolID: 1, NombreRol: "Gestor ANA" },
-    { RolID: 2, NombreRol: "Investigador" },
-    { RolID: 3, NombreRol: "Usuario Comun" },
-  ];
+      if (RolID) {
+        result.input("RolID", sql.Int, RolID);
+      }
+      const datos = await result.execute(procedimiento);
+
+      return datos.recordset;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
 
   static async obtenerTodosRegistroUsuario() {
-    return this.roles.filter((rol) => rol.RolID !== 1);
+    const datos = await RolModelo.obtenerRoles({
+      procedimiento: "sp_ObtenerRolesRegistroUsuario",
+    });
+    return datos;
   }
 
   static async obtenerTodosRegistroAdministrativo() {
-    return this.roles;
+    const datos = await RolModelo.obtenerRoles({
+      procedimiento: "sp_ObtenerRolesRegistroAdministrativo",
+    });
+    return datos;
   }
 
   static async obtenerPorIDRegistroUsuario({ RolID }) {
-    return (
-      this.roles.find((rol) => rol.RolID === RolID && rol.RolID !== 1) || null
-    );
+    const datos = await RolModelo.obtenerRoles({
+      procedimiento: "sp_ObtenerRolesRegistroUsuario",
+      RolID,
+    });
+    return datos;
   }
 
   static async obtenerPorIDRegistroAdministrativo({ RolID }) {
-    return this.roles.find((rol) => rol.RolID === RolID) || null;
+    const datos = await RolModelo.obtenerRoles({
+      procedimiento: "sp_ObtenerRolesRegistroAdministrativo",
+      RolID,
+    });
+    return datos;
   }
 
   static async crear({ NombreRol }) {

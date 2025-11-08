@@ -69,10 +69,8 @@
         /></label>
         <label>
           Rol
-          <select name="rol" required>
+          <select id="roles" name="rol" required>
             <option value="">Seleccionar...</option>
-            <option value="3">Usuario común</option>
-            <option value="2">Investigador</option>
           </select>
         </label>
         <button type="submit">Crear cuenta</button>
@@ -325,8 +323,35 @@
 
       document.getElementById("logout-btn").addEventListener("click", logout);
 
+      async function cargarRoles() {
+        const select = document.getElementById("roles");
+        try {
+          const res = await fetch("/api/roles");
+          if (!res.ok) throw new Error("No se pudieron obtener los roles");
+
+          const roles = await res.json();
+
+          // Limpiar y agregar opción por defecto
+          select.innerHTML = `<option value="">Seleccionar...</option>`;
+
+          // Llenar el select con los roles del backend
+          roles.forEach((rol) => {
+            const option = document.createElement("option");
+            option.value = rol.RolID; // o rol.id según cómo venga en tu BD
+            option.textContent = rol.NombreRol;
+            select.appendChild(option);
+          });
+        } catch (error) {
+          console.error("❌ Error al cargar roles:", error);
+          select.innerHTML = `<option value="">Error al cargar roles</option>`;
+        }
+      }
+
       // --- Al cargar la página ---
       (async () => {
+
+        await cargarRoles();
+
         const sesion = await getSesion();
         if (sesion.logeado)
           mostrarSesion({
