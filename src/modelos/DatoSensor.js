@@ -72,8 +72,17 @@ export class DatoSensorModelo {
     }
   }
 
-  static async obtenerPorId({ id }) {
-    return this.datos.find((d) => d.DatoID === Number(id));
+  static async obtenerUltimoDatoSensores() {
+    try {
+      const pool = await getConnection();
+      const request = pool.request();
+      const result = await request.execute("sp_ObtenerUltimoDatoSensores");
+
+      return result.recordset;
+    } catch (error) {
+      console.error("❌ Error al obtener sensores:", error);
+      throw error;
+    }
   }
 
   async crear() {

@@ -3,99 +3,110 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Visualización</title>
-
+    <title>Panel Principal</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-      }
+    <link rel="stylesheet" href="Visualizacion.css" />
 
-      #map {
-        height: 70vh;
-        width: 80%;
-        margin: 20px auto;
-        border-radius: 8px;
-        border: 2px solid #ccc;
-      }
-    </style>
+    <script type="module" src="Visualizacion.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   </head>
   <body>
-    <h1>Visualización de Sensores</h1>
-    <div id="map"></div>
+    <header class="top-bar">
+      <h1>Plataforma de Monitoreo del Agua - Junín</h1>
 
-    <script>
-      const mapas = [
-        {
-          nombre: "Huancayo",
-          coordenadas: [-12.0651, -75.2049],
-          nivelZoom: 13,
-        },
-        {
-          nombre: "Junín",
-          coordenadas: [-11.48, -74.98],
-          nivelZoom: 10,
-        },
-      ];
+      <div class="user-menu">
+        <button class="user-btn" id="userBtn">
+          <i class="fas fa-user"></i>
+          <span class="user-text" id="nombreUsuario"></span>
+          <i class="arrow fa fa-chevron-down"></i>
+        </button>
 
-      const indexMap = 0;
+        <div class="user-dropdown" id="userDropdown">
+          <ul>
+            <!-- <li id="changeAccount">Cambiar de cuenta</li> -->
+            <li id="logout">Cerrar sesión</li>
+          </ul>
+        </div>
+      </div>
+    </header>
 
-      // Crear mapa centrado en Junín
-      const map = L.map("map").setView(
-        mapas[indexMap].coordenadas,
-        mapas[indexMap].nivelZoom
-      );
+    <nav class="main-header">
+      <a href="/datos-sensores" data-section="sensores">DATOS SENSORES</a>
+      <a href="../Predicciones/HistorialEvalu.html" data-section="predicciones"
+        >PREDICCIONES</a
+      >
+      <a href="/visualizacion" class="active">VISUALIZACIÓN</a>
+      <a href="../Usuarios" data-section="usuarios">USUARIOS</a>
+      <a href="../Notificaciones" data-section="notificaciones"
+        >NOTIFICACIONES</a
+      >
+    </nav>
 
-      // Capa base (OpenStreetMap)
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap contributors",
-      }).addTo(map);
+    <div class="container">
+      <aside id="slider" class="slider">
+        <div class="slider-option">
+          <h2>Opciones</h2>
+          <button id="home-btn" class="menu-btn">&#9776;</button>
+        </div>
+        <ul id="listaOpciones">
+          <li data-href="../Visualizacion/MapInteractiv.html" class="active">
+            Mapa Interactivo
+          </li>
+          <li class="has-submenu">
+            Reportes
+            <ul class="submenu">
+              <li data-href="../Visualizacion/ReporMinsa.html">MINSA</li>
+              <li data-href="../Visualizacion/ReporContaminacion.html">
+                Riesgo de Contaminación
+              </li>
+            </ul>
+          </li>
+          <li data-href="../Visualizacion/FiltroDat.html" class="filtro">
+            Filtro de Datos
+          </li>
+        </ul>
+      </aside>
+      <button id="toggle-btn" class="toggle-btn">&#9776;</button>
 
-      // 🔹 Función para obtener sensores desde el backend
-      async function cargarSensores() {
-        try {
-          const res = await fetch("/api/sensores/");
-          if (!res.ok) throw new Error("Error al obtener sensores");
+      <main id="main-content" class="content">
+        <div class="contenedor-visualizacion">
+          <div class="visualizacion-mapa" id="visualizacion-mapa">
+          </div>
 
-          const sensores = await res.json();
+          <div class="visualizacion-panel">
+            <h3>Estación de Monitoreo:</h3>
+            <p id="nombre-estacion">Cargando...</p>
 
-          if (!Array.isArray(sensores) || sensores.length === 0) {
-            alert("No se encontraron sensores registrados.");
-            return;
-          }
+            <h4>Última lectura:</h4>
+            <p class="ultima-lectura" id="ultima-lectura">--/--/---- --:--</p>
 
-          sensores.forEach((s) => {
-            // Ajusta los nombres de las propiedades según tu backend
-            const { Nombre, Latitud, Longitud, CalidadAgua } = s;
+            <hr />
 
-            // Define color según la calidad
-            const color =
-              CalidadAgua === "Buena"
-                ? "green"
-                : CalidadAgua === "Regular"
-                ? "orange"
-                : "red";
-
-            const marker = L.circleMarker([Latitud, Longitud], {
-              color,
-              radius: 10,
-              fillOpacity: 0.8,
-            }).addTo(map);
-
-            marker.bindPopup(`
-              <b>${Nombre}</b><br>
-              Calidad del agua: <b style="color:${color}">${CalidadAgua}</b>
-            `);
-          });
-        } catch (error) {
-          console.error("❌ Error al cargar sensores:", error);
-          alert("No se pudieron cargar los sensores. Revisa la consola.");
-        }
-      }
-
-      // 🔸 Cargar sensores al iniciar la página
-      cargarSensores();
-    </script>
+            <ul class="lista-mediciones">
+              <li><strong>pH:</strong> <span id="dato-ph">--</span></li>
+              <li>
+                <strong>Turbidez:</strong> <span id="dato-turbidez">--</span>
+              </li>
+              <li>
+                <strong>Oxígeno Disuelto:</strong>
+                <span id="dato-oxigeno">--</span>
+              </li>
+              <li>
+                <strong>Conductividad:</strong>
+                <span id="dato-conductividad">--</span>
+              </li>
+              <li>
+                <strong>Temperatura:</strong>
+                <span id="dato-temperatura">--</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </main>
+    </div>
   </body>
 </html>

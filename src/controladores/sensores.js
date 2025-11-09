@@ -1,4 +1,5 @@
 import { SensorModelo } from "../modelos/Sensor.js";
+import { DatoSensorModelo } from "../modelos/DatoSensor.js";
 
 import {
   validarDatosSensor,
@@ -12,12 +13,34 @@ export class SensoresControlador {
     try {
       const sensores = await SensorModelo.obtenerTodos();
 
-      const sensoresConCalidadAgua = sensores.map((s) => ({
-        ...s,
-        CalidadAgua: "Buena",
-      }));
+      const ultimoDatoSensores =
+        await DatoSensorModelo.obtenerUltimoDatoSensores();
 
-      res.json(sensoresConCalidadAgua);
+      const sensoresConCalidadAgua = sensores.map((s) => {
+        const datos = ultimoDatoSensores
+          .filter((d) => d.SensorID === s.SensorID)
+          .map(
+            ({
+              SensorID,
+              ParametroID,
+              Valor_procesado,
+              TimestampRegistro,
+            }) => ({
+              SensorID,
+              ParametroID,
+              Valor_procesado,
+              TimestampRegistro,
+            })
+          );
+
+        return {
+          ...s,
+          Datos: datos,
+          CalidadAgua: "Buena", // función auxiliar opcional
+        };
+      });
+
+      res.json({ sensoresConCalidadAgua });
     } catch (error) {
       console.error("Error al obtener sensores:", error);
       res.status(500).json({ error: "Error al obtener sensores" });

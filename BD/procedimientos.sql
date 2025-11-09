@@ -65,6 +65,30 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE sp_ObtenerUltimoDatoSensores
+AS
+BEGIN
+    SELECT 
+        ds.SensorID,
+        ds.ParametroID,
+        ds.Valor_procesado,
+        ds.TimestampRegistro
+    FROM DatosSensores ds
+    INNER JOIN (
+        SELECT 
+            SensorID, 
+            ParametroID, 
+            MAX(TimestampRegistro) AS UltimoRegistro
+        FROM DatosSensores
+        GROUP BY SensorID, ParametroID
+    ) ult
+        ON ds.SensorID = ult.SensorID
+        AND ds.ParametroID = ult.ParametroID
+        AND ds.TimestampRegistro = ult.UltimoRegistro;
+END
+GO
+
+
 
 -- 15. Procedimiento para buscar usuario por su nombre (para gestión)
 CREATE OR ALTER  PROCEDURE sp_BuscarUsuarioPorNombre

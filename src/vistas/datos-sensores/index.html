@@ -10,75 +10,23 @@
     />
     <link rel="stylesheet" href="DatSensor.css" />
     <script src="/socket.io/socket.io.js"></script>
-
-    <style>
-      /* Pequeñas reglas para asegurar el dropdown (no tocan tu CSS principal) */
-      .user-menu {
-        position: relative;
-        display: inline-block;
-      }
-      .user-dropdown {
-        position: absolute;
-        right: 0;
-        top: calc(100% + 8px);
-        background: #ffffff;
-        border-radius: 6px;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-        padding: 8px;
-        min-width: 200px;
-        z-index: 2000;
-        display: none;
-      }
-      .user-dropdown.active {
-        display: block;
-      }
-      .user-dropdown ul {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-      }
-      .user-dropdown li {
-        margin: 6px 0;
-      }
-      .user-dropdown button.dropdown-btn {
-        width: 100%;
-        background: transparent;
-        border: none;
-        text-align: left;
-        padding: 8px;
-        cursor: pointer;
-        border-radius: 4px;
-      }
-      .user-dropdown button.dropdown-btn:hover {
-        background: rgba(0, 0, 0, 0.04);
-      }
-      .user-dropdown button.cerrar-sesion {
-        background-color: #c0392b;
-        color: white;
-      }
-      .user-dropdown button.cerrar-sesion:hover {
-        background-color: #a93226;
-      }
-    </style>
   </head>
 
   <body>
     <header class="top-bar">
       <h1>Plataforma de Monitoreo del Agua - Junín</h1>
+
       <div class="user-menu">
-        <button
-          class="user-btn"
-          id="userBtn"
-          aria-haspopup="true"
-          aria-expanded="false"
-        >
+        <button class="user-btn" id="userBtn">
           <i class="fas fa-user"></i>
           <span class="user-text" id="nombreUsuario"></span>
-          <span class="arrow">▼</span>
+          <i class="arrow fa fa-chevron-down"></i>
         </button>
-        <div class="user-dropdown" id="userDropdown" role="menu">
+
+        <div class="user-dropdown" id="userDropdown">
           <ul>
-            <!-- Aquí inyectamos los botones según el rol -->
+            <!-- <li id="changeAccount">Cambiar de cuenta</li> -->
+            <li id="logout">Cerrar sesión</li>
           </ul>
         </div>
       </div>
@@ -87,7 +35,7 @@
     <nav class="main-header">
       <a href="/datos-sensores">DATOS SENSORES</a>
       <a href="#">PREDICCIONES</a>
-      <a href="#">VISUALIZACIÓN</a>
+      <a href="/visualizacion">VISUALIZACIÓN</a>
       <a href="#">USUARIOS</a>
       <a href="#">NOTIFICACIONES</a>
       <a href="#" id="logoutLink">SALIR</a>
@@ -99,10 +47,23 @@
           <h2>Opciones</h2>
           <button id="home-btn" class="menu-btn">&#9776;</button>
         </div>
-        <ul id="listaOpciones"></ul>
-        <div id="acciones"></div>
-        <!-- lo dejamos aunque quede vacío -->
+        <ul id="listaOpciones">
+          <li class="active">Datos Sensores</li>
+          <!-- <li class="has-submenu">
+            Reportes
+            <ul class="submenu">
+              <li data-href="../Visualizacion/ReporMinsa.html">MINSA</li>
+              <li data-href="../Visualizacion/ReporContaminacion.html">
+                Riesgo de Contaminación
+              </li>
+            </ul>
+          </li>
+          <li data-href="../Visualizacion/FiltroDat.html" class="filtro">
+            Filtro de Datos
+          </li> -->
+        </ul>
       </aside>
+      <button id="toggle-btn" class="toggle-btn">&#9776;</button>
 
       <main id="main-content" class="content">
         <div class="contenedor-datos-sensores">
@@ -132,27 +93,11 @@
       </main>
     </div>
 
-    <script>
-      const authApi = "/api/auth";
+    <script type="module">
+
+      import { logout as logoutFunc, getSesion } from "../util/sesion.js";
+
       const tbody = document.querySelector("#tablaSensores tbody");
-
-      // --- Dropdown elements ---
-      const userBtn = document.getElementById("userBtn");
-      const userDropdown = document.getElementById("userDropdown");
-      const userDropdownList = userDropdown.querySelector("ul");
-
-      userBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const isActive = userDropdown.classList.toggle("active");
-        userBtn.setAttribute("aria-expanded", isActive ? "true" : "false");
-      });
-
-      document.addEventListener("click", (e) => {
-        if (!userDropdown.contains(e.target) && !userBtn.contains(e.target)) {
-          userDropdown.classList.remove("active");
-          userBtn.setAttribute("aria-expanded", "false");
-        }
-      });
 
       // --- Lecturas tabla ---
       function agregarNuevaLectura(lectura) {
@@ -160,17 +105,17 @@
         if (placeholderRow) placeholderRow.remove();
 
         const nuevaFilaHTML = `
-          <tr>
-            <td>${lectura.DatoID ?? "-"}</td>
-            <td>${lectura.SensorID ?? "-"}</td>
-            <td>${lectura.ParametroID ?? "-"}</td>
-            <td>${lectura.TimestampRegistro ?? "-"}</td>
-            <td>${lectura.TimestampEnvio ?? "-"}</td>
-            <td>${lectura.Valor_original ?? "-"}</td>
-            <td>${lectura.Valor_procesado ?? "-"}</td>
-            <td>${lectura.Valor_normalizado ?? "-"}</td>
-          </tr>
-        `;
+              <tr>
+                <td>${lectura.DatoID ?? "-"}</td>
+                <td>${lectura.SensorID ?? "-"}</td>
+                <td>${lectura.ParametroID ?? "-"}</td>
+                <td>${lectura.TimestampRegistro ?? "-"}</td>
+                <td>${lectura.TimestampEnvio ?? "-"}</td>
+                <td>${lectura.Valor_original ?? "-"}</td>
+                <td>${lectura.Valor_procesado ?? "-"}</td>
+                <td>${lectura.Valor_normalizado ?? "-"}</td>
+              </tr>
+            `;
         tbody.insertAdjacentHTML("afterbegin", nuevaFilaHTML);
       }
 
@@ -180,98 +125,83 @@
         lista.reverse().forEach(agregarNuevaLectura);
       }
 
-      // --- Logout (tu función) ---
-      async function logout() {
-        await fetch(`${authApi}/logout`, {
-          method: "POST",
-          credentials: "same-origin",
-        });
-        window.location.reload();
-      }
+      
 
-      // --- Mostrar sesión: inyecta botones en el dropdown (arriba a la derecha) ---
-      function mostrarSesion({ UsuarioID, RolID, NombreUsuario }) {
-        // nombre en header
-        const nombreEl = document.getElementById("nombreUsuario");
-        if (nombreEl) nombreEl.textContent = NombreUsuario ?? "Usuario";
+      // 🔹 Control del menú desplegable del usuario
+      function inicializarMenuUsuario() {
+        const userBtn = document.getElementById("userBtn");
+        const dropdown = document.getElementById("userDropdown");
+        const logout = document.getElementById("logout");
+        //const changeAccount = document.getElementById("changeAccount");
 
-        // limpiar menú
-        userDropdownList.innerHTML = "";
-
-        // helpers para crear items
-        const pushBtn = (text, id = "", cls = "") => {
-          const li = document.createElement("li");
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = `dropdown-btn ${cls}`.trim();
-          if (id) btn.id = id;
-          btn.textContent = text;
-          li.appendChild(btn);
-          userDropdownList.appendChild(li);
-          return btn;
-        };
-
-        /*// opciones según rol
-        if (RolID === 1) {
-          pushBtn("Panel Administrativo", "btnPanelAdmin");
-          pushBtn("Zona de Investigación", "btnZonaInvestigacion");
-          pushBtn("Zona de Usuarios", "btnZonaUsuarios");
-        } else if (RolID === 2) {
-          pushBtn("Zona de Investigación", "btnZonaInvestigacion");
-          pushBtn("Zona de Usuarios", "btnZonaUsuarios");
-        } else {
-          pushBtn("Zona de Usuarios", "btnZonaUsuarios");
-        }*/
-
-        // siempre cerrar sesión al final (estilado)
-        const btnCerrar = pushBtn(
-          "Cerrar sesión",
-          "btnCerrarSesion",
-          "cerrar-sesion"
-        );
-        btnCerrar.addEventListener("click", async () => {
-          await logout();
+        userBtn.addEventListener("click", (e) => {
+          e.stopPropagation(); // Evita cierre inmediato
+          userBtn.classList.toggle("active");
         });
 
-        // Opcional: asignar navegación a botones (ejemplo)
-        const panelAdminBtn = document.getElementById("btnPanelAdmin");
-        if (panelAdminBtn)
-          panelAdminBtn.addEventListener("click", () => {
-            window.location.href = "/admin"; // ajusta la ruta real
-          });
-        const zonaInvBtn = document.getElementById("btnZonaInvestigacion");
-        if (zonaInvBtn)
-          zonaInvBtn.addEventListener("click", () => {
-            window.location.href = "/investigacion"; // ajusta la ruta real
-          });
-        const zonaUsuariosBtn = document.getElementById("btnZonaUsuarios");
-        if (zonaUsuariosBtn)
-          zonaUsuariosBtn.addEventListener("click", () => {
-            window.location.href = "/usuarios"; // ajusta la ruta real
-          });
+        logout.addEventListener("click", logoutFunc);
+
+        /*
+        changeAccount.addEventListener("click", () => {
+          localStorage.removeItem("usuario");
+          window.location.href = "../login.html";
+        });*/
+
+        document.addEventListener("click", (e) => {
+          if (!userBtn.contains(e.target) && !dropdown.contains(e.target)) {
+            userBtn.classList.remove("active");
+          }
+        });
       }
 
-      // --- Obtener sesión ---
-      async function getSesion() {
-        try {
-          const res = await fetch(`${authApi}/session`, {
-            credentials: "same-origin",
-          });
 
-          if (res.status === 401) return { logeado: false };
-          if (!res.ok) return { logeado: false };
-          return await res.json();
-        } catch (err) {
-          console.error("Error al obtener sesión:", err);
-          return { logeado: false };
-        }
+      function inicializarSlider() {
+        const slider = document.getElementById("slider");
+        const toggleBtn = document.getElementById("toggle-btn");
+        const homeBtn = document.getElementById("home-btn");
+
+        // 🔹 Ocultar el slider
+        homeBtn.addEventListener("click", () => {
+          slider.classList.add("hidden");
+        });
+
+        // 🔹 Mostrar el slider
+        toggleBtn.addEventListener("click", () => {
+          slider.classList.remove("hidden");
+        });
+
+        const listaOpciones = document.getElementById("listaOpciones");
+
+        listaOpciones.addEventListener("click", (e) => {
+          const li = e.target.closest("li");
+          if (!li) return;
+
+          // Si es un botón con submenú (Reportes)
+          if (li.classList.contains("has-submenu")) {
+            e.preventDefault();
+            e.stopPropagation();
+            li.classList.toggle("active");
+            return;
+          }
+
+          // Si tiene destino, redirige normalmente
+          if (li.dataset.href) {
+            window.location.href = li.dataset.href;
+          }
+        });
       }
 
       // --- Inicialización ---
       (async () => {
         // mostrar sesión (rellena dropdown)
         const sesion = await getSesion();
-        if (sesion.logeado) mostrarSesion(sesion);
+        if (sesion.logeado) {
+          document.getElementById("nombreUsuario").textContent =
+            sesion.NombreUsuario;
+        }
+
+        inicializarMenuUsuario();
+        inicializarSlider();
 
         // cargar lecturas iniciales
         try {
