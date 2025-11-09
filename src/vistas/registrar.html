@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registrarse</title>
+  <link rel="stylesheet" href="./static/styles.css">
+  <script src="./static/registrar.js" defer></script>
+</head>
+<body>
+  <div class="login-container">
+    <div class="welcome-section">
+      <h1>Registrate</h1>
+      <p>Solo usuarios permitidos</p>
+      <div class="social-icons">
+        <a href="#"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg" alt="Facebook"></a>
+        <a href="#"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitter.svg" alt="Twitter"></a>
+        <a href="#"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" alt="Instagram"></a>
+        <a href="#"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg" alt="YouTube"></a>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>Crear cuenta</h2>
+      <input type="email" id="correo" placeholder="Correo electrónico">
+      <input type="text" id="nuevoUsuario" placeholder="Nombre de usuario">
+      <input type="password" id="nuevaContraseña" placeholder="Contraseña">
+      <input type="password" id="confirmarContraseña" placeholder="Confirmar contraseña">
+      <select id="rol">
+        <option value="">Seleccionar rol</option>
+      </select>
+      <button id="btnRegistrar">Registrarse</button>
+      <div id="mensaje"></div>
+
+      <p class="terms">
+        Al registrarte aceptas nuestros <a href="#">Términos de servicio</a> y 
+        <a href="#">Política de privacidad</a>.
+      </p>
+
+      <a href="index.html" class="register-link">¿Ya tienes cuenta? Inicia sesión aquí</a>
+    </div>
+  </div>
+</body>
+</html>

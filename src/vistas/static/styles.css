@@ -8,7 +8,7 @@
 body {
   height: 100vh;
   background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-              url('fondo-agua.jpg'); /* 🔹 Ajusta a tu imagen de fondo */
+              url(fondo-agua.jpg); /* 🔹 Ajusta a tu imagen de fondo */
   background-size: cover;
   background-position: center;
   display: flex;
@@ -80,7 +80,7 @@ body {
 }
 
 input[type="text"],
-input[type="password"] {
+input[type="password"], input[type="email"] {
   width: 100%;
   padding: 12px;
   margin: 10px 0;
@@ -108,20 +108,19 @@ button:hover {
 
 .secondary-btn {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   margin-top: 12px;
-  background: transparent;
-  color: #00b4ff;
-  border: 2px solid #00b4ff;
+  background: #1f526b;     /* ✅ Verde sólido */
+  color: white;
+  border: none;
   border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.2s ease, background 0.3s ease;
 }
 
 .secondary-btn:hover {
-  background: #00b4ff;
-  color: white;
+  background: #1f526b;     /* ✅ Verde un poco más oscuro al pasar */
   transform: scale(1.03);
 }
 
