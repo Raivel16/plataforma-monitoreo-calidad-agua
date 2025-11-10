@@ -1,0 +1,133 @@
+/* === HISTORIAL DE PREDICCIONES (solo contenedor) === */
+.contenedor-pred {
+  background: #ffffff;
+  padding: 26px;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.pred-layout {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 25px;
+  margin-top: 20px;
+}
+
+.pred-mapa img {
+  width: 620px;
+  height: 360px;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Panel lateral */
+.pred-panel {
+  width: 270px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.pred-panel h3 {
+  color: #1f526b;
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+/* Botones del historial */
+.pred-botones {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pred-botones button {
+  padding: 7px;
+  border: 1px solid #1f526b;
+  border-radius: 5px;
+  background-color: white;
+  color: #1f526b;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.pred-botones button:hover {
+  background-color: #608eaa;
+  color: #fff;
+}
+
+.pred-botones .activo {
+  background-color: #608eaa;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Franja verde del resultado */
+.pred-resultado {
+  text-align: center;
+  color: white;
+  font-weight: bold;
+  border-radius: 5px;
+  padding: 8px;
+  margin-bottom: 12px;
+}
+
+.pred-resultado.buena {
+  background-color: #6ab04c;
+}
+
+/* Detalle de predicción */
+.pred-detalle {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 30px;
+  background-color: #f9f9f9;
+}
+
+.pred-detalle h4 {
+  color: #1f526b;
+  margin-bottom: 5px;
+}
+
+/* 🔹 Barra de filtros */
+.pred-filtros {
+  display: flex;
+  gap: 15px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.pred-filtros select,
+.pred-filtros input {
+  padding: 10px 15px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  outline: none;
+  transition: 0.2s;
+  flex: 1;
+  min-width: 200px;
+}
+
+/* 🔹 Efectos al pasar el mouse */
+.pred-filtros select:hover,
+.pred-filtros input:hover {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+}
+
+/* 🔹 Título */
+.contenedor-pred h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 25px;
+}

@@ -1,0 +1,13 @@
+/* === CONTENEDOR PRINCIPAL === */
+.container {
+    flex: 1;
+    display: flex;
+    min-height: calc(100vh - 120px);
+    background-color: #f4f4f9;
+}
+
+.content {
+    flex: 1;
+    padding: 30px;
+    background-color: #f4f4f9;
+}

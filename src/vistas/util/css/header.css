@@ -1,0 +1,118 @@
+/* BARRA SUPERIOR */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 40px;
+  background-color: #1f526b;
+  color: white;
+  position: relative;
+}
+
+/* 🔹 Contenedor general del usuario */
+.user-menu {
+  position: relative;
+}
+
+/* 🔹 Botón principal del usuario */
+.user-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px 8px 12px; 
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.user-btn:hover {
+  background-color: rgba(0, 0, 0, 0.5);
+  max-width: 180px; 
+}
+
+/* Flecha azul celeste */
+.user-btn .arrow {
+  color: #00b4ff;
+  font-size: 14px;
+  transition: transform 0.3s ease;
+}
+
+/* Texto de usuario oculto inicialmente */
+.user-text {
+  opacity: 0;
+  transform: translateX(-10px);
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: all 0.4s ease;
+}
+
+.user-btn:hover .user-text {
+  opacity: 1;
+  transform: translateX(0);
+  max-width: 120px;
+}
+
+/* 🔹 Menú desplegable */
+.user-dropdown {
+  position: absolute;
+  right: 0;
+  top: 110%;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 10px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  min-width: 160px;
+  z-index: 10;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+}
+
+/* Mostrar menú cuando el botón está activo */
+.user-btn.active + .user-dropdown {
+  max-height: 200px;
+  opacity: 1;
+}
+
+/* Items del menú */
+.user-dropdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.user-dropdown ul li {
+  padding: 10px 15px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-left: 4px solid transparent;
+}
+
+.user-dropdown ul li:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-left: 4px solid #00b4ff;
+}
+
+/* 🔹 Animación de aparición */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 🔹 Rotar flecha al abrir */
+.user-btn.active .arrow {
+  transform: rotate(180deg);
+}
+
+/* 🔹 Mantener visible el texto del usuario cuando el botón está activo */
+.user-btn.active .user-text {
+  opacity: 1;
+  transform: translateX(0);
+  max-width: 120px;
+}

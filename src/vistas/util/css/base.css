@@ -1,0 +1,46 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+html, body {
+    height: 100%;
+    background-color: #1f526b;
+}
+
+
+.cargando,
+.error {
+  text-align: center;
+  padding: 15px;
+  color: #888;
+}
+
+
+
+.cerrar-sesion {
+  background-color: #c0392b;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.cerrar-sesion:hover {
+  background-color: #e74c3c;
+}
+
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

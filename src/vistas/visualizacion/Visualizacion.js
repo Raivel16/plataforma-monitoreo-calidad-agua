@@ -1,4 +1,30 @@
-import { logout as logoutFunc, getSesion } from "../util/sesion.js";
+import { inicializar } from "../util/js/inicializar.js";
+
+const mapas = [
+  {
+    nombre: "Huancayo",
+    coordenadas: [-12.0651, -75.2049],
+    nivelZoom: 13,
+  },
+  {
+    nombre: "Junín",
+    coordenadas: [-11.48, -74.98],
+    nivelZoom: 10,
+  },
+];
+
+const indexMap = 0;
+
+// Crear mapa centrado en Junín
+const map = L.map("visualizacion-mapa").setView(
+  mapas[indexMap].coordenadas,
+  mapas[indexMap].nivelZoom
+);
+
+// Capa base (OpenStreetMap)
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: "© OpenStreetMap contributors",
+}).addTo(map);
 
 // 🔹 Obtiene los datos desde el backend
 function obtenerDatosEstacion({
@@ -34,94 +60,6 @@ function obtenerDatosEstacion({
   datoConductividad.textContent = conductividad?.Valor_procesado ?? "--";
   datoTemperatura.textContent = temperatura?.Valor_procesado ?? "--";
 }
-
-// 🔹 Control del menú desplegable del usuario
-function inicializarMenuUsuario() {
-  const userBtn = document.getElementById("userBtn");
-  const dropdown = document.getElementById("userDropdown");
-  const logout = document.getElementById("logout");
-  //const changeAccount = document.getElementById("changeAccount");
-
-  userBtn.addEventListener("click", (e) => {
-    e.stopPropagation(); // Evita cierre inmediato
-    userBtn.classList.toggle("active");
-  });
-
-  logout.addEventListener("click", logoutFunc);
-
-  // changeAccount.addEventListener("click", () => {
-  //   localStorage.removeItem("usuario");
-  //   window.location.href = "../login.html";
-  // });
-
-  document.addEventListener("click", (e) => {
-    if (!userBtn.contains(e.target) && !dropdown.contains(e.target)) {
-      userBtn.classList.remove("active");
-    }
-  });
-}
-
-function inicializarSlider() {
-  const slider = document.getElementById("slider");
-  const toggleBtn = document.getElementById("toggle-btn");
-  const homeBtn = document.getElementById("home-btn");
-
-  // 🔹 Ocultar el slider
-  homeBtn.addEventListener("click", () => {
-    slider.classList.add("hidden");
-  });
-
-  // 🔹 Mostrar el slider
-  toggleBtn.addEventListener("click", () => {
-    slider.classList.remove("hidden");
-  });
-
-  const listaOpciones = document.getElementById("listaOpciones");
-
-  listaOpciones.addEventListener("click", (e) => {
-    const li = e.target.closest("li");
-    if (!li) return;
-
-    // Si es un botón con submenú (Reportes)
-    if (li.classList.contains("has-submenu")) {
-      e.preventDefault();
-      e.stopPropagation();
-      li.classList.toggle("active");
-      return;
-    }
-
-    // Si tiene destino, redirige normalmente
-    if (li.dataset.href) {
-      window.location.href = li.dataset.href;
-    }
-  });
-}
-
-const mapas = [
-  {
-    nombre: "Huancayo",
-    coordenadas: [-12.0651, -75.2049],
-    nivelZoom: 13,
-  },
-  {
-    nombre: "Junín",
-    coordenadas: [-11.48, -74.98],
-    nivelZoom: 10,
-  },
-];
-
-const indexMap = 0;
-
-// Crear mapa centrado en Junín
-const map = L.map("visualizacion-mapa").setView(
-  mapas[indexMap].coordenadas,
-  mapas[indexMap].nivelZoom
-);
-
-// Capa base (OpenStreetMap)
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution: "© OpenStreetMap contributors",
-}).addTo(map);
 
 // 🔹 Función para obtener sensores desde el backend
 async function cargarSensores() {
@@ -177,16 +115,7 @@ async function cargarSensores() {
 }
 
 (async () => {
-  // mostrar sesión (rellena dropdown)
-  const sesion = await getSesion();
-  if (sesion.logeado) {
-    document.getElementById("nombreUsuario").textContent = sesion.NombreUsuario;
-  } else {
-    document.getElementById("nombreUsuario").textContent = "Invitado";
-  }
-
-  inicializarMenuUsuario();
-  inicializarSlider();
+  await inicializar();
 
   // 🔸 Cargar sensores al iniciar la página
   cargarSensores();

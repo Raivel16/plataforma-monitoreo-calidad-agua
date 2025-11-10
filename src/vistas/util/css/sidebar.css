@@ -1,0 +1,136 @@
+
+/* === SLIDER LATERAL === */
+.slider {
+    width: 250px;
+    background-color: #1f526b;
+    color: #fff;
+    padding: 20px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.slider h2 {
+    margin-bottom: 10px;
+    font-size: 18px;
+    padding-bottom: 5px;
+}
+
+.slider ul {
+    list-style: none;
+    margin-top: 15px;
+}
+
+.slider ul li {
+    margin-bottom: 10px;
+    padding: 8px;
+    background-color: #1f526b;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.slider ul li:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.slider ul li.active {
+    background-color: rgba(0, 0, 0, 0.3); /* Fondo negro translúcido */
+    font-weight: bold;
+    border-left: 4px solid #00b4ff; /* Línea celeste en el lado izquierdo */
+    transition: background-color 0.3s ease, border-left 0.3s ease;
+}
+
+
+
+.slider-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; 
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ffffff;
+}
+
+.slider-option h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.menu-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.menu-btn:hover {
+  color: #00b4ff;
+}
+
+/* === SLIDER OCULTO === */
+.slider.hidden {
+  transform: translateX(-100%);
+  width: 0;
+  padding: 0;
+  overflow: hidden;
+  transition: all 0.4s ease;
+}
+
+/* === BOTÓN FLOTANTE === */
+.toggle-btn {
+  position: fixed;
+  top: 120px;
+  left: 0px;
+  background-color: #1f526b;
+  color: white;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  padding: 10px 12px;
+  font-size: 20px;
+  width: 60px; 
+  height: 50px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: left 0.4s ease, background-color 0.3s ease;
+  z-index: 5;
+}
+
+.toggle-btn:hover {
+  background-color: #00b4ff;
+}
+
+.slider.hidden ~ .toggle-btn {
+  left: 0; 
+}
+
+.slider:not(.hidden) ~ .toggle-btn {
+  left: -60px; 
+}
+
+/* 🔹 Submenús ocultos por defecto */
+.submenu {
+  display: none;
+  list-style: none;
+  padding-left: 15px;
+  margin-top: 8px;
+}
+
+/* 🔹 Cuando el padre tiene la clase "active", mostrar el submenú */
+.has-submenu.active .submenu {
+  display: block;
+}
+
+/* 🔹 Submenús con el mismo estilo */
+.submenu li {
+  background-color: #17445a;
+  padding: 6px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submenu li:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
