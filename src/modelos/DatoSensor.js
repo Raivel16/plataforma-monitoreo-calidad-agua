@@ -1,6 +1,8 @@
 import { getConnection } from "../config/db_sqlserver.js";
 import sql from "mssql";
 
+
+
 // src/modelos/DatosSensoresModelo.js
 export class DatoSensorModelo {
   static datos = [
@@ -65,6 +67,7 @@ export class DatoSensorModelo {
 
       // 3. Devolver el conjunto de registros (los datos del SELECT)
       // 'result.recordset' es un arreglo con todas las filas devueltas
+
       return result.recordset;
     } catch (err) {
       console.error("❌ Error al ejecutar SP [sp_ObtenerDatosSensores]:", err);
@@ -121,20 +124,24 @@ export class DatoSensorModelo {
       const result = await request.execute("sp_InsertarDatosSensor");
 
       // 2. Extrae el ID del recordset devuelto por la cláusula OUTPUT
-      // result.recordset será algo como: [ { DatoID: 123 } ]
-      const nuevoDatoID = result.recordset[0].DatoID;
+
+      const nuevoDato = result.recordset[0];
 
       console.log(
-        `✅ Registro insertado en la base de datos. ID: ${nuevoDatoID}`
+        `✅ Registro insertado en la base de datos. ID: ${nuevoDato.DatoID}`
       );
 
-      this.DatoID = nuevoDatoID;
+      this.DatoID = nuevoDato.DatoID;
       this.TimestampRegistro = this.TimestampRegistro.toISOString();
       // // 3. Devuelve el objeto completo, incluyendo el nuevo ID
       return {
-        DatoID: nuevoDatoID, // <-- ¡AQUÍ ESTÁ!
+        DatoID: nuevoDato.DatoID, // <-- ¡AQUÍ ESTÁ!
         SensorID: this.SensorID,
+        Nombre: nuevoDato.Nombre,
+        Descripcion: nuevoDato.Descripcion,
         ParametroID: this.ParametroID,
+        NombreParametro: nuevoDato.NombreParametro,
+        UnidadMedida: nuevoDato.UnidadMedida,
         Valor_original: this.Valor_original,
         Valor_procesado: this.Valor_procesado,
         Valor_normalizado: this.Valor_normalizado,

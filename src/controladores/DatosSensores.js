@@ -1,9 +1,19 @@
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+
 import { preprocesarDato } from "../utils/preprocesarDato.js";
 
 // src/controladores/datosSensoresControlador.js
 import { DatoSensorModelo } from "../modelos/DatoSensor.js";
+
 import { validarDatosDatoSensor } from "../schemas/datoSensor.js";
 import { formatZodError } from "../utils/formatZodError.js";
+
+
 
 export class DatosSensoresControlador {
   // GET /api/datos
@@ -20,6 +30,16 @@ export class DatosSensoresControlador {
   static async obtenerUltimosRegistros(req, res) {
     try {
       const datos = await DatoSensorModelo.obtenerTodos({ ultimosDiez: true });
+
+      datos.forEach((d) => {
+        d.TimestampRegistro = dayjs(d.TimestampRegistro)
+          .tz("America/Lima")
+          .format("DD/MM/YYYY HH:mm:ss");
+        d.TimestampEnvio = dayjs(d.TimestampEnvio)
+          .tz("America/Lima")
+          .format("DD/MM/YYYY HH:mm:ss");
+      });
+
       res.json(datos);
     } catch (error) {
       console.error("Error al obtener datos de sensores:", error);
@@ -75,6 +95,15 @@ export class DatosSensoresControlador {
       const nuevoDato = new DatoSensorModelo(lecturaValidada.data);
 
       const resultado = await nuevoDato.crear();
+
+      resultado.TimestampRegistro = dayjs(nuevoDato.TimestampRegistro)
+        .tz("America/Lima")
+        .format("DD/MM/YYYY HH:mm:ss");
+      resultado.TimestampEnvio = dayjs(nuevoDato.TimestampEnvio)
+        .tz("America/Lima")
+        .format("DD/MM/YYYY HH:mm:ss");
+
+
 
       // Emitir evento en tiempo real al cliente conectado
       io.emit("nuevaLectura", resultado);

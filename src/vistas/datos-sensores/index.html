@@ -73,8 +73,10 @@
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>ID Sensor</th>
-                  <th>ID Parámetro</th>
+                  <th>Sensor</th>
+                  <th>Descripción</th>
+                  <th>Parámetro</th>
+                  <th>Unidad</th>
                   <th>Tiempo de Registro</th>
                   <th>Tiempo de Envío</th>
                   <th>Valor Original</th>
@@ -107,13 +109,15 @@
         const nuevaFilaHTML = `
               <tr>
                 <td>${lectura.DatoID ?? "-"}</td>
-                <td>${lectura.SensorID ?? "-"}</td>
-                <td>${lectura.ParametroID ?? "-"}</td>
+                <td data-sensorId="${lectura.SensorID}">${lectura.Nombre ?? "-"}</td>
+                <td> ${lectura.Descripcion ?? "-"}</td>
+                <td data-parametroId="${lectura.ParametroID}">${lectura.NombreParametro ?? "-"}</td>
+                <td>${lectura.UnidadMedida ?? "-"}</td>
                 <td>${lectura.TimestampRegistro ?? "-"}</td>
                 <td>${lectura.TimestampEnvio ?? "-"}</td>
-                <td>${lectura.Valor_original ?? "-"}</td>
-                <td>${lectura.Valor_procesado ?? "-"}</td>
-                <td>${lectura.Valor_normalizado ?? "-"}</td>
+                <td>${lectura.Valor_original.toFixed(4) ?? "-"}</td>
+                <td>${lectura.Valor_procesado.toFixed(4) ?? "-"}</td>
+                <td>${lectura.Valor_normalizado.toFixed(4) ?? "-"}</td>
               </tr>
             `;
         tbody.insertAdjacentHTML("afterbegin", nuevaFilaHTML);

@@ -2,8 +2,29 @@ USE MonitoreoAguaJunin;
 GO
 
 
+GO
+CREATE VIEW vw_DatosSensores_Detalle AS
+SELECT 
+    d.DatoID,
+    d.SensorID,
+    s.Nombre,
+    s.Descripcion,
+    d.ParametroID,
+    p.NombreParametro,
+    p.UnidadMedida,
+    d.TimestampRegistro,
+    d.TimestampEnvio,
+    d.Valor_original,
+    d.Valor_procesado,
+    d.Valor_normalizado,
+    d.Estado
+FROM DatosSensores d
+JOIN Sensores s ON s.SensorID = d.SensorID
+JOIN Parametros p ON p.ParametroID = d.ParametroID;
+GO
+
 -- 1. Procedimiento para insertar una nueva lectura en DatosSensores
-CREATE OR ALTER  PROCEDURE sp_InsertarDatosSensor
+CREATE OR ALTER PROCEDURE sp_InsertarDatosSensor
     @SensorID INT,
     @ParametroID INT,
     @TimestampRegistro DATETIME2,
@@ -14,24 +35,30 @@ CREATE OR ALTER  PROCEDURE sp_InsertarDatosSensor
     @Estado VARCHAR(20) = 'crudo'
 AS
 BEGIN
+    SET NOCOUNT ON;
 
-SET NOCOUNT ON;
+    DECLARE @NuevoID INT;
 
     INSERT INTO DatosSensores (
-        SensorID, ParametroID, TimestampRegistro, TimestampEnvio, Valor_original, 
-        Valor_procesado, Valor_normalizado, Estado
+        SensorID, ParametroID, TimestampRegistro, TimestampEnvio, 
+        Valor_original, Valor_procesado, Valor_normalizado, Estado
     )
-    OUTPUT INSERTED.DatoID
     VALUES (
-        @SensorID, @ParametroID, @TimestampRegistro, @TimestampEnvio, @Valor_original, 
-        @Valor_procesado, @Valor_normalizado, @Estado
+        @SensorID, @ParametroID, @TimestampRegistro, @TimestampEnvio, 
+        @Valor_original, @Valor_procesado, @Valor_normalizado, @Estado
     );
 
+    SET @NuevoID = SCOPE_IDENTITY();
 
-END
+    SELECT * 
+    FROM vw_DatosSensores_Detalle
+    WHERE DatoID = @NuevoID;
+END;
 GO
 
 
+
+GO
 CREATE OR ALTER PROCEDURE sp_ObtenerDatosSensores
     @SensorID_Filtro INT = NULL,
     @ParametroID_Filtro INT = NULL,
@@ -45,7 +72,11 @@ BEGIN
     SELECT TOP (CASE WHEN @UltimosDiez = 1 THEN 10 ELSE 1000000 END)
         ds.DatoID,
         s.SensorID,
+        s.Nombre,
+        s.Descripcion,
         p.ParametroID,
+        p.NombreParametro,
+        p.UnidadMedida,
         ds.TimestampRegistro,
         ds.TimestampEnvio,
         ds.Valor_original,
@@ -64,6 +95,7 @@ BEGIN
     ORDER BY ds.TimestampRegistro DESC;
 END
 GO
+
 
 CREATE OR ALTER PROCEDURE sp_ObtenerUltimoDatoSensores
 AS
