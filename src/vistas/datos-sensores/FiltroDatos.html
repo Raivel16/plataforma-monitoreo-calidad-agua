@@ -20,7 +20,7 @@
     <!-- Estilos CSS  Específicos-->
     <link rel="stylesheet" href="datSensor.css" />
 
-    <script type="module" src="index.js"></script>
+    <script type="module" src="filtro.js"></script>
     <script src="/socket.io/socket.io.js"></script>
   </head>
 
@@ -61,8 +61,8 @@
           <button id="home-btn" class="menu-btn">&#9776;</button>
         </div>
         <ul id="listaOpciones">
-          <li class="active">Ingesta de Datos</li>
-          <li data-href="./FiltroDatos.html">Filtro de Datos</li>
+          <li data-href="./index.html">Ingesta de Datos</li>
+          <li class="active">Filtro de Datos</li>
           <li data-href="./Sensores.html">Sensores</li>
           <li data-href="./Parametros.html">Parámetros</li>
         </ul>
@@ -71,7 +71,17 @@
 
       <main id="main-content" class="content">
         <div class="contenedor-ingesta">
-          <h2>📊 Ingesta de Datos de Sensores</h2>
+          <h2>📊 Filtrar Datos de Sensores</h2>
+          <div class="filtro-busqueda">
+            <input
+              id="input-busqueda"
+              type="text"
+              placeholder="Buscar..."
+              class="input-busqueda"
+            />
+            <button id="btn-buscar">Buscar</button>
+          </div>
+
           <div class="tabla-container">
             <table id="tablaSensores">
               <thead>

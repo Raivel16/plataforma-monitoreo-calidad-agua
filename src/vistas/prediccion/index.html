@@ -1,11 +1,128 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Predicciones</title>
+
+    <!-- Íconos -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- CSS comunes -->
+    <link rel="stylesheet" href="../util/css/base.css" />
+    <link rel="stylesheet" href="../util/css/header.css" />
+    <link rel="stylesheet" href="../util/css/navbar.css" />
+    <link rel="stylesheet" href="../util/css/sidebar.css" />
+    <link rel="stylesheet" href="../util/css/layout.css" />
+
+    <!-- CSS específico de esta página -->
+    <link rel="stylesheet" href="prediccion.css" />
+
+    <!-- JS específico (opcional) -->
+    <script type="module" src="prediccion.js"></script>
   </head>
+
   <body>
-    <h1>Predicciones</h1>
+    <!-- ENCABEZADO -->
+    <header class="top-bar">
+      <h1>Plataforma de Monitoreo del Agua - Junín</h1>
+
+      <div class="user-menu">
+        <button class="user-btn" id="userBtn">
+          <i class="fas fa-user"></i>
+          <span class="user-text" id="nombreUsuario"></span>
+          <i class="arrow fa fa-chevron-down"></i>
+        </button>
+
+        <div class="user-dropdown" id="userDropdown">
+          <ul>
+            <li id="logout">Cerrar sesión</li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <!-- NAVBAR -->
+    <nav class="main-header">
+      <a href="/datos-sensores" id="btn-seccion-datos-sensores"
+        >DATOS SENSORES</a
+      >
+      <a href="#" class="active" id="btn-seccion-predicciones">PREDICCIONES</a>
+      <a href="/visualizacion" id="btn-seccion-visualizacion">VISUALIZACIÓN</a>
+      <a href="" id="btn-seccion-usuarios">USUARIOS</a>
+      <a href="" id="btn-seccion-notificaciones">NOTIFICACIONES</a>
+    </nav>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="container">
+      <!-- SIDEBAR -->
+      <aside id="slider" class="slider">
+        <div class="slider-option">
+          <h2>Opciones</h2>
+          <button id="home-btn" class="menu-btn">&#9776;</button>
+        </div>
+
+        <ul id="listaOpciones">
+          <li class="active">Predicciones</li>
+        </ul>
+      </aside>
+
+      <button id="toggle-btn" class="toggle-btn">&#9776;</button>
+
+      <!-- CONTENIDO PRINCIPAL -->
+      <main id="main-content" class="content">
+        <div class="contenedor-pred">
+          <div class="pred-filtros">
+            <select>
+              <option selected disabled>Seleccionar Cuenca</option>
+              <option>Cuenca del Mantaro</option>
+              <option>Cuenca del Rímac</option>
+              <option>Cuenca del Chillón</option>
+            </select>
+
+            <select>
+              <option selected disabled>Seleccionar Río</option>
+              <option>Río Shullcas</option>
+              <option>Río Mantaro</option>
+              <option>Río Cunas</option>
+            </select>
+
+            <input type="text" placeholder="Buscar Estación..." />
+          </div>
+
+          <h2>Mapa de Predicciones de Calidad del Agua</h2>
+
+          <div class="pred-layout">
+            <div class="pred-mapa">
+              <img src="Mapa.png" alt="Mapa de Predicciones" />
+            </div>
+
+            <div class="pred-panel">
+              <h3>Historial de Predicciones</h3>
+              <div class="pred-botones">
+                <button>Predicción #1</button>
+                <button>Predicción #2</button>
+                <button>Predicción #3</button>
+              </div>
+
+              <div class="pred-resultado buena">Calidad Pronosticada Buena</div>
+
+              <div class="pred-detalle">
+                <h4>Detalle de Predicción</h4>
+                <p><strong>Parámetros Clave</strong></p>
+                <ul>
+                  <li>Bajos niveles de Turbidez</li>
+                  <li>pH estable 6.8</li>
+                  <li>Ausencia de coliformes</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
   </body>
 </html>

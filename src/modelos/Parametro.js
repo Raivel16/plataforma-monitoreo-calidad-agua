@@ -1,6 +1,4 @@
-import { ca } from "zod/locales";
 import { getConnection } from "../config/db_sqlserver.js";
-import sql from "mssql";
 
 export class ParametroModelo {
   static async obtenerTodos() {

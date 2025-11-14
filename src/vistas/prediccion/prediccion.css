@@ -106,24 +106,7 @@
   flex-wrap: wrap;
 }
 
-.pred-filtros select,
-.pred-filtros input {
-  padding: 10px 15px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  font-size: 0.95rem;
-  outline: none;
-  transition: 0.2s;
-  flex: 1;
-  min-width: 200px;
-}
 
-/* 🔹 Efectos al pasar el mouse */
-.pred-filtros select:hover,
-.pred-filtros input:hover {
-  border-color: #007bff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
-}
 
 /* 🔹 Título */
 .contenedor-pred h2 {

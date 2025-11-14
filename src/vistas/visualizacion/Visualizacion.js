@@ -15,24 +15,23 @@ const mapas = [
 
 const indexMap = 0;
 
-// Crear mapa centrado en Junín
 const map = L.map("visualizacion-mapa").setView(
   mapas[indexMap].coordenadas,
   mapas[indexMap].nivelZoom
 );
 
-// Capa base (OpenStreetMap)
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution: "© OpenStreetMap contributors",
 }).addTo(map);
 
-// 🔹 Obtiene los datos desde el backend
+// ===============================
+//  MOSTRAR DATOS EN PANEL
+// ===============================
 function obtenerDatosEstacion({
   Nombre,
-  Latitud,
-  Longitud,
   CalidadAgua,
   color,
+  EstadoOperativo,
   datosSensor,
 } = {}) {
   const nombreEstacion = document.getElementById("nombre-estacion");
@@ -43,17 +42,34 @@ function obtenerDatosEstacion({
   const datoConductividad = document.getElementById("dato-conductividad");
   const datoTemperatura = document.getElementById("dato-temperatura");
 
-  nombreEstacion.textContent = Nombre || "No disponible";
+  nombreEstacion.textContent = Nombre ?? "No disponible";
 
-  ultimaLectura.textContent = CalidadAgua || "--/--/---- --:--";
-  ultimaLectura.style.color = color;
+  // ⇨ Mostrar "No activo" si está desactivado
+  const textoCalidad =
+    EstadoOperativo === false ? "No activo" : CalidadAgua ?? "Sin datos";
 
+  ultimaLectura.textContent = textoCalidad;
+  ultimaLectura.style.color = EstadoOperativo === false ? "#495057" : color;
+
+  // Extraer parámetros
   const ph = datosSensor.find((d) => d.ParametroID === 1);
   const turbidez = datosSensor.find((d) => d.ParametroID === 2);
   const oxigenoDisuelto = datosSensor.find((d) => d.ParametroID === 3);
   const conductividad = datosSensor.find((d) => d.ParametroID === 4);
   const temperatura = datosSensor.find((d) => d.ParametroID === 5);
 
+  // Si está desactivado → mostrar “--”
+  if (EstadoOperativo === false) {
+    datoPh.textContent =
+      datoTurbidez.textContent =
+      datoOxigeno.textContent =
+      datoConductividad.textContent =
+      datoTemperatura.textContent =
+        "--";
+    return;
+  }
+
+  // Si está activo → mostrar valores
   datoPh.textContent = ph?.Valor_procesado ?? "--";
   datoTurbidez.textContent = turbidez?.Valor_procesado ?? "--";
   datoOxigeno.textContent = oxigenoDisuelto?.Valor_procesado ?? "--";
@@ -61,10 +77,14 @@ function obtenerDatosEstacion({
   datoTemperatura.textContent = temperatura?.Valor_procesado ?? "--";
 }
 
-// 🔹 Función para obtener sensores desde el backend
+// ===============================
+//  CARGAR SENSORES
+// ===============================
 async function cargarSensores() {
   try {
-    const res = await fetch("/api/sensores/");
+    const res = await fetch("/api/sensores/visualizacion", {
+      cache: "no-store",
+    });
     if (!res.ok) throw new Error("Error al obtener sensores");
 
     const data = await res.json();
@@ -76,18 +96,37 @@ async function cargarSensores() {
     }
 
     sensores.forEach((s) => {
-      // Ajusta los nombres de las propiedades según tu backend
-      const { Nombre, Latitud, Longitud, CalidadAgua, Datos: datosSensor } = s;
+      const {
+        Nombre,
+        Latitud,
+        Longitud,
+        CalidadAgua,
+        EstadoOperativo,
+        Datos: datosSensor,
+      } = s;
 
-      console.log(datosSensor);
+      // ===============================
+      //  DEFINIR COLOR DEL MARCADOR
+      // ===============================
+      let color;
 
-      // Define color según la calidad
-      const color =
-        CalidadAgua === "Buena"
-          ? "green"
-          : CalidadAgua === "Regular"
-          ? "orange"
-          : "red";
+      if (EstadoOperativo === false) {
+        // Sensor desactivado → gris oscuro
+        color = "#495057";
+      } else if (CalidadAgua === null) {
+        // Sensor sin datos → gris claro
+        color = "#6c757d";
+      } else if (CalidadAgua === "Buena") {
+        color = "green";
+      } else if (CalidadAgua === "Regular") {
+        color = "orange";
+      } else {
+        color = "red";
+      }
+
+      // Texto para popup según estado
+      const textoCalidad =
+        EstadoOperativo === false ? "No activo" : CalidadAgua ?? "Sin datos";
 
       const marker = L.circleMarker([Latitud, Longitud], {
         color,
@@ -96,14 +135,17 @@ async function cargarSensores() {
       }).addTo(map);
 
       marker.bindPopup(`
-              <span>${Nombre}</span><br>
-              Calidad del agua: <b style="color:${color}">${CalidadAgua}</b>
-            `);
+          <span>${Nombre}</span><br>
+          Calidad del agua: <b style="color:${color}">
+            ${textoCalidad}
+          </b>
+      `);
 
       marker.on("click", function () {
         obtenerDatosEstacion({
           ...s,
           color,
+          EstadoOperativo,
           datosSensor,
         });
       });
@@ -116,7 +158,5 @@ async function cargarSensores() {
 
 (async () => {
   await inicializar();
-
-  // 🔸 Cargar sensores al iniciar la página
   cargarSensores();
 })();

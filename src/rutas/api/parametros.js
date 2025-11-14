@@ -1,12 +1,11 @@
 import { Router } from "express";
+import { ParametrosControlador } from "../../controladores/Parametros.js";
 
 export const parametrosRouter = Router();
 
 // Definir las rutas para parámetros
 
-parametrosRouter.get("/", (req, res) => {
-  res.send("Listar parámetros existentes");
-});
+parametrosRouter.get("/", ParametrosControlador.obtenerTodos);
 
 parametrosRouter.get("/:id", (req, res) => {
   res.send(`Obtener parámetro con ID ${req.params.id}`);

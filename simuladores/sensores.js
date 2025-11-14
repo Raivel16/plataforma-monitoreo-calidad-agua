@@ -35,6 +35,6 @@ async function enviarDatos() {
 }
 
 // Envía datos cada 10 segundos
-setInterval(enviarDatos, 10000);
+setInterval(enviarDatos, 5000);
 
 

@@ -10,6 +10,87 @@ html, body {
     background-color: #1f526b;
 }
 
+select,
+input {
+  padding: 10px 15px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  outline: none;
+  transition: 0.2s;
+  flex: 1;
+  min-width: 200px;
+}
+
+/* 🔹 Efectos al pasar el mouse */
+select:hover,
+input:hover {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+}
+
+button {
+  background-color: #1f526b;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Hover */
+button:hover {
+  background-color: #0e4d77;
+  transform: translateY(-2px);
+}
+
+
+/* Contenedor */
+#paginacion {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Botones */
+#paginacion button {
+  background-color: #0b3c5d; /* azul petróleo */
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Hover */
+#paginacion button:hover {
+  background-color: #0e4d77;
+  transform: translateY(-2px);
+}
+
+/* Página actual */
+#paginacion button.activa {
+  background-color: #1b76b9; 
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+/* Deshabilitados */
+#paginacion button:disabled {
+  background-color: #b8c7d1;
+  color: #fff;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 
 .cargando,
 .error {

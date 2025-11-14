@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_fuaSx8kSu5
 createdAt: 2025-11-08T18:38:36.852862900
-updatedAt: 2025-11-08T19:38:54.076039700
+updatedAt: 2025-11-10T20:22:30.923369700
 workspaceId: wk_TV6JMdJDX5
 folderId: fl_s6XHXmPBXz
 authentication: {}
@@ -11,9 +11,9 @@ body:
   text: |
     {
       "datosHistoricos": [
-        { "ph": 6.8, "turbidez": 3.2, "temperatura": 22.4, "oxigeno": 6.1 },
-        { "ph": 5.1, "turbidez": 2.9, "temperatura": 23.0, "oxigeno": 2.3 },
-        { "ph": 5.0, "turbidez": 4.5, "temperatura": 21.9, "oxigeno": 2.9 }
+        { "ph": 8.8, "turbidez": 3.2, "temperatura": 22.4, "oxigeno": 6.1 },
+        { "ph": 6.1, "turbidez": 2.9, "temperatura": 23.0, "oxigeno": 6.3 },
+        { "ph": 6.0, "turbidez": 4.5, "temperatura": 21.9, "oxigeno": 6.9 }
       ]
     }
 bodyType: application/json

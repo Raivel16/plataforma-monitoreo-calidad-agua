@@ -120,6 +120,15 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE sp_ObtenerParametros
+AS
+BEGIN
+    SELECT
+        p.ParametroID, p.NombreParametro, p.UnidadMedida
+    FROM
+        Parametros p;
+END
+GO
 
 
 -- 15. Procedimiento para buscar usuario por su nombre (para gestión)
@@ -279,7 +288,6 @@ GO
 -- 4. Procedimiento para insertar un nuevo sensor
 CREATE OR ALTER  PROCEDURE sp_InsertarSensor
     @Nombre VARCHAR(100),
-    @Tipo VARCHAR(50),
     @Modelo VARCHAR(50),
     @Fabricante VARCHAR(100),
     @Latitud DECIMAL(9,6),
@@ -287,8 +295,8 @@ CREATE OR ALTER  PROCEDURE sp_InsertarSensor
     @Descripcion VARCHAR(255) = NULL
 AS
 BEGIN
-    INSERT INTO Sensores (Nombre, Tipo, Modelo, Fabricante, Latitud, Longitud, Descripcion, EstadoOperativo)
-    VALUES (@Nombre, @Tipo, @Modelo, @Fabricante, @Latitud, @Longitud, @Descripcion, 1);
+    INSERT INTO Sensores (Nombre, Modelo, Fabricante, Latitud, Longitud, Descripcion, EstadoOperativo)
+    VALUES (@Nombre, @Modelo, @Fabricante, @Latitud, @Longitud, @Descripcion, 1);
     SELECT SCOPE_IDENTITY() AS NuevoSensorID;
 END
 GO
@@ -296,25 +304,31 @@ GO
 
 
 -- 6. Procedimiento para actualizar info de un sensor existente a través del ID
-CREATE OR ALTER  PROCEDURE sp_ActualizarSensor
+CREATE OR ALTER PROCEDURE sp_ActualizarSensor
     @SensorID INT,
-    @Nombre VARCHAR(100),
-    @Tipo VARCHAR(50),
-    @Modelo VARCHAR(50),
-    @Fabricante VARCHAR(100),
-    @Latitud DECIMAL(9,6),
-    @Longitud DECIMAL(9,6),
-    @Descripcion VARCHAR(255),
-    @EstadoOperativo BIT
+
+    @Nombre VARCHAR(100) = NULL,
+    @Modelo VARCHAR(50) = NULL,
+    @Fabricante VARCHAR(100) = NULL,
+    @Latitud DECIMAL(9,6) = NULL,
+    @Longitud DECIMAL(9,6) = NULL,
+    @Descripcion VARCHAR(255) = NULL,
+    @EstadoOperativo BIT = NULL
 AS
 BEGIN
     UPDATE Sensores
     SET
-        Nombre = @Nombre, Tipo = @Tipo, Modelo = @Modelo, Fabricante = @Fabricante, 
-        Latitud = @Latitud, Longitud = @Longitud, Descripcion = @Descripcion, EstadoOperativo = @EstadoOperativo
+        Nombre = COALESCE(@Nombre, Nombre),
+        Modelo = COALESCE(@Modelo, Modelo),
+        Fabricante = COALESCE(@Fabricante, Fabricante),
+        Latitud = COALESCE(@Latitud, Latitud),
+        Longitud = COALESCE(@Longitud, Longitud),
+        Descripcion = COALESCE(@Descripcion, Descripcion),
+        EstadoOperativo = COALESCE(@EstadoOperativo, EstadoOperativo)
     WHERE SensorID = @SensorID;
 END
 GO
+
 
 -- 7. Procedimiento para eliminar un sensor a través del ID (Incluye eliminación en cascada de datos dependientes)
 CREATE OR ALTER  PROCEDURE sp_EliminarSensor

@@ -1,5 +1,6 @@
 import { SensorModelo } from "../modelos/Sensor.js";
 import { DatoSensorModelo } from "../modelos/DatoSensor.js";
+import { ServicioIASimulada } from "../servicios/ServicioIASimulada.js";
 
 import {
   validarDatosSensor,
@@ -9,38 +10,65 @@ import { formatZodError } from "../utils/formatZodError.js";
 
 export class SensoresControlador {
   // GET /api/sensores
-  static async obtenerTodos(req, res) {
+  static async obtenerTodosVisualizacion(req, res) {
     try {
       const sensores = await SensorModelo.obtenerTodos();
 
       const ultimoDatoSensores =
         await DatoSensorModelo.obtenerUltimoDatoSensores();
 
-      const sensoresConCalidadAgua = sensores.map((s) => {
-        const datos = ultimoDatoSensores
-          .filter((d) => d.SensorID === s.SensorID)
-          .map(
-            ({
-              SensorID,
+      const sensoresConCalidadAgua = await Promise.all(
+        sensores.map(async (s) => {
+          const datos = ultimoDatoSensores
+            .filter((d) => d.SensorID === s.SensorID)
+            .map(({ ParametroID, Valor_procesado, TimestampRegistro }) => ({
               ParametroID,
               Valor_procesado,
               TimestampRegistro,
-            }) => ({
-              SensorID,
-              ParametroID,
-              Valor_procesado,
-              TimestampRegistro,
-            })
-          );
+            }));
 
-        return {
-          ...s,
-          Datos: datos,
-          CalidadAgua: "Buena", // función auxiliar opcional
-        };
-      });
+          // Si no tiene datos → devolver sensor sin predicción
+          if (datos.length === 0) {
+            return {
+              ...s,
+              Datos: [],
+              CalidadAgua: null,
+              Explicacion: "Aún no hay datos registrados para este sensor.",
+              ProbabilidadRiesgo: null,
+              FechaHoraPrediccion: null,
+            };
+          }
+
+          const datosPrediccion = datos.map((d) => ({
+            [d.ParametroID]: d.Valor_procesado,
+          }));
+
+          const prediccion = await ServicioIASimulada.generarPrediccion({
+            datosHistoricos: datosPrediccion,
+          });
+
+          return {
+            ...s,
+            Datos: datos,
+            CalidadAgua: prediccion.ValorPredicho,
+            Explicacion: prediccion.Explicacion,
+            ProbabilidadRiesgo: prediccion.ProbabilidadRiesgo,
+            FechaHoraPrediccion: prediccion.FechaHoraPrediccion,
+          };
+        })
+      );
 
       res.json({ sensoresConCalidadAgua });
+    } catch (error) {
+      console.error("Error al obtener sensores:", error);
+      res.status(500).json({ error: "Error al obtener sensores" });
+    }
+  }
+
+  static async obtenerTodos(req, res) {
+    try {
+      const sensores = await SensorModelo.obtenerTodos();
+      res.json(sensores);
     } catch (error) {
       console.error("Error al obtener sensores:", error);
       res.status(500).json({ error: "Error al obtener sensores" });
@@ -56,13 +84,7 @@ export class SensoresControlador {
       if (!sensor) {
         return res.status(404).json({ error: "Sensor no encontrado" });
       }
-
-      const sensorConCalidadAgua = {
-        ...sensor,
-        CalidadAgua: "Buena",
-      };
-
-      res.json(sensorConCalidadAgua);
+      res.json(sensor);
     } catch (error) {
       console.error("Error al obtener sensor:", error);
       res.status(500).json({ error: "Error al obtener sensor" });
@@ -72,17 +94,32 @@ export class SensoresControlador {
   // POST /api/sensores
   static async crear(req, res) {
     try {
-      const nuevoSensor = validarDatosSensor(req.body);
+      const datos = req.body;
+
+      // 🔥 Convertir tipos ANTES de validar
+      if (datos.Latitud !== undefined) datos.Latitud = Number(datos.Latitud);
+      if (datos.Longitud !== undefined) datos.Longitud = Number(datos.Longitud);
+
+      if (datos.EstadoOperativo !== undefined) {
+        datos.EstadoOperativo =
+          datos.EstadoOperativo === "true" || datos.EstadoOperativo === true;
+      }
+
+      const nuevoSensor = validarDatosSensor(datos);
 
       if (!nuevoSensor.success) {
         const normalized = formatZodError(nuevoSensor.error);
         return res.status(400).json({ error: normalized });
       }
 
-      const sensorCreado = await SensorModelo.crear({ ...nuevoSensor.data });
-      res.status(201).json(sensorCreado);
+      const sensorCreado = await SensorModelo.crear(nuevoSensor.data);
+
+      res.status(201).json({
+        mensaje: "Sensor registrado correctamente",
+        sensor: sensorCreado,
+      });
     } catch (error) {
-      console.error("Error al crear sensor:", error);
+      console.error("❌ Error al crear sensor:", error);
       res.status(500).json({ error: "Error al registrar sensor" });
     }
   }
@@ -91,26 +128,46 @@ export class SensoresControlador {
   static async actualizar(req, res) {
     try {
       const { id } = req.params;
-      const datosActualizados = validarParcialDatosSensor(req.body);
+      const datos = req.body;
+
+      // 🔥 Convertir tipos ANTES de validar
+      if (datos.Latitud !== undefined) datos.Latitud = Number(datos.Latitud);
+      if (datos.Longitud !== undefined) datos.Longitud = Number(datos.Longitud);
+      if (datos.EstadoOperativo !== undefined) {
+        datos.EstadoOperativo =
+          datos.EstadoOperativo === "true" || datos.EstadoOperativo === true;
+      }
+
+      // Validación parcial con Zod
+      const datosActualizados = validarParcialDatosSensor(datos);
 
       if (!datosActualizados.success) {
         const normalized = formatZodError(datosActualizados.error);
         return res.status(400).json({ error: normalized });
       }
 
-      const sensor = await SensorModelo.actualizar({
-        id,
+      // Ejecutar actualización en el modelo
+      const resultado = await SensorModelo.actualizar({
+        id: Number(id),
         datos: datosActualizados.data,
       });
 
-      if (!sensor) {
+      // Si no se afectaron filas → sensor no existe
+      if (!resultado || resultado.filasAfectadas === 0) {
         return res.status(404).json({ error: "Sensor no encontrado" });
       }
 
-      res.json({ mensaje: "Sensor actualizado correctamente", sensor });
+      // ✔ Como no hay recordset del SP, devolvemos lo enviado
+      return res.json({
+        mensaje: "Sensor actualizado correctamente",
+        sensor: {
+          SensorID: Number(id),
+          ...datosActualizados.data,
+        },
+      });
     } catch (error) {
-      console.error("Error al actualizar sensor:", error);
-      res.status(500).json({ error: "Error al actualizar sensor" });
+      console.error("❌ Error al actualizar sensor:", error);
+      return res.status(500).json({ error: "Error al actualizar sensor" });
     }
   }
 

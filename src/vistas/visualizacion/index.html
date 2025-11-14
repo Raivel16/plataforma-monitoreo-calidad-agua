@@ -16,9 +16,9 @@
     <link rel="stylesheet" href="../util/css/navbar.css" />
     <link rel="stylesheet" href="../util/css/sidebar.css" />
     <link rel="stylesheet" href="../util/css/layout.css" />
-     <!-- ----------------- -->
+    <!-- ----------------- -->
 
-     <!-- Estilos CSS  Específicos-->
+    <!-- Estilos CSS  Específicos-->
     <link rel="stylesheet" href="visualizacion.css" />
 
     <script type="module" src="visualizacion.js"></script>
@@ -45,13 +45,23 @@
     </header>
 
     <nav class="main-header">
-      <a href="/datos-sensores" data-section="sensores">DATOS SENSORES</a>
-      <a href="../Predicciones/HistorialEvalu.html" data-section="predicciones"
+      <a
+        href="/datos-sensores"
+        data-section="sensores"
+        id="btn-seccion-datos-sensores"
+        >DATOS SENSORES</a
+      >
+      <a
+        href="/prediccion"
+        data-section="predicciones"
+        id="btn-seccion-predicciones"
         >PREDICCIONES</a
       >
-      <a href="/visualizacion" class="active">VISUALIZACIÓN</a>
-      <a href="../Usuarios" data-section="usuarios">USUARIOS</a>
-      <a href="../Notificaciones" data-section="notificaciones"
+      <a href="/visualizacion" id="btn-seccion-visualizacion" class="active"
+        >VISUALIZACIÓN</a
+      >
+      <a href="" data-section="usuarios" id="btn-seccion-usuarios">USUARIOS</a>
+      <a href="" data-section="notificaciones" id="btn-seccion-notificaciones"
         >NOTIFICACIONES</a
       >
     </nav>
@@ -84,8 +94,7 @@
 
       <main id="main-content" class="content">
         <div class="contenedor-visualizacion">
-          <div class="visualizacion-mapa" id="visualizacion-mapa">
-          </div>
+          <div class="visualizacion-mapa" id="visualizacion-mapa"></div>
 
           <div class="visualizacion-panel">
             <h3>Estación de Monitoreo:</h3>

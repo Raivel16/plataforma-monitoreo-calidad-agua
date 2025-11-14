@@ -20,8 +20,7 @@
     <!-- Estilos CSS  Específicos-->
     <link rel="stylesheet" href="datSensor.css" />
 
-    <script type="module" src="index.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="parametros.js"></script>
   </head>
 
   <body>
@@ -61,31 +60,33 @@
           <button id="home-btn" class="menu-btn">&#9776;</button>
         </div>
         <ul id="listaOpciones">
-          <li class="active">Ingesta de Datos</li>
+          <li data-href="./index.html">Ingesta de Datos</li>
           <li data-href="./FiltroDatos.html">Filtro de Datos</li>
           <li data-href="./Sensores.html">Sensores</li>
-          <li data-href="./Parametros.html">Parámetros</li>
+          <li class="active">Parámetros</li>
         </ul>
       </aside>
       <button id="toggle-btn" class="toggle-btn">&#9776;</button>
 
       <main id="main-content" class="content">
         <div class="contenedor-ingesta">
-          <h2>📊 Ingesta de Datos de Sensores</h2>
+          <h2>Parámetros</h2>
+          <nav class="operaciones">
+            <input
+              id="input-busqueda"
+              type="text"
+              placeholder="Buscar..."
+              class="input-busqueda"
+            />
+            <button id="btn-buscar">Buscar</button>
+          </nav>
           <div class="tabla-container">
-            <table id="tablaSensores">
+            <table id="tablaSensores" class="tbl-parametros">
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Sensor</th>
-                  <th>Descripción</th>
-                  <th>Parámetro</th>
-                  <th>Unidad</th>
-                  <th>Tiempo de Registro</th>
-                  <th>Tiempo de Envío</th>
-                  <th>Valor Original</th>
-                  <th>Valor Procesado</th>
-                  <th>Valor Normalizado</th>
+                  <th>Nombre</th>
+                  <th>Unidad de Medida</th>
                 </tr>
               </thead>
               <tbody>

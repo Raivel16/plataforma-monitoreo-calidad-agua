@@ -16,6 +16,10 @@
 }
 
 .tabla-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   overflow-x: auto;
 }
 
@@ -42,3 +46,102 @@
   background: #f0f8ff;
 }
 
+
+#tablaSensores.tbl-parametros {
+  width: 60%;
+}
+
+
+.filtro-busqueda, .operaciones
+{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  gap: 20px;
+}
+
+.filtro-busqueda input, .operaciones input {
+  max-width: 250px;
+}
+
+
+.btn-agregar{
+  background-color: #608eaa;
+  color: #fff;
+}
+
+
+.col-modificar,
+.col-eliminar {
+  width: 120px;
+  text-align: center;
+}
+
+
+
+/* ----------- MODAL ------------ */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.55);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  width: 420px;
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  animation: fadeIn .3s ease-out;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  text-align: center;
+}
+
+.modal-content label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.modal-content input,
+.modal-content textarea,
+.modal-content select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.cerrar {
+  float: right;
+  font-size: 22px;
+  cursor: pointer;
+  color: #333;
+}
+
+.btn-guardar {
+  width: 100%;
+  margin-top: 15px;
+  background: #0066cc;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-guardar:hover {
+  background: #004c99;
+}

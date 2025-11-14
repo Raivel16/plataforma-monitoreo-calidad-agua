@@ -8,6 +8,9 @@
   color: white;
   position: relative;
 }
+.top-bar h1 {
+  text-align: center;
+}
 
 /* 🔹 Contenedor general del usuario */
 .user-menu {

@@ -63,7 +63,7 @@ export class SensorModelo {
 
   static async obtenerPorId({ id }) {
     const result = await this.obtenerDatos({ SensorID: id });
-    return result;
+    return result[0];
   }
 
   static async crear({
@@ -73,37 +73,71 @@ export class SensorModelo {
     Latitud,
     Longitud,
     Descripcion,
-    EstadoOperativo = true,
   }) {
-    const nuevoSensor = {
-      SensorID: this.sensores.length + 1,
-      Nombre,
-      Modelo,
-      Fabricante,
-      Latitud,
-      Longitud,
-      Descripcion,
-      EstadoOperativo,
-    };
-    this.sensores.push(nuevoSensor);
-    return nuevoSensor;
+    try {
+      const pool = await getConnection();
+      const request = pool.request();
+
+      request.input("Nombre", sql.VarChar(100), Nombre);
+      request.input("Modelo", sql.VarChar(50), Modelo);
+      request.input("Fabricante", sql.VarChar(100), Fabricante);
+      request.input("Latitud", sql.Decimal(9, 6), Latitud);
+      request.input("Longitud", sql.Decimal(9, 6), Longitud);
+      request.input("Descripcion", sql.VarChar(255), Descripcion ?? null);
+
+      const result = await request.execute("sp_InsertarSensor");
+
+      const nuevoId = result.recordset[0]?.NuevoSensorID;
+
+      return {
+        SensorID: nuevoId,
+        Nombre,
+        Modelo,
+        Fabricante,
+        Latitud,
+        Longitud,
+        Descripcion,
+        EstadoOperativo: true, // por defecto según tu SP
+      };
+    } catch (error) {
+      console.error("❌ Error al crear sensor:", error);
+      throw error;
+    }
   }
 
-
-  
   static async actualizar({ id, datos }) {
-    const idx = this.sensores.findIndex((s) => s.SensorID === Number(id));
-    if (idx === -1) return null;
+    try {
+      const pool = await getConnection();
+      const request = pool.request();
 
-    console.log("Datos a actualizar:", datos);
+      // Siempre se envía el ID
+      request.input("SensorID", sql.Int, id);
 
-    this.sensores[idx] = {
-      ...this.sensores[idx],
-      ...datos,
-      SensorID: this.sensores[idx].SensorID,
-    };
+      // Parámetros opcionales
+      request.input("Nombre", sql.VarChar(100), datos.Nombre ?? null);
+      request.input("Modelo", sql.VarChar(50), datos.Modelo ?? null);
+      request.input("Fabricante", sql.VarChar(100), datos.Fabricante ?? null);
+      request.input("Latitud", sql.Decimal(9, 6), datos.Latitud ?? null);
+      request.input("Longitud", sql.Decimal(9, 6), datos.Longitud ?? null);
+      request.input("Descripcion", sql.VarChar(255), datos.Descripcion ?? null);
+      request.input("EstadoOperativo", sql.Bit, datos.EstadoOperativo ?? null);
 
-    return this.sensores[idx];
+      const result = await request.execute("sp_ActualizarSensor");
+
+      // ✔ Solo validar filas afectadas (ya que tu SP no retorna recordsets)
+      if (result.rowsAffected[0] === 0) {
+        return null; // No encontrado
+      }
+
+      // ✔ Se puede devolver manualmente lo que se actualizó
+      return {
+        id,
+        ...datos,
+      };
+    } catch (error) {
+      console.error("❌ Error al actualizar sensor:", error);
+      throw error;
+    }
   }
 
   static async desactivar({ id }) {
