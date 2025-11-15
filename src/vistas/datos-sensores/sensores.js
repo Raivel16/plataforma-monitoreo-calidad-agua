@@ -1,4 +1,4 @@
-import { filtrarDatos, init } from "./tablaGenerica.js";
+import { filtrarDatos, init } from "../util/js/tablaGenerica.js";
 import { inicializar } from "../util/js/inicializar.js";
 
 await inicializar();
@@ -20,7 +20,9 @@ init({
         <td>${s.Fabricante ?? "-"}</td>
         <td>${s.Latitud ?? "-"}</td>
         <td>${s.Longitud ?? "-"}</td>
-        <td>${s.EstadoOperativo ? "Activo" : "Inactivo"}</td>
+        <td data-estadoOperativo="${s.EstadoOperativo}">${
+          s.EstadoOperativoTexto ?? "-"
+        }
         <td>
             <button class="btn-edit" data-id="${s.SensorID}">Modificar</button>
         </td>

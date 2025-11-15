@@ -11,4 +11,14 @@ export class RolesControlador {
     }
   }
 
+  static async obtenerTodosRegistroAdministrativo(req, res) {
+    try {
+      const roles = await RolModelo.obtenerTodosRegistroAdministrativo();
+      res.json(roles);
+    } catch (error) {
+      console.error("Error al obtener roles:", error);
+      res.status(500).json({ error: "Error al obtener roles" });
+    }
+  }
+
 }

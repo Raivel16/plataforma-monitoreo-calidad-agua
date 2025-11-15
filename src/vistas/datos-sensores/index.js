@@ -1,18 +1,12 @@
-// import { init, conectarSocket } from "./datSensor.js";
-// import { inicializar } from "../util/js/inicializar.js";
-
-// init({ apiUrl: "http://localhost:3000/api/datos/ultimos" });
-
-// await inicializar();
-// conectarSocket();
-
-import { init, conectarSocket } from "./tablaGenerica.js";
+import { init, conectarSocket } from "../util/js/tablaGenerica.js";
 import { inicializar } from "../util/js/inicializar.js";
 
 await inicializar();
 
+const apiUrl = "http://localhost:3000/api/datos/ultimos";
+
 init({
-  apiUrl: "http://localhost:3000/api/datos/ultimos",
+  apiUrl,
   selectorTbody: "#tablaSensores tbody",
   mapearFilaFn: (lectura) => `
               <tr>

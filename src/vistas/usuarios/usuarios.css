@@ -7,31 +7,31 @@
   overflow-x: auto;
 }
 
-#tablaSensores {
+#tablaUsuarios {
   width: 100%;
   border-collapse: collapse;
   font-size: 15px;
 }
 
-#tablaSensores th {
+#tablaUsuarios th {
   background: #1f526b;
   color: #fff;
   padding: 10px;
   text-align: center;
 }
 
-#tablaSensores td {
+#tablaUsuarios td {
   border-bottom: 1px solid #ddd;
   text-align: center;
   padding: 8px;
 }
 
-#tablaSensores tr:hover {
+#tablaUsuarios tr:hover {
   background: #f0f8ff;
 }
 
 
-#tablaSensores.tbl-parametros {
+#tablaUsuarios.tbl-parametros {
   width: 60%;
 }
 
@@ -128,4 +128,19 @@
 
 .btn-guardar:hover {
   background: #004c99;
+}
+
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0; /* reemplaza left/top/width/height */
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.55);
+  justify-content: center;
+  align-items: center;
+}
+
+#grupoPassword {
+  margin-top: 10px;
 }

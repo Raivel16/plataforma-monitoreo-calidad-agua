@@ -5,9 +5,7 @@ export const rolesRouter = Router();
 
 // Definir las rutas para roles
 rolesRouter.get("/", RolesControlador.obtenerTodosDesdeUsuario);
-rolesRouter.get("/admin", (req, res) => {
-  res.send("Obtener todos los roles desde el admin");
-});
+rolesRouter.get("/admin", RolesControlador.obtenerTodosRegistroAdministrativo);
 rolesRouter.get("/:id", (req, res) => {
   res.send(`Obtener rol con ID ${req.params.id} desde el usuario`);
 });

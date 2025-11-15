@@ -11,3 +11,65 @@
     padding: 30px;
     background-color: #f4f4f9;
 }
+
+
+
+.contenedor-seccion {
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+
+.contenedor-seccion h2 {
+  color: #1f526b;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 600;
+}
+
+
+/* Contenedor */
+#paginacion {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Botones */
+#paginacion button {
+  background-color: #0b3c5d; /* azul petróleo */
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Hover */
+#paginacion button:hover {
+  background-color: #0e4d77;
+  transform: translateY(-2px);
+}
+
+/* Página actual */
+#paginacion button.activa {
+  background-color: #1b76b9; 
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+/* Deshabilitados */
+#paginacion button:disabled {
+  background-color: #b8c7d1;
+  color: #fff;
+  cursor: not-allowed;
+  box-shadow: none;
+}

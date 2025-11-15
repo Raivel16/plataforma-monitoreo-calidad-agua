@@ -235,41 +235,34 @@ END
 GO
 
 -- 3. Procedimiento para obtener información de todos los sensores con filtro
-CREATE OR ALTER  PROCEDURE sp_ObtenerSensores
-    @EstadoOperativo_Filtro BIT = NULL, -- NULL para todos, 1 para activos, 0 para inactivos
-    @SensorID INT = NULL -- NULL para todos
+
+CREATE OR ALTER PROCEDURE sp_ObtenerSensores
+    @EstadoOperativo_Filtro BIT = NULL, -- NULL para todos
+    @SensorID INT = NULL               -- NULL para todos
 AS
 BEGIN
-    IF @EstadoOperativo_Filtro IS NULL
-        IF @SensorID IS NULL
-            SELECT
-                SensorID, Nombre, Modelo, Fabricante, Latitud, Longitud, Descripcion, EstadoOperativo
-            FROM
-                Sensores
-        ELSE
-            SELECT
-                SensorID, Nombre, Modelo, Fabricante, Latitud, Longitud, Descripcion, EstadoOperativo
-            FROM
-                Sensores
-            WHERE
-                SensorID = @SensorID
-    ELSE IF 
-        IF @SensorID IS NULL
-            SELECT
-                SensorID, Nombre, Modelo, Fabricante, Latitud, Longitud, Descripcion, EstadoOperativo
-            FROM
-                Sensores
-            WHERE
-                EstadoOperativo = @EstadoOperativo_Filtro
-        ELSE
-            SELECT
-                SensorID, Nombre, Modelo, Fabricante, Latitud, Longitud, Descripcion, EstadoOperativo
-            FROM
-                Sensores
-            WHERE
-                SensorID = @SensorID AND EstadoOperativo = @EstadoOperativo_Filtro
-END
+    SET NOCOUNT ON;
+
+    SELECT
+        SensorID,
+        Nombre,
+        Modelo,
+        Fabricante,
+        Latitud,
+        Longitud,
+        Descripcion,
+        EstadoOperativo,
+        CASE 
+            WHEN EstadoOperativo = 1 THEN 'Activo'
+            ELSE 'Inactivo'
+        END AS EstadoOperativoTexto
+    FROM Sensores
+    WHERE
+        (@EstadoOperativo_Filtro IS NULL OR EstadoOperativo = @EstadoOperativo_Filtro)
+        AND (@SensorID IS NULL OR SensorID = @SensorID);
+END;
 GO
+
 
 -- 5. Procedimiento para obtener info de un sensor por el ID
 CREATE OR ALTER  PROCEDURE sp_ObtenerSensorPorID
@@ -496,3 +489,64 @@ BEGIN
 END
 GO
 
+
+
+CREATE OR ALTER PROCEDURE sp_ObtenerUsuarios
+    @UsuarioID INT = NULL,
+    @NombreUsuario VARCHAR(100) = NULL,
+    @RolID INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        u.UsuarioID,
+        u.NombreUsuario,
+        u.Correo,
+        u.Activo,
+        -- Convertimos BIT → texto
+        CASE 
+            WHEN u.Activo = 1 THEN 'Activo'
+            ELSE 'Inactivo'
+        END AS EstadoUsuario,
+
+        r.RolID,
+        r.NombreRol
+    FROM Usuarios u
+    INNER JOIN Roles r ON u.RolID = r.RolID
+    WHERE 
+        (@UsuarioID IS NULL OR u.UsuarioID = @UsuarioID)
+        AND (@NombreUsuario IS NULL OR u.NombreUsuario LIKE '%' + @NombreUsuario + '%')
+        AND (@RolID IS NULL OR r.RolID = @RolID)
+    ORDER BY u.UsuarioID;
+END;
+GO
+
+
+CREATE OR ALTER PROCEDURE sp_ActualizarUsuario
+    @UsuarioID INT,
+    @RolID INT,
+    @ContrasenaHash VARCHAR(255) = NULL, -- Puede venir NULL si no se actualiza
+    @Activo BIT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar que el usuario exista
+    IF NOT EXISTS (SELECT 1 FROM Usuarios WHERE UsuarioID = @UsuarioID)
+    BEGIN
+        RAISERROR('El usuario no existe.', 16, 1);
+        RETURN;
+    END
+
+    -- Actualizar datos
+    UPDATE Usuarios
+    SET 
+        RolID = @RolID,
+        Activo = @Activo,
+        ContrasenaHash = COALESCE(@ContrasenaHash, ContrasenaHash) -- Solo si viene
+    WHERE UsuarioID = @UsuarioID;
+
+    SELECT * FROM Usuarios WHERE UsuarioID = @UsuarioID;
+END
+GO

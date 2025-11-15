@@ -22,11 +22,30 @@ export class UsuarioModelo {
     this.Activo = Activo;
   }
 
-  static async obtenerTodos() {
-    return usuarios;
+  static async obtenerTodos({
+    UsuarioID = null,
+    NombreUsuario = null,
+    RolID = null,
+  } = {}) {
+    try {
+      const pool = await getConnection();
+      const request = pool.request();
+
+      request.input("UsuarioID", sql.Int, UsuarioID);
+      request.input("NombreUsuario", sql.VarChar(100), NombreUsuario);
+      request.input("RolID", sql.Int, RolID);
+
+      const result = await request.execute("sp_ObtenerUsuarios");
+
+      return result.recordset;
+    } catch (error) {
+      console.error("Error en obtenerTodos:", error);
+      throw error;
+    }
   }
+
   static async obtenerPorId({ UsuarioID }) {
-    return usuarios.find((u) => u.UsuarioID === Number(UsuarioID));
+    return UsuarioModelo.obtenerTodos({ UsuarioID });
   }
 
   async verificarDuplicados() {
@@ -93,19 +112,36 @@ export class UsuarioModelo {
   }
 
   static async actualizar({ UsuarioID, datos }) {
-    const idx = usuarios.findIndex((u) => u.UsuarioID === Number(UsuarioID));
-    if (idx === -1) return null;
-
+    console.log("UsuarioID a actualizar:", UsuarioID);
     console.log("Datos a actualizar:", datos);
 
-    usuarios[idx] = {
-      ...usuarios[idx],
-      ...datos,
-      UsuarioID: usuarios[idx].UsuarioID,
-    };
+    try {
+      const pool = await getConnection();
+      const request = pool.request();
 
-    return usuarios[idx];
+      // Si viene contraseña, la encriptamos
+      let contrasenaHash = null;
+      if (datos.Contrasena) {
+        contrasenaHash = await bcrypt.hash(datos.Contrasena, 10);
+      }
+
+      // Mapear parámetros
+      request.input("UsuarioID", sql.Int, UsuarioID);
+      request.input("RolID", sql.Int, datos.RolID);
+      request.input("ContrasenaHash", sql.VarChar(255), contrasenaHash);
+      request.input("Activo", sql.Bit, datos.Activo);
+
+      // Ejecutar SP
+      const result = await request.execute("sp_ActualizarUsuario");
+
+      // Devuelve el usuario actualizado (recordset[0])
+      return result.recordset[0];
+    } catch (error) {
+      console.error("Error al actualizar usuario:", error);
+      throw error;
+    }
   }
+
   static async eliminar({ UsuarioID }) {
     const index = usuarios.findIndex((u) => u.UsuarioID === Number(UsuarioID));
     if (index === -1) return false;

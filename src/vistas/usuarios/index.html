@@ -18,9 +18,9 @@
     <!-- ----------------- -->
 
     <!-- Estilos CSS  Específicos-->
-    <link rel="stylesheet" href="datSensor.css" />
+    <link rel="stylesheet" href="usuarios.css" />
 
-    <script type="module" src="filtro.js"></script>
+    <script type="module" src="usuarios.js"></script>
     <script src="/socket.io/socket.io.js"></script>
   </head>
 
@@ -45,12 +45,12 @@
     </header>
 
     <nav class="main-header">
-      <a href="/datos-sensores" class="active" id="btn-seccion-datos-sensores"
+      <a href="/datos-sensores" id="btn-seccion-datos-sensores"
         >DATOS SENSORES</a
       >
       <a href="/prediccion" id="btn-seccion-predicciones">PREDICCIONES</a>
       <a href="/visualizacion" id="btn-seccion-visualizacion">VISUALIZACIÓN</a>
-      <a href="" id="btn-seccion-usuarios">USUARIOS</a>
+      <a href="" id="btn-seccion-usuarios" class="active">USUARIOS</a>
       <a href="" id="btn-seccion-notificaciones">NOTIFICACIONES</a>
     </nav>
 
@@ -61,17 +61,15 @@
           <button id="home-btn" class="menu-btn">&#9776;</button>
         </div>
         <ul id="listaOpciones">
-          <li data-href="./index.html">Ingesta de Datos</li>
-          <li class="active">Filtro de Datos</li>
-          <li data-href="./Sensores.html">Sensores</li>
-          <li data-href="./Parametros.html">Parámetros</li>
+          <li data-href="./index.html" class="active">Usuarios</li>
+          <li data-href="./roles.html">Roles</li>
         </ul>
       </aside>
       <button id="toggle-btn" class="toggle-btn">&#9776;</button>
 
       <main id="main-content" class="content">
         <div class="contenedor-seccion">
-          <h2>📊 Filtrar Datos de Sensores</h2>
+          <h2>Usuarios</h2>
           <div class="filtro-busqueda">
             <input
               id="input-busqueda"
@@ -80,22 +78,19 @@
               class="input-busqueda"
             />
             <button id="btn-buscar">Buscar</button>
+            <button class="btn-agregar">Agregar</button>
           </div>
 
           <div class="tabla-container">
-            <table id="tablaSensores">
+            <table id="tablaUsuarios">
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Sensor</th>
-                  <th>Descripción</th>
-                  <th>Parámetro</th>
-                  <th>Unidad</th>
-                  <th>Tiempo de Registro</th>
-                  <th>Tiempo de Envío</th>
-                  <th>Valor Original</th>
-                  <th>Valor Procesado</th>
-                  <th>Valor Normalizado</th>
+                  <th>Usuario</th>
+                  <th>Correo</th>
+                  <th>Rol</th>
+                  <th>Estado</th>
+                  <th>Modificar</th>
                 </tr>
               </thead>
               <tbody>
@@ -108,6 +103,53 @@
           </div>
         </div>
       </main>
+    </div>
+
+    <!-- ===========================
+     MODAL AGREGAR / EDITAR USUARIO
+=========================== -->
+    <div id="modalUsuario" class="modal">
+      <div class="modal-content">
+        <span class="cerrar" id="cerrarModal">&times;</span>
+        <h3 id="tituloModal">Agregar Usuario</h3>
+
+        <label for="nombreUsuarioInput">Nombre Usuario</label>
+        <input
+          type="text"
+          id="nombreUsuarioInput"
+          placeholder="Ingrese usuario"
+        />
+
+        <label for="correoInput">Correo</label>
+        <input type="email" id="correoInput" placeholder="correo@ejemplo.com" />
+        
+        <div id="grupoPassword">
+          <label for="passwordInput">Contraseña</label>
+          <input
+            type="password"
+            id="passwordInput"
+            placeholder="Ingrese contraseña"
+          />
+
+          <label for="password2Input">Repetir Contraseña</label>
+          <input
+            type="password"
+            id="password2Input"
+            placeholder="Repita contraseña"
+          />
+        </div>
+
+        <label for="rolInput">Rol</label>
+        <select id="rolInput"></select>
+
+        <label for="estadoInput">Estado</label>
+        <select id="estadoInput">
+          <option value="1">Activo</option>
+          <option value="0">Inactivo</option>
+        </select>
+
+        <button id="btnGuardar" class="btn-guardar">Guardar</button>
+      </div>
     </div>
   </body>
 </html>

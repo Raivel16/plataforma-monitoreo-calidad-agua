@@ -6,9 +6,7 @@ import {
   validarParcialDatosUsuario,
 } from "../schemas/usuario.js";
 
-
 import { procesarRegistroUsuario } from "../utils/procesarRegistroUsuario.js";
-
 
 function verificarRolID({ req, id }) {
   // Descomentar cuando se pruebe el fetch en la vista
@@ -72,6 +70,8 @@ export class UsuarioControlador {
     try {
       const { id } = req.params;
 
+      console.log(req.body);
+
       if (!verificarRolID({ req, id }))
         return res
           .status(404)
@@ -79,6 +79,7 @@ export class UsuarioControlador {
 
       const datosActualizados = validarParcialDatosUsuario(req.body);
 
+      
       if (!datosActualizados.success) {
         const zodError = datosActualizados.error;
         const issues = zodError.issues || zodError.errors || [];
@@ -91,7 +92,7 @@ export class UsuarioControlador {
       }
 
       const usuario = await UsuarioModelo.actualizar({
-        UsuarioID: id,
+        UsuarioID: Number(id),
         datos: datosActualizados.data,
       });
 

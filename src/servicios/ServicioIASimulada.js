@@ -38,8 +38,6 @@ export class ServicioIASimulada {
 
     // Recorremos los datos recientes
     for (const d of ultimos) {
-      console.log("Procesando dato:", d);
-
       // Soporte flexible: acepta ParametroID o "parametroId" o incluso clave numérica
       const parametroID = d.ParametroID ?? d.parametroId ?? Object.keys(d)[0];
       const valor = d.Valor_procesado ?? d.valorProcesado ?? d[parametroID];

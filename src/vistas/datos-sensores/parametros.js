@@ -1,4 +1,4 @@
-import { filtrarDatos, init } from "./tablaGenerica.js";
+import { filtrarDatos, init } from "../util/js/tablaGenerica.js";
 import { inicializar } from "../util/js/inicializar.js";
 
 await inicializar();
@@ -6,7 +6,7 @@ await inicializar();
 const apiUrl = "http://localhost:3000/api/parametros/";
 
 init({
-  apiUrl: apiUrl,
+  apiUrl,
   selectorTbody: "#tablaSensores tbody",
   mapearFilaFn: (lectura) => `
               <tr>
