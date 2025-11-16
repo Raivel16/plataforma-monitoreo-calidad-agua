@@ -12,6 +12,7 @@ import { sensoresRouter } from "./api/sensores.js";
 import { umbralesAlertasRouter } from "./api/umbralesAlertas.js";
 import { usuariosRouter } from "./api/usuarios.js";
 import { authRouter } from "./api/auth.js";
+import { verificarPermiso } from "../middlewares/auth.js";
 
 export const apiRouter = (io) => {
   const router = Router();
@@ -23,7 +24,7 @@ export const apiRouter = (io) => {
   // Montar el sub-router de sensores en /sensores
   router.use("/alertas", alertasUsuariosRouter);
   router.use("/anomalias", anomaliasRouter);
-  router.use("/datos", datosSensoresRouter(io));
+  router.use("/datos", verificarPermiso(3), datosSensoresRouter(io));
   router.use("/parametros", parametrosRouter);
   router.use("/predicciones", prediccionesRouter);
   router.use("/registrosAlertas", registrosAlertasRouter);

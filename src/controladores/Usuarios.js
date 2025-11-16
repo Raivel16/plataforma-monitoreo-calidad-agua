@@ -8,13 +8,6 @@ import {
 
 import { procesarRegistroUsuario } from "../utils/procesarRegistroUsuario.js";
 
-function verificarRolID({ req, id }) {
-  // Descomentar cuando se pruebe el fetch en la vista
-  // const UsuarioLogeado = req.session?.usuario?.RolID ?? -1;
-  // if (UsuarioLogeado != id && UsuarioLogeado != 1) return false;
-  return true;
-}
-
 export class UsuarioControlador {
   static async obtenerTodos(req, res) {
     try {
@@ -29,11 +22,6 @@ export class UsuarioControlador {
   static async obtenerPorId(req, res) {
     try {
       const { id } = req.params;
-
-      if (!verificarRolID({ req, id }))
-        return res
-          .status(404)
-          .json({ error: "No tiene permitido buscar datos de otros usuarios" });
 
       const usuario = await UsuarioModelo.obtenerPorId({ UsuarioID: id });
 
@@ -72,10 +60,6 @@ export class UsuarioControlador {
 
       console.log(req.body);
 
-      if (!verificarRolID({ req, id }))
-        return res
-          .status(404)
-          .json({ error: "No tiene permitido actualizar otro usuario." });
 
       const datosActualizados = validarParcialDatosUsuario(req.body);
 
@@ -110,10 +94,6 @@ export class UsuarioControlador {
   static async eliminar(req, res) {
     try {
       const { id } = req.params;
-      if (!verificarRolID({ req, id }))
-        return res
-          .status(404)
-          .json({ error: "No tiene permitido eliminar otro usuario." });
 
       const eliminado = await UsuarioModelo.eliminar({ UsuarioID: id });
 

@@ -22,13 +22,14 @@ export function verificarSesion(req, res, next) {
   next();
 }
 
-// arreglar
-export function verificarRol(rolesPermitidos = []) {
+export function verificarPermiso(nivelMinimo) {
   return (req, res, next) => {
-    // Si la petición es a la API (ruta que comienza con /api) devolvemos JSON
-    const isApi = req.path && req.path.startsWith("/api");
+    const isApi =
+      req.path && req.path.startsWith("/api");
 
-    if (!req.session.usuario) {
+    const usuario = req.session.usuario;
+
+    if (!usuario) {
       if (
         isApi ||
         req.xhr ||
@@ -39,19 +40,18 @@ export function verificarRol(rolesPermitidos = []) {
       return res.redirect("/");
     }
 
-    if (!rolesPermitidos.includes(req.session.usuario.RolID)) {
+    const nivel = usuario.NivelPermiso;
+
+    if (nivel < nivelMinimo) {
       if (
         isApi ||
         req.xhr ||
         req.headers.accept?.includes("application/json")
       ) {
         return res.status(403).json({
-          error: `Acceso denegado. Se requiere uno de los roles: ${rolesPermitidos.join(
-            ", "
-          )}`,
+          error: `Acceso denegado. Se requiere nivel ${nivelMinimo} o superior.`,
         });
       }
-      // Si es una petición de navegador HTML, redirigir a la vista pública
       return res.redirect("/visualizacion");
     }
 

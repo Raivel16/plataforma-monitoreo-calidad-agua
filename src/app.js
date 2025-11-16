@@ -3,7 +3,7 @@ import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
 import { corsMiddleware } from "./middlewares/cors.js"; // ✅ importa aquí
-import { verificarSesion, verificarRol } from "./middlewares/auth.js";
+import { verificarSesion, verificarPermiso } from "./middlewares/auth.js";
 import cookieParser from "cookie-parser";
 import fs from "node:fs";
 
@@ -23,8 +23,19 @@ app.use(cookieParser());
 app.use(verificarSesion);
 app.use(morgan("dev"));
 
+
+
+app.get("/datos-sensores/sensores.html", verificarPermiso(4), (req, res) => {
+  res.sendFile(path.join(__dirname, "vistas", "datos-sensores", "sensores.html"));
+});
+
+app.get("/datos-sensores/parametros.html", verificarPermiso(4), (req, res) => {
+  res.sendFile(path.join(__dirname, "vistas", "datos-sensores", "parametros.html"));
+});
+
+
 // 📂 Rutas protegidas (deben montarse antes de servir archivos estáticos)
-app.use("/datos-sensores", verificarRol([1, 2]), (req, res) => {
+app.use("/datos-sensores", verificarPermiso(3), (req, res) => {
 
   // 🔹 Redirigir si falta la barra final (para que carguen bien los CSS/JS)
   if (req.originalUrl === "/datos-sensores") {
@@ -42,6 +53,12 @@ app.use("/datos-sensores", verificarRol([1, 2]), (req, res) => {
 
   res.sendFile(rutaArchivo);
 });
+
+
+
+
+
+
 
 // 📂 Rutas estáticas públicas (montar después de rutas protegidas para evitar bypass)
 app.use("/", express.static(path.join(__dirname, "vistas")));

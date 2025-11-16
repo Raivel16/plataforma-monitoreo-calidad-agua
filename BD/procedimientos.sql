@@ -2,6 +2,7 @@ USE MonitoreoAguaJunin;
 GO
 
 
+--DATOS SENSORES
 GO
 CREATE VIEW vw_DatosSensores_Detalle AS
 SELECT 
@@ -120,6 +121,8 @@ BEGIN
 END
 GO
 
+--PARAMETROS
+
 CREATE OR ALTER PROCEDURE sp_ObtenerParametros
 AS
 BEGIN
@@ -131,6 +134,7 @@ END
 GO
 
 
+--USUARIOS
 -- 15. Procedimiento para buscar usuario por su nombre (para gestión)
 CREATE OR ALTER  PROCEDURE sp_BuscarUsuarioPorNombre
     @NombreUsuario_Filtro VARCHAR(100)
@@ -163,6 +167,67 @@ END;
 
 
 
+CREATE OR ALTER PROCEDURE sp_ObtenerUsuarios
+    @UsuarioID INT = NULL,
+    @NombreUsuario VARCHAR(100) = NULL,
+    @RolID INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        u.UsuarioID,
+        u.NombreUsuario,
+        u.Correo,
+        u.Activo,
+        -- Convertimos BIT → texto
+        CASE 
+            WHEN u.Activo = 1 THEN 'Activo'
+            ELSE 'Inactivo'
+        END AS EstadoUsuario,
+
+        r.RolID,
+        r.NombreRol
+    FROM Usuarios u
+    INNER JOIN Roles r ON u.RolID = r.RolID
+    WHERE 
+        (@UsuarioID IS NULL OR u.UsuarioID = @UsuarioID)
+        AND (@NombreUsuario IS NULL OR u.NombreUsuario LIKE '%' + @NombreUsuario + '%')
+        AND (@RolID IS NULL OR r.RolID = @RolID)
+    ORDER BY u.UsuarioID;
+END;
+GO
+
+
+CREATE OR ALTER PROCEDURE sp_ActualizarUsuario
+    @UsuarioID INT,
+    @RolID INT,
+    @ContrasenaHash VARCHAR(255) = NULL, -- Puede venir NULL si no se actualiza
+    @Activo BIT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar que el usuario exista
+    IF NOT EXISTS (SELECT 1 FROM Usuarios WHERE UsuarioID = @UsuarioID)
+    BEGIN
+        RAISERROR('El usuario no existe.', 16, 1);
+        RETURN;
+    END
+
+    -- Actualizar datos
+    UPDATE Usuarios
+    SET 
+        RolID = @RolID,
+        Activo = @Activo,
+        ContrasenaHash = COALESCE(@ContrasenaHash, ContrasenaHash) -- Solo si viene
+    WHERE UsuarioID = @UsuarioID;
+
+    SELECT * FROM Usuarios WHERE UsuarioID = @UsuarioID;
+END
+GO
+
+
 
 -- 16. Procedimiento para insertar un Usuario (solo para administradores)
 CREATE OR ALTER  PROCEDURE sp_InsertarUsuario
@@ -180,59 +245,28 @@ END
 GO
 
 -- 17. Procedimiento para buscar un usuario para autenticación (devuelve hash y nombre)
-CREATE OR ALTER  PROCEDURE sp_AutenticarUsuario
+CREATE OR ALTER PROCEDURE sp_AutenticarUsuario
     @NombreUsuario VARCHAR(100)
 AS
 BEGIN
-    SELECT
-        ContrasenaHash, NombreUsuario, Correom, Activo, RolID
-    FROM
-        Usuarios
-    WHERE
-        NombreUsuario = @NombreUsuario;
+    SELECT 
+        U.UsuarioID,
+        U.NombreUsuario,
+        U.Correo,
+        U.ContrasenaHash,
+        U.Activo,
+
+        R.RolID,
+        R.NombreRol,
+        R.NivelPermiso   -- ⬅️ Nuevo campo para seguridad basada en permisos
+
+    FROM Usuarios U
+    INNER JOIN Roles R ON U.RolID = R.RolID
+    WHERE U.NombreUsuario = @NombreUsuario;
 END
 GO
 
-CREATE OR ALTER PROCEDURE sp_ObtenerRolesRegistroAdministrativo
-@RolID INT = NULL
-AS
-BEGIN
-    IF @RolID IS NULL
-        SELECT
-            RolID, NombreRol
-        FROM
-            Roles
-    ELSE
-        SELECT
-            RolID, NombreRol
-        FROM
-            Roles
-        WHERE
-            RolID = @RolID
-END
-
-GO
-
-CREATE OR ALTER PROCEDURE sp_ObtenerRolesRegistroUsuario
-@RolID INT = NULL
-AS
-BEGIN
-        IF @RolID IS NULL
-            SELECT
-                RolID, NombreRol
-            FROM
-                Roles
-                WHERE RolID <> 1
-        ELSE
-            SELECT
-                RolID, NombreRol
-            FROM
-                Roles
-            WHERE
-                RolID = @RolID AND RolID <> 1
-END
-
-GO
+--SENSORES
 
 -- 3. Procedimiento para obtener información de todos los sensores con filtro
 
@@ -363,6 +397,13 @@ BEGIN
 END
 GO
 
+
+
+
+
+
+--PREDICCIONES y ANOMALIAS
+
 -- 8. Procedimiento para obtener todas las predicciones con filtro
 CREATE OR ALTER  PROCEDURE sp_ObtenerPredicciones
     @SensorID_Filtro INT = NULL,
@@ -491,62 +532,102 @@ GO
 
 
 
-CREATE OR ALTER PROCEDURE sp_ObtenerUsuarios
-    @UsuarioID INT = NULL,
-    @NombreUsuario VARCHAR(100) = NULL,
+
+
+
+--ROLES
+
+
+CREATE OR ALTER PROCEDURE sp_ObtenerRolesRegistroAdministrativo
     @RolID INT = NULL
 AS
 BEGIN
-    SET NOCOUNT ON;
-
-    SELECT 
-        u.UsuarioID,
-        u.NombreUsuario,
-        u.Correo,
-        u.Activo,
-        -- Convertimos BIT → texto
-        CASE 
-            WHEN u.Activo = 1 THEN 'Activo'
-            ELSE 'Inactivo'
-        END AS EstadoUsuario,
-
-        r.RolID,
-        r.NombreRol
-    FROM Usuarios u
-    INNER JOIN Roles r ON u.RolID = r.RolID
-    WHERE 
-        (@UsuarioID IS NULL OR u.UsuarioID = @UsuarioID)
-        AND (@NombreUsuario IS NULL OR u.NombreUsuario LIKE '%' + @NombreUsuario + '%')
-        AND (@RolID IS NULL OR r.RolID = @RolID)
-    ORDER BY u.UsuarioID;
-END;
+    IF @RolID IS NULL
+        SELECT RolID, NombreRol, EsInterno, NivelPermiso
+        FROM Roles;
+    ELSE
+        SELECT RolID, NombreRol, EsInterno, NivelPermiso
+        FROM Roles
+        WHERE RolID = @RolID;
+END
 GO
 
 
-CREATE OR ALTER PROCEDURE sp_ActualizarUsuario
-    @UsuarioID INT,
-    @RolID INT,
-    @ContrasenaHash VARCHAR(255) = NULL, -- Puede venir NULL si no se actualiza
-    @Activo BIT
+
+
+CREATE OR ALTER PROCEDURE sp_ObtenerRolesRegistroUsuario
+    @RolID INT = NULL
+AS
+BEGIN
+    IF @RolID IS NULL
+        SELECT RolID, NombreRol, EsInterno, NivelPermiso
+        FROM Roles
+        WHERE EsInterno = 0;
+    ELSE
+        SELECT RolID, NombreRol, EsInterno, NivelPermiso
+        FROM Roles
+        WHERE RolID = @RolID AND EsInterno = 0;
+END
+
+
+GO
+
+CREATE OR ALTER PROCEDURE sp_InsertarRol
+    @NombreRol      VARCHAR(50),
+    @EsInterno      BIT       = 0,
+    @NivelPermiso   INT       = 1
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validar que el usuario exista
-    IF NOT EXISTS (SELECT 1 FROM Usuarios WHERE UsuarioID = @UsuarioID)
+    -- Validar nombre repetido
+    IF EXISTS (SELECT 1 FROM Roles WHERE NombreRol = @NombreRol)
     BEGIN
-        RAISERROR('El usuario no existe.', 16, 1);
+        RAISERROR('El nombre del rol ya existe.', 16, 1);
         RETURN;
     END
 
-    -- Actualizar datos
-    UPDATE Usuarios
-    SET 
-        RolID = @RolID,
-        Activo = @Activo,
-        ContrasenaHash = COALESCE(@ContrasenaHash, ContrasenaHash) -- Solo si viene
-    WHERE UsuarioID = @UsuarioID;
+    INSERT INTO Roles (NombreRol, EsInterno, NivelPermiso)
+    VALUES (@NombreRol, @EsInterno, @NivelPermiso);
 
-    SELECT * FROM Usuarios WHERE UsuarioID = @UsuarioID;
+    SELECT SCOPE_IDENTITY() AS NuevoRolID;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_ModificarRol
+    @RolID          INT,
+    @NombreRol      VARCHAR(50) = NULL,
+    @EsInterno      BIT         = NULL,
+    @NivelPermiso   INT         = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar que el rol exista
+    IF NOT EXISTS (SELECT 1 FROM Roles WHERE RolID = @RolID)
+    BEGIN
+        RAISERROR('El RolID no existe.', 16, 1);
+        RETURN;
+    END
+
+    -- Validar nombre repetido (si se desea actualizar)
+    IF @NombreRol IS NOT NULL AND EXISTS (
+        SELECT 1
+        FROM Roles
+        WHERE NombreRol = @NombreRol AND RolID <> @RolID
+    )
+    BEGIN
+        RAISERROR('El nombre del rol ya está en uso.', 16, 1);
+        RETURN;
+    END
+
+    UPDATE Roles
+    SET 
+        NombreRol    = ISNULL(@NombreRol, NombreRol),
+        EsInterno    = ISNULL(@EsInterno, EsInterno),
+        NivelPermiso = ISNULL(@NivelPermiso, NivelPermiso)
+    WHERE RolID = @RolID;
+
+    SELECT 'OK' AS Resultado;
 END
 GO

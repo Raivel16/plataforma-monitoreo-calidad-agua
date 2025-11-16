@@ -1,5 +1,5 @@
 import { init, conectarSocket } from "../util/js/tablaGenerica.js";
-import { inicializar } from "../util/js/inicializar.js";
+import { inicializar, ocultarSubSeccionesDatosSensores } from "../util/js/inicializar.js";
 
 await inicializar();
 
@@ -29,3 +29,5 @@ init({
 });
 
 conectarSocket();
+
+ocultarSubSeccionesDatosSensores();

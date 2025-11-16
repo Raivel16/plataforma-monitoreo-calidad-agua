@@ -43,6 +43,7 @@ export class AuthModelo {
         RolID: usuario.RolID,
         NombreUsuario: usuario.NombreUsuario,
         Correo: usuario.Correo,
+        NivelPermiso: usuario.NivelPermiso,
       };
     } catch (error) {
       console.error("Error durante la autenticación:", error);

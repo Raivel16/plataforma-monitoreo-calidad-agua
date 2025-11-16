@@ -1,5 +1,5 @@
 import { filtrarDatos, init } from "../util/js/tablaGenerica.js";
-import { inicializar } from "../util/js/inicializar.js";
+import { inicializar, ocultarSubSeccionesDatosSensores } from "../util/js/inicializar.js";
 
 await inicializar();
 
@@ -161,3 +161,5 @@ document.getElementById("btn-buscar").addEventListener("click", async () => {
   const filtro = document.getElementById("input-busqueda").value.trim();
   await filtrarDatos(filtro, apiUrl);
 });
+
+ocultarSubSeccionesDatosSensores();

@@ -6,11 +6,9 @@ import { validarDatosLogin } from "../schemas/auth.js";
 
 import { formatZodError } from "../utils/formatZodError.js";
 
-
 import dotenv from "dotenv";
 
 dotenv.config();
-
 
 export class AuthControlador {
   static async login(req, res) {
@@ -34,7 +32,8 @@ export class AuthControlador {
           UsuarioID: user.UsuarioID,
           RolID: user.RolID,
           NombreUsuario: user.NombreUsuario,
-          Correo: user.Correo
+          Correo: user.Correo,
+          NivelPermiso: user.NivelPermiso,
         },
         process.env.SECRET_JWT_KEY,
         { expiresIn: "1h" }
@@ -49,13 +48,12 @@ export class AuthControlador {
         })
         .json(user);
     } catch (error) {
-      console.log(error.message)
+      console.log(error.message);
       return res
         .status(500)
         .json({ mensaje: "Error del servidor", error: error.message });
     }
   }
-
 
   static logout(req, res) {
     res.clearCookie("access_token");
@@ -69,6 +67,7 @@ export class AuthControlador {
       NombreUsuario: req.session.usuario.NombreUsuario,
       UsuarioID: req.session.usuario.UsuarioID,
       RolID: req.session.usuario.RolID,
+      NivelPermiso: req.session.usuario.NivelPermiso,
     });
   }
 }

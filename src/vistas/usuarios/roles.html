@@ -18,9 +18,9 @@
     <!-- ----------------- -->
 
     <!-- Estilos CSS  Específicos-->
-    <link rel="stylesheet" href="datSensor.css" />
+    <link rel="stylesheet" href="usuarios.css" />
 
-    <script type="module" src="index.js"></script>
+    <script type="module" src="roles.js"></script>
     <script src="/socket.io/socket.io.js"></script>
   </head>
 
@@ -45,12 +45,12 @@
     </header>
 
     <nav class="main-header">
-      <a href="/datos-sensores" class="active" id="btn-seccion-datos-sensores"
+      <a href="/datos-sensores" id="btn-seccion-datos-sensores"
         >DATOS SENSORES</a
       >
       <a href="/prediccion" id="btn-seccion-predicciones">PREDICCIONES</a>
       <a href="/visualizacion" id="btn-seccion-visualizacion">VISUALIZACIÓN</a>
-      <a href="/usuarios" id="btn-seccion-usuarios">USUARIOS</a>
+      <a href="" id="btn-seccion-usuarios" class="active">USUARIOS</a>
       <a href="" id="btn-seccion-notificaciones">NOTIFICACIONES</a>
     </nav>
 
@@ -61,31 +61,35 @@
           <button id="home-btn" class="menu-btn">&#9776;</button>
         </div>
         <ul id="listaOpciones">
-          <li id="btn-subseccion-ingesta"    class="active">Ingesta de Datos</li>
-          <li id="btn-subseccion-filtro"     data-href="./filtroDatos.html">Filtro de Datos</li>
-          <li id="btn-subseccion-sensores"   data-href="./sensores.html">Sensores</li>
-          <li id="btn-subseccion-parametros" data-href="./parametros.html">Parámetros</li>
+          <li data-href="./index.html">Usuarios</li>
+          <li data-href="./roles.html" class="active">Roles</li>
         </ul>
       </aside>
       <button id="toggle-btn" class="toggle-btn">&#9776;</button>
 
       <main id="main-content" class="content">
         <div class="contenedor-seccion">
-          <h2>📊 Ingesta de Datos de Sensores</h2>
+          <h2>Roles</h2>
+          <div class="filtro-busqueda">
+            <input
+              id="input-busqueda"
+              type="text"
+              placeholder="Buscar..."
+              class="input-busqueda"
+            />
+            <button id="btn-buscar">Buscar</button>
+            <button class="btn-agregar">Agregar</button>
+          </div>
+
           <div class="tabla-container">
-            <table id="tablaSensores">
+            <table id="tablaUsuarios">
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Sensor</th>
-                  <th>Descripción</th>
-                  <th>Parámetro</th>
-                  <th>Unidad</th>
-                  <th>Tiempo de Registro</th>
-                  <th>Tiempo de Envío</th>
-                  <th>Valor Original</th>
-                  <th>Valor Procesado</th>
-                  <th>Valor Normalizado</th>
+                  <th>Rol</th>
+                  <th>Rol Interno</th>
+                  <th>Nivel de Permiso</th>
+                  <th>Modificar</th>
                 </tr>
               </thead>
               <tbody>
@@ -98,6 +102,37 @@
           </div>
         </div>
       </main>
+    </div>
+
+    <!-- ================== MODAL ================== -->
+    <div id="modalRol" class="modal">
+      <div class="modal-content">
+        <span class="cerrar" id="cerrarModal">&times;</span>
+        <h3 id="tituloModal">Nuevo Rol</h3>
+
+        <label>Nombre del Rol</label>
+        <input
+          type="text"
+          id="inputNombreRol"
+          placeholder="Ej: Administrador"
+        />
+
+        <label>Es Interno</label>
+        <select id="inputEsInterno">
+          <option value="1">Sí (Interno)</option>
+          <option value="0">No (Externo)</option>
+        </select>
+
+        <label>Nivel de Permiso</label>
+        <select id="inputNivelPermiso">
+          <option value="1">1 - Básico</option>
+          <option value="2">2 - Medio</option>
+          <option value="3">3 - Avanzado</option>
+          <option value="4">4 - Administrador</option>
+        </select>
+
+        <button class="btn-guardar" id="btnGuardarRol">Guardar</button>
+      </div>
     </div>
   </body>
 </html>

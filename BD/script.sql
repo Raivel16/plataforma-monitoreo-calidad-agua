@@ -34,8 +34,11 @@ END
     -- 2.1. TABLA ROLES
     CREATE TABLE Roles (
         RolID INT PRIMARY KEY IDENTITY(1,1),
-        NombreRol VARCHAR(50) NOT NULL UNIQUE
+        NombreRol VARCHAR(50) NOT NULL UNIQUE,
+        EsInterno BIT NOT NULL DEFAULT 0, -- TRUE=Interno, FALSE=Externo
+        NivelPermiso INT NOT NULL DEFAULT 1 -- (1,2,3,4)
     );
+
 
     -- 2.2. TABLA USUARIOS (HU011 - Acceso Seguro)
     CREATE TABLE Usuarios (
@@ -138,10 +141,9 @@ END
     -- ==============================================================================
 
     -- Roles (HU011)
-    INSERT INTO Roles (NombreRol) VALUES ('Gestor ANA'); -- 1
-    INSERT INTO Roles (NombreRol) VALUES ('Investigador'); -- 2
-    INSERT INTO Roles (NombreRol) VALUES ('Público General'); -- 3
-
+    INSERT INTO Roles (NombreRol, EsInterno, NivelPermiso) VALUES ('Gestor ANA', 1, 4);
+    INSERT INTO Roles (NombreRol, EsInterno, NivelPermiso) VALUES ('Investigador', 0, 3);
+    INSERT INTO Roles (NombreRol, EsInterno, NivelPermiso) VALUES ('Público General', 0, 2);
     -- Parámetros (RF1.1)
     INSERT INTO Parametros (NombreParametro, UnidadMedida) VALUES ('pH', 'Unidad');
     INSERT INTO Parametros (NombreParametro, UnidadMedida) VALUES ('Turbidez', 'NTU');

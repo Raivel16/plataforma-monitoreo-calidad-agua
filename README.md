@@ -3,18 +3,19 @@ Proyecto del curso de Diseño de Software.
 
 
 
-- [ ] Seccion de usuarios
-- Implementar de usuarios
-  - Listar usuarios
-  - Crear usuario (verificar en vista si aparecen los usuarios segun el rol unicamente debe aparecer cierto tipo de rol corregir de alguna forma los procedimientos almacenados que validan o responden eso)
-  - Modificar usuario (ver si hay algun campo de desabilitar)
+- [x] Seccion de usuarios
+- [x] Implementar de usuarios
+  - [x] Listar usuarios
+  - [x] Crear usuario
+  - [x] Modificar usuario (ver si hay algun campo de desabilitar)
   
-- Implementar de Roles 
-  - añadir roles 
-  - Modificar roles
-  - Listar roles
-  - Implementar de alguna forma el nivel de permisos y que el backend verifique por el nivel y no el rol
-  -  Nivel de permisos
+- [x] Implementar de Roles 
+- [x] (verificar en vista si aparecen los usuarios segun el rol unicamente debe aparecer cierto tipo de rol corregir de alguna forma los procedimientos almacenados que validan o responden eso)
+  - [x] añadir roles  
+  - [x] Modificar roles
+  - [x] Listar roles
+  - [x] Implementar de alguna forma el nivel de permisos y que el backend verifique por el nivel y no el rol
+  -  [x] Nivel de permisos
      -  muy bajo: solo visualizacion y prediccion
      -  bajo: solo visualizacion, prediccion acceso a notificaciones
      -  medio: solo visualizacion, prediccion, notificaciones, Datos Sensores (solo filtro (renombrar por Datos), poner de primero filtro ingesta de segundo)
