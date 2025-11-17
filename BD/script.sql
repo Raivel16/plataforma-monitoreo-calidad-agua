@@ -77,6 +77,20 @@ END
         EstadoOperativo BIT NOT NULL DEFAULT 1 -- 1=Activo, 0=Inactivo/Error (Booleano)
     );
 
+        -- 1) Tabla para estado de sensores (consecutivas anomalias)
+    IF OBJECT_ID('SensorEstados') IS NULL
+    BEGIN
+    CREATE TABLE SensorEstados (
+    SensorID INT NOT NULL,
+    ParametroID INT NOT NULL,
+    ConsecutivasAnomalias INT NOT NULL DEFAULT 0,
+    UltimaAnomalia DATETIME2 NULL,
+    EstadoSensor VARCHAR(20) NOT NULL DEFAULT 'NORMAL', -- NORMAL, POSIBLE_DANADO, DANADO
+    CONSTRAINT PK_SensorEstados PRIMARY KEY (SensorID, ParametroID)
+    );
+    END
+    GO
+
     -- 3.2. TABLA DATOSSENSORES (Modificada de Lecturas - HU003, HU002)
     CREATE TABLE DatosSensores (
         DatoID BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -175,4 +189,6 @@ END
 
 -- Insertando Usuarios
 INSERT INTO Usuarios (RolID, NombreUsuario, Correo, ContrasenaHash, Activo) VALUES(1, 'admin', 'raivellorenzo.valiente@gmail.com', '$2a$10$veZ8cibHpGfDLgmEAinXcu6gQDOg.5iU3B4C/DFfx4jm8dnuxsLEC', 1)
+
+
 

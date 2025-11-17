@@ -37,7 +37,7 @@ PRINT 'Permisos de ejecución otorgados.';
 GO
 
 -- Procedimiento de prueba de conexión
-CREATE OR ALTER PROCEDURE sp_TestConexion
+CREATE PROCEDURE sp_TestConexion
 AS
 BEGIN
   PRINT 'Conexión exitosa';
