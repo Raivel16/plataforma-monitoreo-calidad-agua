@@ -112,22 +112,22 @@ END
     -- 4.2. TABLA REGISTROALERTAS (HU010, HU014 - Trazabilidad de Alertas)
     CREATE TABLE RegistroAlertas (
         RegistroAlertaID BIGINT PRIMARY KEY IDENTITY(1,1),
-        UmbralID INT NOT NULL FOREIGN KEY REFERENCES UmbralesAlerta(UmbralID),
-        LecturaID BIGINT NOT NULL FOREIGN KEY REFERENCES DatosSensores(DatoID), -- Dato que causó la alerta
+        UmbralID INT NULL FOREIGN KEY REFERENCES UmbralesAlerta(UmbralID),
+        DatoID BIGINT NOT NULL FOREIGN KEY REFERENCES DatosSensores(DatoID), -- Dato que causó la alerta
         FechaHoraAlerta DATETIME2 NOT NULL,
-        EstadoNotificacion VARCHAR(50) NOT NULL -- Ej: 'ENVIADO_ANA', 'ENVIADO_SATE', 'PENDIENTE'
+        EstadoNotificacion VARCHAR(50) NOT NULL -- Ej: 'Pendiente', 'Enviado', 'Error'
     );
 
-    -- 4.3. TABLA PREDICCIONES (HU004, HU006 - Resultados de IA)
-    CREATE TABLE Predicciones (
-        PrediccionID BIGINT PRIMARY KEY IDENTITY(1,1),
-        Ubicacion varchar(50) NOT NULL,
-        FechaHoraPrediccion DATETIME2 NOT NULL, -- Momento futuro de la predicción
-        ValorPredicho VARCHAR(50), -- Ej: 'BUENO', 'MALO'
-        ProbabilidadRiesgo DECIMAL(5,2) -- Probabilidad asociada al riesgo (0.00 a 100.00)
+    CREATE TABLE AlertasUsuarios (
+        AlertaUsuarioID BIGINT PRIMARY KEY IDENTITY(1,1),
+        RegistroAlertaID BIGINT NOT NULL FOREIGN KEY REFERENCES RegistroAlertas(RegistroAlertaID),
+        UsuarioID INT NOT NULL FOREIGN KEY REFERENCES Usuarios(UsuarioID),
+        FechaEnvio DATETIME2 NOT NULL,
+        FechaRevisión DATETIME2 NULL,
+        EstadoAlerta VARCHAR(50) NOT NULL -- Ej: 'Pendiente', 'Revisada', 'Atendida'
     );
 
-    CREATE TABLE Anomalias(
+     CREATE TABLE Anomalias(
         AnomaliaID BIGINT PRIMARY KEY IDENTITY(1,1),
         DatoID BIGINT NOT NULL FOREIGN KEY REFERENCES DatosSensores(DatoID),
         Tipo VARCHAR(50) NOT NULL,
@@ -136,6 +136,17 @@ END
         Estado BIT NOT NULL DEFAULT 1
     );
 
+
+    -- 4.3. TABLA PREDICCIONES (HU004, HU006 - Resultados de IA)
+    CREATE TABLE Predicciones (
+        PrediccionID BIGINT PRIMARY KEY IDENTITY(1,1),
+        SensorID INT NOT NULL FOREIGN KEY REFERENCES Sensores(SensorID),
+        FechaHoraPrediccion DATETIME2 NOT NULL, -- Momento futuro de la predicción
+        ValorPredicho VARCHAR(50), -- Ej: 'BUENO', 'MALO'
+        ProbabilidadRiesgo DECIMAL(5,2) -- Probabilidad asociada al riesgo (0.00 a 100.00)
+    );
+
+   
     -- ==============================================================================
     -- 5. INSERCIÓN DE DATOS INICIALES (Mínimo para roles y parámetros)
     -- ==============================================================================

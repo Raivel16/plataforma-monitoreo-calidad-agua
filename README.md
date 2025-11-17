@@ -27,7 +27,7 @@ Proyecto del curso de Diseño de Software.
 
 - [ ] Seccion de visualizacion
 - Cambiar que se mida la calidad del agua con ultimos 5 datos no solo 1.
-- 
+
 
 - [ ] Seccion de notificaciones
 - Implementar de notificaciones
