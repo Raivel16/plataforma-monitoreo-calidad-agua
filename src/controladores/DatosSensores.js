@@ -79,6 +79,8 @@ export class DatosSensoresControlador {
     try {
       const nuevaLectura = req.body;
 
+      console.log(nuevaLectura);
+
       // Validar campos mínimos
       if (!nuevaLectura.ParametroID || !nuevaLectura.valor) {
         return res
