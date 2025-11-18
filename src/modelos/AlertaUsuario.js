@@ -2,7 +2,7 @@
 import { getConnection } from "../config/db_sqlserver.js";
 import sql from "mssql";
 
-export class AlertaModelo {
+export class AlertaUsuarioModelo {
    static async obtenerPendientesPorUsuario(UsuarioID) {
     const pool = await getConnection();
     const req = pool.request();

@@ -1,4 +1,5 @@
-import { init, conectarSocket } from "../util/js/tablaGenerica.js";
+import { init } from "../util/js/tablaGenerica.js";
+import { conectarSocketSensores } from "../util/js/conectarSocketSensores.js";
 import { inicializar, ocultarSubSeccionesDatosSensores } from "../util/js/inicializar.js";
 
 await inicializar();
@@ -28,6 +29,6 @@ init({
             `,
 });
 
-conectarSocket();
 
+conectarSocketSensores(apiUrl, { debounceMs: 800, fallbackRecarga: true });
 ocultarSubSeccionesDatosSensores();

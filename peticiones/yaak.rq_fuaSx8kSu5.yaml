@@ -2,9 +2,9 @@ type: http_request
 model: http_request
 id: rq_fuaSx8kSu5
 createdAt: 2025-11-08T18:38:36.852862900
-updatedAt: 2025-11-10T20:22:30.923369700
+updatedAt: 2025-11-18T03:31:21.392984800
 workspaceId: wk_TV6JMdJDX5
-folderId: fl_s6XHXmPBXz
+folderId: fl_as7g8fL2ci
 authentication: {}
 authenticationType: null
 body:
@@ -25,6 +25,6 @@ headers:
   id: vhBSy9Y4SV
 method: POST
 name: ''
-sortPriority: 333.33323333333334
+sortPriority: 0.0
 url: http://localhost:3000/api/predicciones
 urlParameters: []

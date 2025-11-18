@@ -36,6 +36,10 @@ GRANT EXECUTE TO app_backend_user;
 PRINT 'Permisos de ejecución otorgados.';
 GO
 
+
+IF(OBJECT_ID('sp_TestConexion') IS NOT NULL)
+  DROP PROCEDURE sp_TestConexion;
+GO
 -- Procedimiento de prueba de conexión
 CREATE PROCEDURE sp_TestConexion
 AS

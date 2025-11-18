@@ -4,87 +4,103 @@ GO
 
 
 
---PREDICCIONES y ANOMALIAS
+-- --PREDICCIONES y ANOMALIAS
 
--- 8. Procedimiento para obtener todas las predicciones con filtro
-CREATE OR ALTER  PROCEDURE sp_ObtenerPredicciones
-    @SensorID_Filtro INT = NULL,
-    @FechaInicio DATETIME2 = NULL,
-    @FechaFin DATETIME2 = NULL
-AS
-BEGIN
-    SELECT
-        p.PrediccionID, s.Nombre AS Sensor, p.FechaHoraPrediccion, p.ModeloUsado, p.ValorPredicho, p.ProbabilidadRiesgo
-    FROM
-        Predicciones p
-    INNER JOIN Sensores s ON p.SensorID = s.SensorID
-    WHERE
-        (@SensorID_Filtro IS NULL OR p.SensorID = @SensorID_Filtro)
-        AND (@FechaInicio IS NULL OR p.FechaHoraPrediccion >= @FechaInicio)
-        AND (@FechaFin IS NULL OR p.FechaHoraPrediccion <= @FechaFin);
-END
+-- IF(OBJECT_ID('sp_ObtenerPredicciones') IS NOT NULL)
+--   DROP PROCEDURE sp_ObtenerPredicciones;
+-- GO
+-- -- 8. Procedimiento para obtener todas las predicciones con filtro
+-- CREATE OR ALTER  PROCEDURE sp_ObtenerPredicciones
+--     @SensorID_Filtro INT = NULL,
+--     @FechaInicio DATETIME2 = NULL,
+--     @FechaFin DATETIME2 = NULL
+-- AS
+-- BEGIN
+--     SELECT
+--         p.PrediccionID, s.Nombre AS Sensor, p.FechaHoraPrediccion, p.ModeloUsado, p.ValorPredicho, p.ProbabilidadRiesgo
+--     FROM
+--         Predicciones p
+--     INNER JOIN Sensores s ON p.SensorID = s.SensorID
+--     WHERE
+--         (@SensorID_Filtro IS NULL OR p.SensorID = @SensorID_Filtro)
+--         AND (@FechaInicio IS NULL OR p.FechaHoraPrediccion >= @FechaInicio)
+--         AND (@FechaFin IS NULL OR p.FechaHoraPrediccion <= @FechaFin);
+-- END
+-- GO
+
+
+-- IF(OBJECT_ID('sp_ObtenerPrediccionPorID') IS NOT NULL)
+--   DROP PROCEDURE sp_ObtenerPrediccionPorID;
+-- GO
+
+-- -- 9. Procedimiento para obtener una predicción en específico por id
+-- CREATE OR ALTER  PROCEDURE sp_ObtenerPrediccionPorID
+--     @PrediccionID BIGINT
+-- AS
+-- BEGIN
+--     SELECT
+--         p.PrediccionID, s.Nombre AS Sensor, p.FechaHoraPrediccion, p.ModeloUsado, p.ValorPredicho, p.ProbabilidadRiesgo
+--     FROM
+--         Predicciones p
+--     INNER JOIN Sensores s ON p.SensorID = s.SensorID
+--     WHERE
+--         p.PrediccionID = @PrediccionID;
+-- END
+-- GO
+
+-- IF(OBJECT_ID('sp_ObtenerUltimasPredicciones') IS NOT NULL)
+--   DROP PROCEDURE sp_ObtenerUltimasPredicciones;
+-- GO
+-- -- 10. Procedimiento para obtener ultimas predicciones (una por sensor)
+-- CREATE OR ALTER  PROCEDURE sp_ObtenerUltimasPredicciones
+-- AS
+-- BEGIN
+--     -- Utiliza una CTE para encontrar el ID de la última predicción de cada sensor
+--     WITH UltimasPredicciones AS (
+--         SELECT
+--             PrediccionID,
+--             ROW_NUMBER() OVER(PARTITION BY SensorID ORDER BY FechaHoraPrediccion DESC) as rn
+--         FROM
+--             Predicciones
+--     )
+--     SELECT
+--         p.PrediccionID, s.Nombre AS Sensor, p.FechaHoraPrediccion, p.ModeloUsado, p.ValorPredicho, p.ProbabilidadRiesgo
+--     FROM
+--         Predicciones p
+--     INNER JOIN Sensores s ON p.SensorID = s.SensorID
+--     INNER JOIN UltimasPredicciones up ON p.PrediccionID = up.PrediccionID
+--     WHERE
+--         up.rn = 1;
+-- END
+-- GO
+
+-- IF(OBJECT_ID('sp_InsertarPrediccion') IS NOT NULL)
+--   DROP PROCEDURE sp_InsertarPrediccion;
+-- GO
+-- -- 11. Procedimiento para insertar predicción
+-- CREATE OR ALTER  PROCEDURE sp_InsertarPrediccion
+--     @SensorID INT,
+--     @FechaHoraPrediccion DATETIME2,
+--     @ModeloUsado VARCHAR(50) = NULL,
+--     @ValorPredicho VARCHAR(50),
+--     @ProbabilidadRiesgo DECIMAL(5,2)
+-- AS
+-- BEGIN
+--     INSERT INTO Predicciones (
+--         SensorID, FechaHoraPrediccion, ModeloUsado, ValorPredicho, ProbabilidadRiesgo
+--     )
+--     VALUES (
+--         @SensorID, @FechaHoraPrediccion, @ModeloUsado, @ValorPredicho, @ProbabilidadRiesgo
+--     );
+-- END
+-- GO
+
+
+
+
+IF(OBJECT_ID('vw_DatosSensores_Detalle') IS NOT NULL)
+  DROP VIEW vw_DatosSensores_Detalle;
 GO
-
--- 9. Procedimiento para obtener una predicción en específico por id
-CREATE OR ALTER  PROCEDURE sp_ObtenerPrediccionPorID
-    @PrediccionID BIGINT
-AS
-BEGIN
-    SELECT
-        p.PrediccionID, s.Nombre AS Sensor, p.FechaHoraPrediccion, p.ModeloUsado, p.ValorPredicho, p.ProbabilidadRiesgo
-    FROM
-        Predicciones p
-    INNER JOIN Sensores s ON p.SensorID = s.SensorID
-    WHERE
-        p.PrediccionID = @PrediccionID;
-END
-GO
-
--- 10. Procedimiento para obtener ultimas predicciones (una por sensor)
-CREATE OR ALTER  PROCEDURE sp_ObtenerUltimasPredicciones
-AS
-BEGIN
-    -- Utiliza una CTE para encontrar el ID de la última predicción de cada sensor
-    WITH UltimasPredicciones AS (
-        SELECT
-            PrediccionID,
-            ROW_NUMBER() OVER(PARTITION BY SensorID ORDER BY FechaHoraPrediccion DESC) as rn
-        FROM
-            Predicciones
-    )
-    SELECT
-        p.PrediccionID, s.Nombre AS Sensor, p.FechaHoraPrediccion, p.ModeloUsado, p.ValorPredicho, p.ProbabilidadRiesgo
-    FROM
-        Predicciones p
-    INNER JOIN Sensores s ON p.SensorID = s.SensorID
-    INNER JOIN UltimasPredicciones up ON p.PrediccionID = up.PrediccionID
-    WHERE
-        up.rn = 1;
-END
-GO
-
--- 11. Procedimiento para insertar predicción
-CREATE OR ALTER  PROCEDURE sp_InsertarPrediccion
-    @SensorID INT,
-    @FechaHoraPrediccion DATETIME2,
-    @ModeloUsado VARCHAR(50) = NULL,
-    @ValorPredicho VARCHAR(50),
-    @ProbabilidadRiesgo DECIMAL(5,2)
-AS
-BEGIN
-    INSERT INTO Predicciones (
-        SensorID, FechaHoraPrediccion, ModeloUsado, ValorPredicho, ProbabilidadRiesgo
-    )
-    VALUES (
-        @SensorID, @FechaHoraPrediccion, @ModeloUsado, @ValorPredicho, @ProbabilidadRiesgo
-    );
-END
-GO
-
-
-
-
-
 --DATOS SENSORES
 GO
 CREATE VIEW vw_DatosSensores_Detalle AS
@@ -107,6 +123,9 @@ JOIN Sensores s ON s.SensorID = d.SensorID
 JOIN Parametros p ON p.ParametroID = d.ParametroID;
 GO
 
+IF(OBJECT_ID('sp_InsertarDatosSensor') IS NOT NULL)
+  DROP PROCEDURE sp_InsertarDatosSensor;
+GO
 -- 1. Procedimiento para insertar una nueva lectura en DatosSensores
 CREATE PROCEDURE sp_InsertarDatosSensor
     @SensorID INT,
@@ -141,7 +160,9 @@ END;
 GO
 
 
-
+IF(OBJECT_ID('sp_ObtenerDatosSensores') IS NOT NULL)
+  DROP PROCEDURE sp_ObtenerDatosSensores;
+GO
 GO
 CREATE PROCEDURE sp_ObtenerDatosSensores
     @SensorID_Filtro INT = NULL,
@@ -180,7 +201,9 @@ BEGIN
 END
 GO
 
-
+IF(OBJECT_ID('sp_ObtenerUltimoDatoSensores') IS NOT NULL)
+  DROP PROCEDURE sp_ObtenerUltimoDatoSensores;
+GO
 CREATE PROCEDURE sp_ObtenerUltimoDatoSensores
 AS
 BEGIN
@@ -205,7 +228,9 @@ END
 GO
 
 --PARAMETROS
-
+IF(OBJECT_ID('sp_ObtenerParametros') IS NOT NULL)
+  DROP PROCEDURE sp_ObtenerParametros;
+GO
 CREATE PROCEDURE sp_ObtenerParametros
 AS
 BEGIN
@@ -217,8 +242,12 @@ END
 GO
 
 
+
 --USUARIOS
 -- 15. Procedimiento para buscar usuario por su nombre (para gestión)
+IF(OBJECT_ID('sp_BuscarUsuarioPorNombre') IS NOT NULL)
+  DROP PROCEDURE sp_BuscarUsuarioPorNombre;
+GO
 CREATE PROCEDURE sp_BuscarUsuarioPorNombre
     @NombreUsuario_Filtro VARCHAR(100)
 AS
@@ -233,6 +262,9 @@ BEGIN
 END
 GO
 
+IF(OBJECT_ID('sp_VerificarUsuarioOCorreo') IS NOT NULL)
+  DROP PROCEDURE sp_VerificarUsuarioOCorreo;
+GO
 CREATE PROCEDURE sp_VerificarUsuarioOCorreo
   @NombreUsuario VARCHAR(100),
   @Correo VARCHAR(150)
@@ -247,9 +279,11 @@ BEGIN
       ELSE NULL
     END AS Conflicto;
 END;
+GO
 
-
-
+IF(OBJECT_ID('sp_ObtenerUsuarios') IS NOT NULL)
+  DROP PROCEDURE sp_ObtenerUsuarios;
+GO
 CREATE PROCEDURE sp_ObtenerUsuarios
     @UsuarioID INT = NULL,
     @NombreUsuario VARCHAR(100) = NULL,
@@ -281,7 +315,9 @@ BEGIN
 END;
 GO
 
-
+IF(OBJECT_ID('sp_ActualizarUsuario') IS NOT NULL)
+  DROP PROCEDURE sp_ActualizarUsuario;
+GO
 CREATE PROCEDURE sp_ActualizarUsuario
     @UsuarioID INT,
     @RolID INT,
@@ -311,7 +347,9 @@ END
 GO
 
 
-
+IF(OBJECT_ID('sp_InsertarUsuario') IS NOT NULL)
+  DROP PROCEDURE sp_InsertarUsuario;
+GO
 -- 16. Procedimiento para insertar un Usuario (solo para administradores)
 CREATE PROCEDURE sp_InsertarUsuario
     @RolID INT,
@@ -327,6 +365,9 @@ BEGIN
 END
 GO
 
+IF(OBJECT_ID('sp_AutenticarUsuario') IS NOT NULL)
+  DROP PROCEDURE sp_AutenticarUsuario;
+GO
 -- 17. Procedimiento para buscar un usuario para autenticación (devuelve hash y nombre)
 CREATE PROCEDURE sp_AutenticarUsuario
     @NombreUsuario VARCHAR(100)
@@ -352,7 +393,9 @@ GO
 --SENSORES
 
 -- 3. Procedimiento para obtener información de todos los sensores con filtro
-
+IF(OBJECT_ID('sp_ObtenerSensores') IS NOT NULL)
+  DROP PROCEDURE sp_ObtenerSensores;
+GO
 CREATE PROCEDURE sp_ObtenerSensores
     @EstadoOperativo_Filtro BIT = NULL, -- NULL para todos
     @SensorID INT = NULL               -- NULL para todos
@@ -380,7 +423,9 @@ BEGIN
 END;
 GO
 
-
+IF(OBJECT_ID('sp_ObtenerSensorPorID') IS NOT NULL)
+  DROP PROCEDURE sp_ObtenerSensorPorID;
+GO
 -- 5. Procedimiento para obtener info de un sensor por el ID
 CREATE PROCEDURE sp_ObtenerSensorPorID
     @SensorID INT
@@ -395,6 +440,10 @@ BEGIN
 END
 GO
 
+
+IF(OBJECT_ID('sp_InsertarSensor') IS NOT NULL)
+  DROP PROCEDURE sp_InsertarSensor;
+GO
 -- 4. Procedimiento para insertar un nuevo sensor
 CREATE OR ALTER  PROCEDURE sp_InsertarSensor
     @Nombre VARCHAR(100),
@@ -413,6 +462,9 @@ GO
 
 
 
+IF(OBJECT_ID('sp_ActualizarSensor') IS NOT NULL)
+  DROP PROCEDURE sp_ActualizarSensor;
+GO
 -- 6. Procedimiento para actualizar info de un sensor existente a través del ID
 CREATE PROCEDURE sp_ActualizarSensor
     @SensorID INT,
@@ -439,7 +491,9 @@ BEGIN
 END
 GO
 
-
+IF(OBJECT_ID('sp_EliminarSensor') IS NOT NULL)
+  DROP PROCEDURE sp_EliminarSensor;
+GO
 -- 7. Procedimiento para eliminar un sensor a través del ID (Incluye eliminación en cascada de datos dependientes)
 CREATE PROCEDURE sp_EliminarSensor
     @SensorID INT
@@ -457,10 +511,10 @@ BEGIN
     DELETE au 
     FROM AlertasUsuarios au 
     JOIN RegistroAlertas ra ON au.RegistroAlertaID = ra.RegistroAlertaID
-    JOIN DatosSensores ds ON ra.LecturaID = ds.DatoID
+    JOIN DatosSensores ds ON ra.DatoID = ds.DatoID
     WHERE ds.SensorID = @SensorID;
 
-    DELETE ra FROM RegistroAlertas ra JOIN DatosSensores ds ON ra.LecturaID = ds.DatoID WHERE ds.SensorID = @SensorID;
+    DELETE ra FROM RegistroAlertas ra JOIN DatosSensores ds ON ra.DatoID = ds.DatoID WHERE ds.SensorID = @SensorID;
     DELETE FROM Anomalias WHERE DatoID IN (SELECT DatoID FROM DatosSensores WHERE SensorID = @SensorID);
 
     -- 2. Eliminar Predicciones y DatosSensores
@@ -487,7 +541,9 @@ GO
 
 --ROLES
 
-
+IF(OBJECT_ID('sp_ObtenerRolesRegistroAdministrativo') IS NOT NULL)
+  DROP PROCEDURE sp_ObtenerRolesRegistroAdministrativo;
+GO
 CREATE PROCEDURE sp_ObtenerRolesRegistroAdministrativo
     @RolID INT = NULL
 AS
@@ -504,7 +560,9 @@ GO
 
 
 
-
+IF(OBJECT_ID('sp_ObtenerRolesRegistroUsuario') IS NOT NULL)
+  DROP PROCEDURE sp_ObtenerRolesRegistroUsuario;
+GO
 CREATE PROCEDURE sp_ObtenerRolesRegistroUsuario
     @RolID INT = NULL
 AS
@@ -518,10 +576,11 @@ BEGIN
         FROM Roles
         WHERE RolID = @RolID AND EsInterno = 0;
 END
-
-
 GO
 
+IF(OBJECT_ID('sp_InsertarRol') IS NOT NULL)
+  DROP PROCEDURE sp_InsertarRol;
+GO
 CREATE PROCEDURE sp_InsertarRol
     @NombreRol      VARCHAR(50),
     @EsInterno      BIT       = 0,
@@ -544,6 +603,9 @@ BEGIN
 END
 GO
 
+IF(OBJECT_ID('sp_ModificarRol') IS NOT NULL)
+  DROP PROCEDURE sp_ModificarRol;
+GO
 CREATE PROCEDURE sp_ModificarRol
     @RolID          INT,
     @NombreRol      VARCHAR(50) = NULL,

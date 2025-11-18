@@ -4,6 +4,9 @@
     -- Motor: Microsoft SQL Server
     -- ==============================================================================
 
+    USE master;
+    GO
+
 IF EXISTS (SELECT name FROM sys.databases WHERE name = N'MonitoreoAguaJunin')
 BEGIN
     ALTER DATABASE [MonitoreoAguaJunin] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
