@@ -50,3 +50,7 @@ Proyecto del curso de Diseño de Software.
   - Listar predicciones
   - Crear prediccion
   - Medir precision de predicciones
+
+
+  ME QUEDË PROBANDO LO ULTIMO QUE DIO CHATGPT solo puse hasta el controlador AlertaUsuario
+  3) Controlador + ruta Express — controllers/AlertasController.js y ruta
