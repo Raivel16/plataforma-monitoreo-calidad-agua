@@ -95,6 +95,8 @@ export class SensoresControlador {
   static async crear(req, res) {
     try {
       const datos = req.body;
+      
+      
 
       // 🔥 Convertir tipos ANTES de validar
       if (datos.Latitud !== undefined) datos.Latitud = Number(datos.Latitud);
@@ -106,6 +108,8 @@ export class SensoresControlador {
       }
 
       const nuevoSensor = validarDatosSensor(datos);
+
+      console.log(nuevoSensor);
 
       if (!nuevoSensor.success) {
         const normalized = formatZodError(nuevoSensor.error);

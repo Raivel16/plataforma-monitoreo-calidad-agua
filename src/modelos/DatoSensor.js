@@ -5,20 +5,6 @@ import sql from "mssql";
 
 // src/modelos/DatosSensoresModelo.js
 export class DatoSensorModelo {
-  static datos = [
-    {
-      DatoID: 1,
-      SensorID: 2,
-      ParametroID: 5,
-      Valor_original: 7.4,
-      Valor_procesado: 7.4,
-      Valor_normalizado: 0.07400000000000001,
-      Estado: "procesado",
-      TimestampEnvio: "2025-10-23T20:00:00.000Z",
-      TimestampRegistro: "2025-10-24T20:03:13.804Z",
-    },
-  ];
-
   constructor({
     DatoID = null,
     SensorID = null,
@@ -88,81 +74,63 @@ export class DatoSensorModelo {
     }
   }
 
-  async crear() {
-    // Generamos el timestamp de registro justo antes de la inserción
-    this.TimestampRegistro = new Date();
 
-    let pool;
+  /**
+   * Inserta crudo y retorna contexto:
+   * {
+   *   fila: { ... }      // fila completa desde vw_DatosSensores_Detalle (recordsets[0][0])
+   *   umbrales: [...],   // recordsets[1]
+   *   historial: [...]   // recordsets[2]
+   * }
+   */
+  async insertarCrudoConContexto(histCount = 10) {
+    const pool = await getConnection();
+    const req = pool.request();
+    req.input("SensorID", sql.Int, this.SensorID);
+    req.input("ParametroID", sql.Int, this.ParametroID);
+    req.input("TimestampEnvio", sql.DateTime2, this.TimestampEnvio || null);
+    req.input("Valor_original", sql.Decimal(10, 4), this.Valor_original);
+    req.input("HistCount", sql.Int, histCount);
 
-    try {
-      // 1. Obtener la conexión
-      pool = await getConnection();
-      const request = pool.request();
+    const result = await req.execute("sp_InsertarDatoCrudo_ConContexto");
+    const recordsets = result.recordsets || [];
 
-      // 2. Mapear los parámetros al SP
-      //    (usando los valores recibidos y los defaults)
-      request.input("SensorID", sql.Int, this.SensorID);
-      request.input("ParametroID", sql.Int, this.ParametroID);
-      request.input("TimestampRegistro", sql.DateTime2, this.TimestampRegistro);
-      request.input("TimestampEnvio", sql.DateTime2, this.TimestampEnvio);
-      request.input("Valor_original", sql.Decimal(10, 4), this.Valor_original);
-      request.input(
-        "Valor_procesado",
-        sql.Decimal(10, 4),
-        this.Valor_procesado
-      );
-      request.input(
-        "Valor_normalizado",
-        sql.Decimal(10, 4),
-        this.Valor_normalizado
-      );
-      request.input("Estado", sql.VarChar(20), this.Estado);
+    const fila = (recordsets[0] && recordsets[0][0]) ? recordsets[0][0] : null;
+    const umbrales = recordsets[1] || [];
+    const historial = recordsets[2] || [];
 
-      // --- CAMBIOS AQUÍ ---
-
-      // 1. Captura el 'result' de la ejecución
-      const result = await request.execute("sp_InsertarDatosSensor");
-
-      // 2. Extrae el ID del recordset devuelto por la cláusula OUTPUT
-
-      const nuevoDato = result.recordset[0];
-
-      console.log(
-        `✅ Registro insertado en la base de datos. ID: ${nuevoDato.DatoID}`
-      );
-
-      this.DatoID = nuevoDato.DatoID;
-      this.TimestampRegistro = this.TimestampRegistro.toISOString();
-      // // 3. Devuelve el objeto completo, incluyendo el nuevo ID
-      return {
-        DatoID: nuevoDato.DatoID, // <-- ¡AQUÍ ESTÁ!
-        SensorID: this.SensorID,
-        Nombre: nuevoDato.Nombre,
-        Descripcion: nuevoDato.Descripcion,
-        ParametroID: this.ParametroID,
-        NombreParametro: nuevoDato.NombreParametro,
-        UnidadMedida: nuevoDato.UnidadMedida,
-        Valor_original: this.Valor_original,
-        Valor_procesado: this.Valor_procesado,
-        Valor_normalizado: this.Valor_normalizado,
-        Estado: this.Estado,
-        TimestampEnvio: this.TimestampEnvio,
-        TimestampRegistro: this.TimestampRegistro,
-      };
-    } catch (err) {
-      console.error("❌ Error al ejecutar SP [sp_InsertarDatosSensor]:", err);
-      throw new Error(`Error al crear el dato del sensor: ${err.message}`);
-    }
+    return {
+      fila,
+      umbrales,
+      historial
+    };
   }
 
-  static async obtenerPorSensor({ SensorID }) {
-    return this.datos.filter((d) => d.SensorID === Number(SensorID));
+  /**
+   * Actualiza procesado y devuelve la fila actualizada (desde la view)
+   */
+  static async actualizarProcesado(DatoID, { Valor_procesado, Valor_normalizado, Estado }) {
+    const pool = await getConnection();
+    const req = pool.request();
+    req.input("DatoID", sql.BigInt, DatoID);
+    req.input("Valor_procesado", sql.Decimal(10, 4), Valor_procesado);
+    req.input("Valor_normalizado", sql.Decimal(10, 4), Valor_normalizado);
+    req.input("Estado", sql.VarChar(20), Estado);
+
+    const result = await req.execute("sp_ActualizarDatoProcesado");
+    // sp_ActualizarDatoProcesado ahora devuelve la fila completa como recordset[0]
+    const fila = result.recordset && result.recordset[0] ? result.recordset[0] : null;
+    return fila;
   }
 
-  static async eliminar({ id }) {
-    const index = this.datos.findIndex((d) => d.DatoID === Number(id));
-    if (index === -1) return false;
-    this.datos.splice(index, 1);
-    return true;
+  /**
+   * obtenerPorID sigue llamando al SP sp_ObtenerDatoPorID (si lo necesitas)
+   */
+  static async obtenerPorID(DatoID) {
+    const pool = await getConnection();
+    const req = pool.request();
+    req.input("DatoID", sql.BigInt, DatoID);
+    const result = await req.execute("sp_ObtenerDatoPorID");
+    return result.recordset && result.recordset[0] ? result.recordset[0] : null;
   }
 }

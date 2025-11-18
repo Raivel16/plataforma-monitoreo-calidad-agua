@@ -1,3 +1,9 @@
+// archivo: util/js/tablaGenerica.js  (reemplaza la función conectarSocket)
+import { initNotificacionesGlobales } from "../js/notificaciones.js"; // si usas bundler/ESM; si no, notificaciones se expone en window
+import { getSesion } from "./sesion.js"; // tu función existente (usa la misma ruta)
+
+
+
 export let registrosGlobal = [];
 let paginaActual = 1;
 let porPagina = 20;
@@ -117,11 +123,41 @@ export async function filtrarDatos(filtro, apiUrl) {
 }
 
 export async function conectarSocket() {
-  const socket = io("http://localhost:3000");
+  // Inicia sistema global de notificaciones (se unirá a la room si hay sesión)
+  let session = null;
+  try {
+    session = await getSesion(); // tu implementación devuelve { logeado, UsuarioID, NivelPermiso, ... }
+  } catch (e) {
+    console.warn("No se pudo obtener session en conectarSocket:", e);
+  }
 
+  // inicializa notificaciones (esto crea io() y hace join si session.UsuarioID)
+  // Si tu entorno no usa módulos para notificaciones, window.initNotificacionesGlobales existe.
+  let socket;
+  if (typeof initNotificacionesGlobales === "function") {
+    socket = await initNotificacionesGlobales(session);
+  } else if (window.initNotificacionesGlobales) {
+    socket = await window.initNotificacionesGlobales(session);
+  } else {
+    // Fallback simple: fallback to previous simple socket
+    socket = io("http://localhost:3000");
+    if (session && session.logeado && session.UsuarioID) {
+      socket.on("connect", () => socket.emit("joinUserRoom", { UsuarioID: session.UsuarioID }));
+    }
+
+    socket.on("nuevaAlerta", (payload) => {
+      // simple toast if not using notifications.js
+      console.log("Alerta recibida:", payload);
+      alert(`${payload.tipo} - ${payload.mensaje}`);
+    });
+  }
+
+  // Mantener comportamiento original con nuevaLectura
   socket.on("nuevaLectura", (lectura) => {
     if (lectura && typeof lectura === "object") {
       registrosGlobal.unshift(lectura);
+      // Si la longitud es alta, recorta (opcional)
+      // registrosGlobal = registrosGlobal.slice(0, 1000);
       renderPagina();
     }
   });
@@ -130,6 +166,8 @@ export async function conectarSocket() {
     const ph = tbody.querySelector(".cargando");
     if (ph) ph.textContent = "Error de conexión con el servidor.";
   });
+
+  return socket;
 }
 
 export async function init({ apiUrl, selectorTbody, mapearFilaFn }) {

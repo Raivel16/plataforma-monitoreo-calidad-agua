@@ -581,3 +581,266 @@ BEGIN
     SELECT 'OK' AS Resultado;
 END
 GO
+
+
+-- ALERTAS UMBRALES 
+
+
+-- DROP y CREATE: sp_InsertarDatoCrudo_ConContexto (ahora devuelve la fila completa desde la view)
+IF OBJECT_ID('sp_InsertarDatoCrudo_ConContexto') IS NOT NULL
+  DROP PROCEDURE sp_InsertarDatoCrudo_ConContexto;
+GO
+
+CREATE PROCEDURE sp_InsertarDatoCrudo_ConContexto
+  @SensorID INT,
+  @ParametroID INT,
+  @TimestampEnvio DATETIME2 = NULL,
+  @Valor_original DECIMAL(10,4),
+  @HistCount INT = 10
+AS
+BEGIN
+  SET NOCOUNT ON;
+  BEGIN TRAN;
+
+  INSERT INTO DatosSensores (SensorID, ParametroID, TimestampRegistro, TimestampEnvio, Valor_original, Estado)
+  VALUES (@SensorID, @ParametroID, SYSDATETIME(), ISNULL(@TimestampEnvio, SYSDATETIME()), @Valor_original, 'crudo');
+
+  DECLARE @datoId BIGINT = SCOPE_IDENTITY();
+
+  -- 1) Devuelve la fila completa desde la vista (igual que sp_InsertarDatosSensor)
+  SELECT *
+  FROM vw_DatosSensores_Detalle
+  WHERE DatoID = @datoId;
+
+  -- 2) Umbrales del parámetro (segundo recordset)
+  SELECT UmbralID, ParametroID, ValorCritico, TipoUmbral, MensajeAlerta
+  FROM UmbralesAlerta
+  WHERE ParametroID = @ParametroID;
+
+  -- 3) Historial reciente procesado del mismo sensor+parametro (tercer recordset)
+  SELECT TOP (@HistCount) DatoID, Valor_procesado
+  FROM DatosSensores
+  WHERE SensorID = @SensorID AND ParametroID = @ParametroID AND Estado = 'procesado'
+  ORDER BY DatoID DESC;
+
+  COMMIT TRAN;
+END
+GO
+
+-- DROP y CREATE: sp_ActualizarDatoProcesado (ahora devuelve la fila completa desde la view actualizada)
+IF OBJECT_ID('sp_ActualizarDatoProcesado') IS NOT NULL
+  DROP PROCEDURE sp_ActualizarDatoProcesado;
+GO
+
+CREATE PROCEDURE sp_ActualizarDatoProcesado
+  @DatoID BIGINT,
+  @Valor_procesado DECIMAL(10,4),
+  @Valor_normalizado DECIMAL(10,4),
+  @Estado VARCHAR(20) -- 'procesado' o 'descartado'
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  UPDATE DatosSensores
+  SET Valor_procesado = @Valor_procesado,
+      Valor_normalizado = @Valor_normalizado,
+      Estado = @Estado
+  WHERE DatoID = @DatoID;
+
+  -- Devuelve la fila actualizada completa desde la vista
+  SELECT *
+  FROM vw_DatosSensores_Detalle
+  WHERE DatoID = @DatoID;
+END
+GO
+
+
+
+-- SP: obtener alertas pendientes para un usuario (pendientes en AlertasUsuarios)
+IF OBJECT_ID('sp_ObtenerAlertasPendientesPorUsuario') IS NOT NULL
+  DROP PROCEDURE sp_ObtenerAlertasPendientesPorUsuario;
+GO
+
+CREATE PROCEDURE sp_ObtenerAlertasPendientesPorUsuario
+  @UsuarioID INT
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  SELECT 
+    AU.AlertaUsuarioID,
+    AU.RegistroAlertaID,
+    AU.UsuarioID,
+    AU.FechaEnvio,
+    AU.FechaRevisión,
+    AU.EstadoAlerta,
+
+    RA.UmbralID,
+    RA.DatoID AS Registro_DatoID,
+    RA.FechaHoraAlerta,
+    RA.EstadoNotificacion,
+
+    DS.DatoID,
+    DS.SensorID,
+    DS.ParametroID,
+    DS.TimestampRegistro,
+    DS.TimestampEnvio,
+    DS.Valor_original,
+    DS.Valor_procesado,
+    DS.Valor_normalizado,
+
+    S.Nombre AS NombreSensor,
+    S.Descripcion AS SensorDescripcion,
+    P.NombreParametro,
+    P.UnidadMedida
+
+  FROM AlertasUsuarios AU
+  INNER JOIN RegistroAlertas RA ON AU.RegistroAlertaID = RA.RegistroAlertaID
+  LEFT JOIN DatosSensores DS ON RA.DatoID = DS.DatoID
+  LEFT JOIN Sensores S ON DS.SensorID = S.SensorID
+  LEFT JOIN Parametros P ON DS.ParametroID = P.ParametroID
+  WHERE AU.UsuarioID = @UsuarioID
+    AND AU.EstadoAlerta = 'Pendiente'
+  ORDER BY AU.FechaEnvio DESC;
+END
+GO
+
+
+
+
+
+-- 4) sp_InsertarRegistroAlerta
+IF OBJECT_ID('sp_InsertarRegistroAlerta') IS NOT NULL DROP PROCEDURE sp_InsertarRegistroAlerta;
+GO
+CREATE PROCEDURE sp_InsertarRegistroAlerta
+  @UmbralID INT = NULL,
+  @DatoID BIGINT,
+  @EstadoNotificacion VARCHAR(50) = 'Pendiente'
+AS
+BEGIN
+  SET NOCOUNT ON;
+  INSERT INTO RegistroAlertas (UmbralID, DatoID, FechaHoraAlerta, EstadoNotificacion)
+  VALUES (@UmbralID, @DatoID, SYSDATETIME(), @EstadoNotificacion);
+
+  SELECT SCOPE_IDENTITY() AS RegistroAlertaID;
+END
+GO
+
+-- 5) sp_InsertarAnomalia
+IF OBJECT_ID('sp_InsertarAnomalia') IS NOT NULL DROP PROCEDURE sp_InsertarAnomalia;
+GO
+CREATE PROCEDURE sp_InsertarAnomalia
+  @DatoID BIGINT,
+  @Tipo VARCHAR(50),
+  @Descripcion VARCHAR(255)
+AS
+BEGIN
+  SET NOCOUNT ON;
+  INSERT INTO Anomalias (DatoID, Tipo, Descripcion, Fecha_Detectada, Estado)
+  VALUES (@DatoID, @Tipo, @Descripcion, SYSDATETIME(), 1);
+
+  SELECT SCOPE_IDENTITY() AS AnomaliaID;
+END
+GO
+
+-- 6) sp_CrearAlertasUsuariosParaNiveles (inserta en batch y OUTPUTs AlertaUsuarioID+UsuarioID)
+IF OBJECT_ID('sp_CrearAlertasUsuariosParaNiveles') IS NOT NULL DROP PROCEDURE sp_CrearAlertasUsuariosParaNiveles;
+GO
+CREATE PROCEDURE sp_CrearAlertasUsuariosParaNiveles
+  @RegistroAlertaID BIGINT,
+  @NivelesCSV VARCHAR(100) -- ejemplo '2,3,4'
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  ;WITH Niveles AS (
+    SELECT TRY_CAST(value AS INT) as Nivel
+    FROM STRING_SPLIT(@NivelesCSV, ',')
+    WHERE TRY_CAST(value AS INT) IS NOT NULL
+  )
+  INSERT INTO AlertasUsuarios (RegistroAlertaID, UsuarioID, FechaEnvio, EstadoAlerta)
+  OUTPUT inserted.AlertaUsuarioID, inserted.UsuarioID
+  SELECT @RegistroAlertaID, U.UsuarioID, SYSDATETIME(), 'Pendiente'
+  FROM Usuarios U
+  INNER JOIN Roles R ON U.RolID = R.RolID
+  INNER JOIN Niveles N ON N.Nivel = R.NivelPermiso
+  WHERE U.Activo = 1;
+END
+GO
+
+-- 7) sp_ObtenerDatoPorID
+IF OBJECT_ID('sp_ObtenerDatoPorID') IS NOT NULL DROP PROCEDURE sp_ObtenerDatoPorID;
+GO
+CREATE PROCEDURE sp_ObtenerDatoPorID
+  @DatoID BIGINT
+AS
+BEGIN
+  SET NOCOUNT ON;
+  SELECT DS.DatoID, DS.SensorID, DS.ParametroID, DS.TimestampRegistro, DS.TimestampEnvio,
+         DS.Valor_original, DS.Valor_procesado, DS.Valor_normalizado, DS.Estado,
+         P.NombreParametro, P.UnidadMedida, S.Nombre as NombreSensor
+  FROM DatosSensores DS
+  LEFT JOIN Parametros P ON DS.ParametroID = P.ParametroID
+  LEFT JOIN Sensores S ON DS.SensorID = S.SensorID
+  WHERE DS.DatoID = @DatoID;
+END
+GO
+
+-- 8) sp_IncrementarEstadoSensor (incrementa contador de anomalias y devuelve estado)
+IF OBJECT_ID('sp_IncrementarEstadoSensor') IS NOT NULL DROP PROCEDURE sp_IncrementarEstadoSensor;
+GO
+CREATE PROCEDURE sp_IncrementarEstadoSensor
+  @SensorID INT,
+  @ParametroID INT,
+  @Threshold INT = 3
+AS
+BEGIN
+  SET NOCOUNT ON;
+  DECLARE @now DATETIME2 = SYSDATETIME();
+
+  IF EXISTS (SELECT 1 FROM SensorEstados WHERE SensorID = @SensorID AND ParametroID = @ParametroID)
+  BEGIN
+    UPDATE SensorEstados
+    SET ConsecutivasAnomalias = ConsecutivasAnomalias + 1,
+        UltimaAnomalia = @now,
+        EstadoSensor = CASE WHEN ConsecutivasAnomalias + 1 >= @Threshold THEN 'DANADO' ELSE 'POSIBLE_DANADO' END
+    WHERE SensorID = @SensorID AND ParametroID = @ParametroID;
+  END
+  ELSE
+  BEGIN
+    INSERT INTO SensorEstados (SensorID, ParametroID, ConsecutivasAnomalias, UltimaAnomalia, EstadoSensor)
+    VALUES (@SensorID, @ParametroID, 1, @now, CASE WHEN 1 >= @Threshold THEN 'DANADO' ELSE 'POSIBLE_DANADO' END);
+  END
+
+  SELECT SensorID, ParametroID, ConsecutivasAnomalias, UltimaAnomalia, EstadoSensor
+  FROM SensorEstados
+  WHERE SensorID = @SensorID AND ParametroID = @ParametroID;
+END
+GO
+
+-- 9) sp_ResetEstadoSensor (cuando llega lectura normal)
+IF OBJECT_ID('sp_ResetEstadoSensor') IS NOT NULL DROP PROCEDURE sp_ResetEstadoSensor;
+GO
+CREATE PROCEDURE sp_ResetEstadoSensor
+  @SensorID INT,
+  @ParametroID INT
+AS
+BEGIN
+  SET NOCOUNT ON;
+  IF EXISTS (SELECT 1 FROM SensorEstados WHERE SensorID = @SensorID AND ParametroID = @ParametroID)
+  BEGIN
+    UPDATE SensorEstados
+    SET ConsecutivasAnomalias = 0, EstadoSensor = 'NORMAL', UltimaAnomalia = NULL
+    WHERE SensorID = @SensorID AND ParametroID = @ParametroID;
+  END
+  ELSE
+  BEGIN
+    INSERT INTO SensorEstados (SensorID, ParametroID, ConsecutivasAnomalias, EstadoSensor)
+    VALUES (@SensorID, @ParametroID, 0, 'NORMAL');
+  END
+
+  SELECT SensorID, ParametroID, ConsecutivasAnomalias, UltimaAnomalia, EstadoSensor
+  FROM SensorEstados
+  WHERE SensorID = @SensorID AND ParametroID = @ParametroID;
+END
+GO

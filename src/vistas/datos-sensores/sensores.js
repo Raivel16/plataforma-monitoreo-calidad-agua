@@ -1,5 +1,8 @@
 import { filtrarDatos, init } from "../util/js/tablaGenerica.js";
-import { inicializar, ocultarSubSeccionesDatosSensores } from "../util/js/inicializar.js";
+import {
+  inicializar,
+  ocultarSubSeccionesDatosSensores,
+} from "../util/js/inicializar.js";
 
 await inicializar();
 
@@ -21,8 +24,8 @@ init({
         <td>${s.Latitud ?? "-"}</td>
         <td>${s.Longitud ?? "-"}</td>
         <td data-estadoOperativo="${s.EstadoOperativo}">${
-          s.EstadoOperativoTexto ?? "-"
-        }
+    s.EstadoOperativoTexto ?? "-"
+  }
         <td>
             <button class="btn-edit" data-id="${s.SensorID}">Modificar</button>
         </td>
@@ -112,16 +115,20 @@ document.getElementById("formAgregar").addEventListener("submit", async (e) => {
     EstadoOperativo: document.getElementById("agregar-estado").value,
   };
 
-  await fetch(apiUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(nuevo),
-  });
+  try {
+    await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(nuevo),
+    });
 
-  modalAgregar.style.display = "none";
+    modalAgregar.style.display = "none";
 
-  // refrescar tabla
-  await filtrarDatos("", apiUrl);
+    // refrescar tabla
+    await filtrarDatos("", apiUrl);
+  } catch (error) {
+    console.error(error);
+  }
 });
 
 // ===================================

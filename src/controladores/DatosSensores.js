@@ -4,13 +4,16 @@ import timezone from "dayjs/plugin/timezone.js";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-import { preprocesarDato } from "../utils/preprocesarDato.js";
+import { preprocesarDatoNuevo } from "../utils/preprocesarDatoNuevo.js";
+import { formatZodError } from "../utils/formatZodError.js";
+
+import { validarDatosDatoSensor } from "../schemas/datoSensor.js";
 
 // src/controladores/datosSensoresControlador.js
 import { DatoSensorModelo } from "../modelos/DatoSensor.js";
 
-import { validarDatosDatoSensor } from "../schemas/datoSensor.js";
-import { formatZodError } from "../utils/formatZodError.js";
+import { analizarYNotificarAvanzado } from "../servicios/analizadorAvanzado.js";
+
 
 export class DatosSensoresControlador {
   static formatearTimestamp(timestamp) {
@@ -74,29 +77,39 @@ export class DatosSensoresControlador {
     }
   }
 
-  // POST /api/datos
-  static async registrar(req, res, io) {
+ static async registrar(req, res, io) {
     try {
       const nuevaLectura = req.body;
 
-      console.log(nuevaLectura);
-
-      // Validar campos mínimos
-      if (!nuevaLectura.ParametroID || !nuevaLectura.valor) {
-        return res
-          .status(400)
-          .json({ error: "ParametroID y valor son obligatorios" });
+      if (!nuevaLectura.ParametroID || (nuevaLectura.valor === undefined || nuevaLectura.valor === null)) {
+        return res.status(400).json({ error: "ParametroID y valor son obligatorios" });
       }
 
-      const { Valor_original, Valor_procesado, Valor_normalizado, Estado } =
-        preprocesarDato(nuevaLectura);
+      // 1) insertar crudo y recibir contexto (1 viaje a BD)
+      const datoModel = new DatoSensorModelo({
+        SensorID: nuevaLectura.SensorID,
+        ParametroID: nuevaLectura.ParametroID,
+        TimestampEnvio: nuevaLectura.TimestampEnvio || null,
+        Valor_original: parseFloat(nuevaLectura.valor)
+      });
 
+      // contexto.fila es la fila completa desde la view (igual que antes)
+      const contexto = await datoModel.insertarCrudoConContexto(10);
+      const DatoID = contexto.fila?.DatoID;
+
+      // 2) preprocesar con la nueva función (no clampa)
+      const pre = preprocesarDatoNuevo({
+        ParametroID: nuevaLectura.ParametroID,
+        valor: nuevaLectura.valor
+      });
+
+      // 3) validación opcional (Zod)
       const lecturaValidada = validarDatosDatoSensor({
         ...nuevaLectura,
-        Valor_original,
-        Valor_procesado,
-        Valor_normalizado,
-        Estado,
+        Valor_original: pre.Valor_original,
+        Valor_procesado: pre.Valor_procesado,
+        Valor_normalizado: pre.Valor_normalizado,
+        Estado: pre.Estado,
       });
 
       if (!lecturaValidada.success) {
@@ -104,30 +117,49 @@ export class DatosSensoresControlador {
         return res.status(400).json({ error: normalized });
       }
 
-      const nuevoDato = new DatoSensorModelo(lecturaValidada.data);
-
-      const resultado = await nuevoDato.crear();
-
-      resultado.TimestampRegistro = dayjs(nuevoDato.TimestampRegistro)
-        .tz("America/Lima")
-        .format("DD/MM/YYYY HH:mm:ss");
-      resultado.TimestampEnvio = dayjs(nuevoDato.TimestampEnvio)
-        .tz("America/Lima")
-        .format("DD/MM/YYYY HH:mm:ss");
-
-      // Emitir evento en tiempo real al cliente conectado
-      io.emit("nuevaLectura", resultado);
-
-      res.status(201).json({
-        mensaje: "Lectura registrada correctamente",
-        data: resultado,
+      // 4) actualizar dato con procesado -> ahora retorna fila actualizada
+      const filaActualizada = await DatoSensorModelo.actualizarProcesado(DatoID, {
+        Valor_procesado: pre.Valor_procesado,
+        Valor_normalizado: pre.Valor_normalizado,
+        Estado: pre.Estado
       });
+
+      // 5) formatear timestamps (si vienen como DATETIME2)
+      if (filaActualizada?.TimestampRegistro) {
+        filaActualizada.TimestampRegistro = dayjs(filaActualizada.TimestampRegistro).tz("America/Lima").format("DD/MM/YYYY HH:mm:ss");
+      }
+      if (filaActualizada?.TimestampEnvio) {
+        filaActualizada.TimestampEnvio = dayjs(filaActualizada.TimestampEnvio).tz("America/Lima").format("DD/MM/YYYY HH:mm:ss");
+      }
+
+      // 6) emitir lectura procesada al frontend (socket)
+      io.emit("nuevaLectura", filaActualizada);
+
+      // 7) analizar y notificar (pasando umbrales + historial)
+      const acciones = await analizarYNotificarAvanzado({
+        DatoID,
+        SensorID: filaActualizada.SensorID,
+        ParametroID: filaActualizada.ParametroID,
+        Valor_procesado: Number(filaActualizada.Valor_procesado),
+        umbrales: contexto.umbrales,
+        historial: contexto.historial,
+        fueraRangoFisico: pre.FueraRangoFisico,
+        sensorDamageThreshold: 3 // configurable
+      }, io);
+
+      // 8) responder al simulador
+      return res.status(201).json({
+        mensaje: "Lectura registrada y procesada",
+        data: { DatoID },
+        acciones
+      });
+
     } catch (error) {
       console.error("Error al registrar lectura:", error);
-      res.status(500).json({ error: "Error al registrar lectura" });
+      return res.status(500).json({ error: "Error al registrar lectura" });
     }
   }
-
+  
   // GET /api/datos/sensor/:sensorId
   static async obtenerPorSensor(req, res) {
     try {

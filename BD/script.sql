@@ -187,6 +187,51 @@ END
     GO
 
 
+-- -------------------------
+-- INSERT: UmbralesAlerta (ejemplos prácticos)
+-- -------------------------
+-- pH: rango aproximado de agua potable/acuícola
+IF NOT EXISTS (SELECT 1 FROM UmbralesAlerta WHERE ParametroID = (SELECT ParametroID FROM Parametros WHERE NombreParametro='pH'))
+BEGIN
+  DECLARE @ph INT = (SELECT ParametroID FROM Parametros WHERE NombreParametro='pH');
+  INSERT INTO UmbralesAlerta (ParametroID, ValorCritico, TipoUmbral, MensajeAlerta) VALUES
+    (@ph, 6.5, 'MINIMO', 'pH por debajo de 6.5 — posible acidez'),
+    (@ph, 8.5, 'MAXIMO', 'pH por encima de 8.5 — posible alcalinidad');
+END
+
+-- Turbidez: ejemplo (NTU)
+IF NOT EXISTS (SELECT 1 FROM UmbralesAlerta WHERE ParametroID = (SELECT ParametroID FROM Parametros WHERE NombreParametro='Turbidez'))
+BEGIN
+  DECLARE @t INT = (SELECT ParametroID FROM Parametros WHERE NombreParametro='Turbidez');
+  INSERT INTO UmbralesAlerta (ParametroID, ValorCritico, TipoUmbral, MensajeAlerta) VALUES
+    (@t, 5.0, 'MAXIMO', 'Turbidez alta >5 NTU — posible contaminación');
+END
+
+-- Oxígeno disuelto (mg/L)
+IF NOT EXISTS (SELECT 1 FROM UmbralesAlerta WHERE ParametroID = (SELECT ParametroID FROM Parametros WHERE NombreParametro='Oxigeno Disuelto'))
+BEGIN
+  DECLARE @o INT = (SELECT ParametroID FROM Parametros WHERE NombreParametro='Oxígeno Disuelto');
+  INSERT INTO UmbralesAlerta (ParametroID, ValorCritico, TipoUmbral, MensajeAlerta) VALUES
+    (@o, 4.0, 'MINIMO', 'Oxígeno disuelto bajo <4 mg/L — riesgo para fauna acuática');
+END
+
+-- Conductividad (µS/cm)
+IF NOT EXISTS (SELECT 1 FROM UmbralesAlerta WHERE ParametroID = (SELECT ParametroID FROM Parametros WHERE NombreParametro='Conductividad'))
+BEGIN
+  DECLARE @c INT = (SELECT ParametroID FROM Parametros WHERE NombreParametro='Conductividad');
+  INSERT INTO UmbralesAlerta (ParametroID, ValorCritico, TipoUmbral, MensajeAlerta) VALUES
+    (@c, 2000.0, 'MAXIMO', 'Conductividad alta >2000 µS/cm — posible contaminante');
+END
+
+-- Temperatura (°C) (umbral alto ejemplo)
+IF NOT EXISTS (SELECT 1 FROM UmbralesAlerta WHERE ParametroID = (SELECT ParametroID FROM Parametros WHERE NombreParametro='Temperatura'))
+BEGIN
+  DECLARE @t2 INT = (SELECT ParametroID FROM Parametros WHERE NombreParametro='Temperatura');
+  INSERT INTO UmbralesAlerta (ParametroID, ValorCritico, TipoUmbral, MensajeAlerta) VALUES
+    (@t2, 35.0, 'MAXIMO', 'Temperatura alta >35°C — posible evento térmico');
+END
+GO
+
 -- Insertando Usuarios
 INSERT INTO Usuarios (RolID, NombreUsuario, Correo, ContrasenaHash, Activo) VALUES(1, 'admin', 'raivellorenzo.valiente@gmail.com', '$2a$10$veZ8cibHpGfDLgmEAinXcu6gQDOg.5iU3B4C/DFfx4jm8dnuxsLEC', 1)
 

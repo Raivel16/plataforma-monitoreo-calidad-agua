@@ -1,19 +1,14 @@
-export class AlertaModelo {
-  constructor({
-    AlertaUsuarioID = null,
-    RegistroAlertaID = null,
-    UsuarioID = null,
-    FechaEnvio = null,
-    FechaRevisión = null,
-    EstadoAlerta = null,
-  } = {}) {
-    this.AlertaUsuarioID = AlertaUsuarioID;
-    this.RegistroAlertaID = RegistroAlertaID;
-    this.UsuarioID = UsuarioID;
-    this.FechaEnvio = FechaEnvio;
-    this.FechaRevisión = FechaRevisión;
-    this.EstadoAlerta = EstadoAlerta;
-  }
+// models/AnomaliaModelo.js
+import { getConnection } from "../config/db_sqlserver.js";
+import sql from "mssql";
 
+export class AlertaModelo {
+   static async obtenerPendientesPorUsuario(UsuarioID) {
+    const pool = await getConnection();
+    const req = pool.request();
+    req.input("UsuarioID", sql.Int, UsuarioID);
+    const result = await req.execute("sp_ObtenerAlertasPendientesPorUsuario");
+    return result.recordset || [];
+  }
   //funciones de consulta
 }
