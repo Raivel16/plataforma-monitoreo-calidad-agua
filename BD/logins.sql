@@ -36,9 +36,13 @@ GRANT EXECUTE TO app_backend_user;
 PRINT 'Permisos de ejecución otorgados.';
 GO
 
+
+DROP PROCEDURE IF EXISTS dbo.sp_TestConexion;
+GO
 -- Procedimiento de prueba de conexión
 CREATE PROCEDURE sp_TestConexion
 AS
 BEGIN
   PRINT 'Conexión exitosa';
 END;
+GO

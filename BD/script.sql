@@ -3,6 +3,8 @@
     -- Base de Datos: MonitoreoAguaJunin
     -- Motor: Microsoft SQL Server
     -- ==============================================================================
+USE master;
+GO
 
 IF EXISTS (SELECT name FROM sys.databases WHERE name = N'MonitoreoAguaJunin')
 BEGIN
@@ -15,7 +17,7 @@ BEGIN
     PRINT 'ℹ️ La base de datos "MonitoreoAguaJunin" no existe.';
 END
 
-
+GO
 
     -- 1. Crear la Base de Datos (Si no existe)
     IF NOT EXISTS (SELECT name FROM master.dbo.sysdatabases WHERE name = N'MonitoreoAguaJunin')
