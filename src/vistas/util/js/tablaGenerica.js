@@ -126,11 +126,17 @@ export async function conectarSocket() {
     }
   });
 
+  // ✅ Nuevo: escuchar alertas
+  socket.on("nuevaAlerta", (alerta) => {
+    window.dispatchEvent(new CustomEvent("nuevaAlerta", { detail: alerta }));
+  });
+
   socket.on("connect_error", () => {
-    const ph = tbody.querySelector(".cargando");
+    const ph = tbody?.querySelector(".cargando");
     if (ph) ph.textContent = "Error de conexión con el servidor.";
   });
 }
+
 
 export async function init({ apiUrl, selectorTbody, mapearFilaFn }) {
   configurarTabla({

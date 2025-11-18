@@ -2,7 +2,11 @@ import { getSesion } from "./sesion.js";
 import { inicializarMenuUsuario } from "./header.js";
 import { inicializarSlider } from "./slider.js";
 
+import { SistemaNotificaciones } from "./notificaciones.js"; // ✅ Nuevo
+
 let sesion = null;
+let sistemaNotificaciones = null; // ✅ Nuevo
+
 
 function ocultarSecciones() {
   const nivel = sesion?.NivelPermiso;
@@ -94,6 +98,10 @@ export async function inicializar() {
   sesion = await getSesion();
   if (sesion.logeado) {
     document.getElementById("nombreUsuario").textContent = sesion.NombreUsuario;
+    
+    // ✅ Inicializar sistema de notificaciones solo si está logeado
+    sistemaNotificaciones = new SistemaNotificaciones();
+    await sistemaNotificaciones.inicializar();
   } else {
     document.getElementById("nombreUsuario").textContent = "Invitado";
   }

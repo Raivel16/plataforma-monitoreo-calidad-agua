@@ -194,3 +194,13 @@ INSERT INTO Usuarios (RolID, NombreUsuario, Correo, ContrasenaHash, Activo) VALU
 
 
 
+-- Insertar umbrales por defecto (ejecuta una sola vez)
+INSERT INTO UmbralesAlerta (ParametroID, ValorCritico, TipoUmbral, MensajeAlerta)
+VALUES 
+    (1, 6.5, 'MINIMO', 'pH por debajo del límite seguro'),
+    (1, 8.5, 'MAXIMO', 'pH por encima del límite seguro'),
+    (2, 5.0, 'MAXIMO', 'Turbidez elevada detectada'),
+    (3, 5.0, 'MINIMO', 'Oxígeno disuelto bajo'),
+    (4, 2000, 'MAXIMO', 'Conductividad alta'),
+    (5, 30, 'MAXIMO', 'Temperatura elevada');
+GO

@@ -50,3 +50,8 @@ Proyecto del curso de Diseño de Software.
   - Listar predicciones
   - Crear prediccion
   - Medir precision de predicciones
+
+
+
+  arreglar porque se conviertes en anomolias al actualizar
+  ver bien las funciones de umbral y anomalia no funcionan correctamente 

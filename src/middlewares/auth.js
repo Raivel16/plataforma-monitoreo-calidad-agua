@@ -22,10 +22,10 @@ export function verificarSesion(req, res, next) {
   next();
 }
 
+
 export function verificarPermiso(nivelMinimo) {
   return (req, res, next) => {
-    const isApi =
-      req.path && req.path.startsWith("/api");
+    const isApi = req.path && req.path.startsWith("/api");
 
     const usuario = req.session.usuario;
 

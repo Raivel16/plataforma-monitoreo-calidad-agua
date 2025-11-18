@@ -612,3 +612,109 @@ BEGIN
     SELECT 'OK' AS Resultado;
 END
 GO
+
+
+
+--ALERTAS UMBRALES
+
+
+-- Procedimiento para insertar registro de alerta
+CREATE OR ALTER PROCEDURE sp_InsertarRegistroAlerta
+    @UmbralID INT = NULL,
+    @DatoID BIGINT,
+    @FechaHoraAlerta DATETIME2,
+    @EstadoNotificacion VARCHAR(50) = 'Pendiente'
+AS
+BEGIN
+    INSERT INTO RegistroAlertas (UmbralID, DatoID, FechaHoraAlerta, EstadoNotificacion)
+    VALUES (@UmbralID, @DatoID, @FechaHoraAlerta, @EstadoNotificacion);
+    
+    SELECT SCOPE_IDENTITY() AS RegistroAlertaID;
+END
+GO
+
+-- Procedimiento para insertar alerta a usuario
+CREATE OR ALTER PROCEDURE sp_InsertarAlertaUsuario
+    @RegistroAlertaID BIGINT,
+    @UsuarioID INT,
+    @FechaEnvio DATETIME2,
+    @EstadoAlerta VARCHAR(50) = 'Pendiente'
+AS
+BEGIN
+    INSERT INTO AlertasUsuarios (RegistroAlertaID, UsuarioID, FechaEnvio, EstadoAlerta)
+    VALUES (@RegistroAlertaID, @UsuarioID, @FechaEnvio, @EstadoAlerta);
+    
+    SELECT SCOPE_IDENTITY() AS AlertaUsuarioID;
+END
+GO
+
+-- Procedimiento para obtener usuarios por nivel de permiso mínimo
+CREATE OR ALTER PROCEDURE sp_ObtenerUsuariosPorNivel
+    @NivelMinimo INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        U.UsuarioID, 
+        U.NombreUsuario, 
+        U.Correo, 
+        R.NivelPermiso
+    FROM Usuarios U
+    INNER JOIN Roles R ON U.RolID = R.RolID
+    WHERE U.Activo = 1 
+        AND R.NivelPermiso >= @NivelMinimo;
+END
+GO
+
+-- Procedimiento para obtener alertas pendientes de un usuario
+CREATE OR ALTER PROCEDURE sp_ObtenerAlertasPendientesUsuario
+    @UsuarioID INT
+AS
+BEGIN
+    SELECT 
+        AU.AlertaUsuarioID,
+        AU.RegistroAlertaID,
+        AU.UsuarioID,
+        AU.FechaEnvio,
+        AU.EstadoAlerta,
+        RA.DatoID,
+        RA.FechaHoraAlerta,
+        DS.SensorID,
+        S.Nombre AS SensorNombre,
+        DS.ParametroID,
+        P.NombreParametro,
+        DS.Valor_procesado,
+        P.UnidadMedida
+    FROM AlertasUsuarios AU
+    INNER JOIN RegistroAlertas RA ON AU.RegistroAlertaID = RA.RegistroAlertaID
+    INNER JOIN DatosSensores DS ON RA.DatoID = DS.DatoID
+    INNER JOIN Sensores S ON DS.SensorID = S.SensorID
+    INNER JOIN Parametros P ON DS.ParametroID = P.ParametroID
+    WHERE AU.UsuarioID = @UsuarioID 
+      AND AU.EstadoAlerta = 'Pendiente'
+    ORDER BY AU.FechaEnvio DESC;
+END
+GO
+
+-- Procedimiento para marcar alerta como leída
+CREATE OR ALTER PROCEDURE sp_MarcarAlertaLeida
+    @AlertaUsuarioID BIGINT
+AS
+BEGIN
+    UPDATE AlertasUsuarios
+    SET EstadoAlerta = 'Leida',
+        FechaRevisión = GETDATE()
+    WHERE AlertaUsuarioID = @AlertaUsuarioID;
+END
+GO
+
+-- Procedimiento para obtener umbrales
+CREATE OR ALTER PROCEDURE sp_ObtenerUmbrales
+AS
+BEGIN
+    SELECT UmbralID, ParametroID, ValorCritico, TipoUmbral, MensajeAlerta
+    FROM UmbralesAlerta;
+END
+GO
+
