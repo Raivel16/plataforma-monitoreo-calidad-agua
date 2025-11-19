@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_9iY9Y64Sm4
 createdAt: 2025-10-29T03:47:11.105603300
-updatedAt: 2025-10-29T04:51:10.532774
+updatedAt: 2025-11-19T04:46:31.022463400
 workspaceId: wk_TV6JMdJDX5
 folderId: fl_s6XHXmPBXz
 authentication: {}
@@ -10,12 +10,10 @@ authenticationType: null
 body:
   text: |-
     {
-      "Nombre": "Sensor PH-01",
-      "Modelo": "PHX1000",
-      "Fabricante": "Sensores SA",
-      "Latitud": 12.3456,
-      "Longitud": 65.4321,
-      "Descripcion": "Sensor para medir pH del agua"
+      "SensorID": 1,
+      "ParametroID": 3,
+      "valor": -80,
+      "TimestampEnvio": "2025-11-17 04:50:03.9990000"
     }
 bodyType: application/json
 description: ''
@@ -27,5 +25,5 @@ headers:
 method: POST
 name: Registrar nuevo sensor
 sortPriority: 2000.0
-url: http://localhost:3000/api/sensores
+url: http://localhost:3000/api/datos
 urlParameters: []

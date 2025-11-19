@@ -1,9 +1,12 @@
+// notificacion.js
 const ALERTAS_VISTAS_KEY = "alertasVistas";
 
 export class SistemaNotificaciones {
   constructor() {
     this.alertasPendientes = [];
+    // alertasVistas se mantiene como arreglo para persistir; internamente usamos un Set
     this.alertasVistas = this.cargarAlertasVistas();
+    this.alertasVistasSet = new Set(this.alertasVistas.map((v) => Number(v)));
     this.indicador = null;
     this.panel = null;
   }
@@ -11,14 +14,30 @@ export class SistemaNotificaciones {
   cargarAlertasVistas() {
     try {
       const vistas = localStorage.getItem(ALERTAS_VISTAS_KEY);
-      return vistas ? JSON.parse(vistas) : [];
+      const arr = vistas ? JSON.parse(vistas) : [];
+      // normalizar a números y eliminar duplicados
+      const normal = Array.from(new Set(arr.map((v) => Number(v))));
+      return normal;
     } catch {
       return [];
     }
   }
 
   guardarAlertasVistas() {
-    localStorage.setItem(ALERTAS_VISTAS_KEY, JSON.stringify(this.alertasVistas));
+    // Guardamos desde el Set para asegurarnos que no haya duplicados y estén normalizados
+    const arr = Array.from(this.alertasVistasSet).map((v) => Number(v));
+    localStorage.setItem(ALERTAS_VISTAS_KEY, JSON.stringify(arr));
+    // mantener sincronizada la copia en this.alertasVistas
+    this.alertasVistas = arr;
+  }
+
+  // helper: añadir una alerta al set y persistir
+  marcarVistaLocal(alertaID) {
+    const id = Number(alertaID);
+    if (!this.alertasVistasSet.has(id)) {
+      this.alertasVistasSet.add(id);
+      this.guardarAlertasVistas();
+    }
   }
 
   async inicializar() {
@@ -28,9 +47,8 @@ export class SistemaNotificaciones {
   }
 
   crearIndicador() {
-    // Crear badge de notificaciones en el header
     const userMenu = document.querySelector(".user-menu");
-    
+
     this.indicador = document.createElement("div");
     this.indicador.className = "notif-badge";
     this.indicador.style.cssText = `
@@ -50,11 +68,15 @@ export class SistemaNotificaciones {
       cursor: pointer;
       z-index: 100;
     `;
-    
-    userMenu.style.position = "relative";
-    userMenu.appendChild(this.indicador);
 
-    // Crear panel de notificaciones
+    if (userMenu) {
+      userMenu.style.position = "relative";
+      userMenu.appendChild(this.indicador);
+    } else {
+      // Si no existe .user-menu, lo añadimos al body como fallback
+      document.body.appendChild(this.indicador);
+    }
+
     this.panel = document.createElement("div");
     this.panel.className = "notif-panel";
     this.panel.style.cssText = `
@@ -74,15 +96,36 @@ export class SistemaNotificaciones {
 
     document.body.appendChild(this.panel);
 
-    // Click en indicador abre/cierra panel
     this.indicador.addEventListener("click", (e) => {
       e.stopPropagation();
       this.togglePanel();
     });
 
-    // Click fuera cierra panel
+    // Delegación de eventos dentro del panel (evita re-adjuntar listeners constantemente)
+    this.panel.addEventListener("click", (e) => {
+      // botón "marcar todas"
+      const btn = e.target.closest && e.target.closest("#marcar-todas-leidas");
+      if (btn) {
+        e.stopPropagation();
+        this.marcarTodasLeidas();
+        return;
+      }
+
+      // click en alerta
+      const item = e.target.closest && e.target.closest(".alerta-item");
+      if (item) {
+        e.stopPropagation();
+        const id = item.dataset.id;
+        this.marcarComoLeida(id);
+      }
+    });
+
     document.addEventListener("click", (e) => {
-      if (!this.panel.contains(e.target) && !this.indicador.contains(e.target)) {
+      if (
+        this.panel &&
+        !this.panel.contains(e.target) &&
+        !this.indicador.contains(e.target)
+      ) {
         this.panel.style.display = "none";
       }
     });
@@ -94,18 +137,20 @@ export class SistemaNotificaciones {
         credentials: "same-origin",
       });
 
-      if (!res.ok) return;
+      if (!res.ok) {
+        console.warn("Respuesta no OK al pedir pendientes:", res.status);
+        return;
+      }
 
       const alertas = await res.json();
-      
-      // Filtrar solo las no vistas
+
+      // Usar el Set para decidir cuáles mostrar (normalizamos IDs a Number)
       this.alertasPendientes = alertas.filter(
-        (a) => !this.alertasVistas.includes(a.AlertaUsuarioID)
+        (a) => !this.alertasVistasSet.has(Number(a.AlertaUsuarioID))
       );
 
       this.actualizarIndicador();
-      
-      // Mostrar notificaciones toast solo si hay nuevas
+
       if (this.alertasPendientes.length > 0) {
         this.mostrarToasts();
       }
@@ -115,23 +160,32 @@ export class SistemaNotificaciones {
   }
 
   escucharNuevasAlertas() {
-    window.addEventListener("nuevaAlerta", (event) => {
-      const alerta = event.detail;
-      
-      // Solo si es para este usuario
-      if (alerta.UsuarioID) {
+    if (typeof window.socket !== "undefined" && window.socket) {
+      console.log("✅ Socket.io conectado - escuchando nuevas alertas");
+
+      window.socket.on("nuevaAlerta", (alerta) => {
+        console.log("📬 Nueva alerta recibida:", alerta);
+
         this.alertasPendientes.unshift(alerta);
         this.actualizarIndicador();
         this.mostrarToastIndividual(alerta);
-      }
-    });
+
+        if (this.panel.style.display === "flex") {
+          this.renderPanel();
+        }
+      });
+    } else {
+      console.warn(
+        "⚠️ Socket.io no está disponible - notificaciones en tiempo real deshabilitadas"
+      );
+    }
   }
 
   actualizarIndicador() {
     const count = this.alertasPendientes.length;
-    
+
     if (count > 0) {
-      this.indicador.textContent = count > 9 ? "9+" : count;
+      this.indicador.textContent = count > 9 ? "9+" : String(count);
       this.indicador.style.display = "flex";
     } else {
       this.indicador.style.display = "none";
@@ -140,7 +194,7 @@ export class SistemaNotificaciones {
 
   togglePanel() {
     const isVisible = this.panel.style.display === "flex";
-    
+
     if (!isVisible) {
       this.renderPanel();
       this.panel.style.display = "flex";
@@ -150,40 +204,38 @@ export class SistemaNotificaciones {
   }
 
   renderPanel() {
+
     this.panel.innerHTML = `
       <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
         <h3 style="margin: 0; font-size: 16px;">Notificaciones (${this.alertasPendientes.length})</h3>
-        ${this.alertasPendientes.length > 0 ? 
-          `<button id="marcar-todas-leidas" style="background: #1f526b; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">Marcar todas como leídas</button>` 
-          : ''}
+        ${this.alertasPendientes.length > 0 ? `<button id="marcar-todas-leidas" style="background: #1f526b; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">Marcar todas como leídas</button>` : ""}
       </div>
       <div style="overflow-y: auto; flex: 1; padding: 10px;">
-        ${this.alertasPendientes.length === 0 
-          ? '<p style="text-align: center; color: #999; padding: 20px;">No hay notificaciones pendientes</p>'
-          : this.alertasPendientes.map(a => this.renderAlerta(a)).join('')
-        }
+        ${this.alertasPendientes.length === 0 ? '<p style="text-align: center; color: #999; padding: 20px;">No hay notificaciones pendientes</p>' : this.alertasPendientes.map((a) => this.renderAlerta(a)).join("")}
       </div>
     `;
 
-    // Event listener para marcar todas como leídas
-    const btnMarcarTodas = this.panel.querySelector("#marcar-todas-leidas");
-    if (btnMarcarTodas) {
-      btnMarcarTodas.addEventListener("click", () => this.marcarTodasLeidas());
-    }
-
-    // Event listeners para cada alerta
-    this.panel.querySelectorAll(".alerta-item").forEach((item) => {
-      item.addEventListener("click", () => {
-        const id = item.dataset.id;
-        this.marcarComoLeida(id);
-      });
-    });
+    // No necesitamos adjuntar listeners individuales aquí (delegación en crearIndicador())
+    // Pero dejamos esto por compatibilidad si se requiere (sin duplicar listeners)
   }
 
   renderAlerta(alerta) {
-    const icono = alerta.tipo === "UMBRAL" ? "⚠️" : "🔴";
-    const color = alerta.tipo === "UMBRAL" ? "#ff9800" : "#f44336";
-    
+    let icono, color, titulo;
+
+    if (alerta.tipo === "UMBRAL") {
+      icono = "⚠️";
+      color = "#ff9800";
+      titulo = "Umbral Superado";
+    } else if (alerta.tipo === "CONTAMINACION_CRITICA") {
+      icono = "🚨";
+      color = "#d32f2f";
+      titulo = "Contaminación Crítica";
+    } else {
+      icono = "🔴";
+      color = "#f44336";
+      titulo = "Anomalía Detectada";
+    }
+
     return `
       <div class="alerta-item" data-id="${alerta.AlertaUsuarioID}" style="
         padding: 12px;
@@ -198,16 +250,17 @@ export class SistemaNotificaciones {
           <span style="font-size: 24px;">${icono}</span>
           <div style="flex: 1;">
             <div style="font-weight: bold; color: ${color}; margin-bottom: 4px;">
-              ${alerta.tipo === "UMBRAL" ? "Umbral Superado" : "Anomalía Detectada"}
+              ${titulo}
             </div>
             <div style="font-size: 13px; color: #555; margin-bottom: 4px;">
-              ${alerta.SensorNombre || alerta.mensaje}
+              ${alerta.SensorNombre || alerta.mensaje || ""}
             </div>
             <div style="font-size: 12px; color: #777;">
-              ${alerta.NombreParametro}: ${Number(alerta.Valor_procesado || alerta.Valor).toFixed(2)} ${alerta.UnidadMedida}
+              ${alerta.NombreParametro || ""}: ${this.formatearValor(alerta)} ${alerta.UnidadMedida || ""}
             </div>
+            ${alerta.contexto ? `<div style="font-size: 11px; color: #666; margin-top: 4px; font-style: italic;">${alerta.contexto}</div>` : ""}
             <div style="font-size: 11px; color: #999; margin-top: 4px;">
-              ${alerta.Timestamp || new Date(alerta.FechaEnvio).toLocaleString()}
+              ${alerta.Timestamp || (alerta.FechaEnvio ? new Date(alerta.FechaEnvio).toLocaleString() : "")}
             </div>
           </div>
         </div>
@@ -216,9 +269,8 @@ export class SistemaNotificaciones {
   }
 
   mostrarToasts() {
-    // Mostrar máximo 3 toasts al cargar
     const toMostrar = this.alertasPendientes.slice(0, 3);
-    
+
     toMostrar.forEach((alerta, index) => {
       setTimeout(() => {
         this.mostrarToastIndividual(alerta);
@@ -228,8 +280,22 @@ export class SistemaNotificaciones {
 
   mostrarToastIndividual(alerta) {
     const toast = document.createElement("div");
-    const icono = alerta.tipo === "UMBRAL" ? "⚠️" : "🔴";
-    const color = alerta.tipo === "UMBRAL" ? "#ff9800" : "#f44336";
+
+    let icono, color, titulo;
+
+    if (alerta.tipo === "UMBRAL") {
+      icono = "⚠️";
+      color = "#ff9800";
+      titulo = "⚠️ Umbral Superado";
+    } else if (alerta.tipo === "CONTAMINACION_CRITICA") {
+      icono = "🚨";
+      color = "#d32f2f";
+      titulo = "🚨 Contaminación Crítica";
+    } else {
+      icono = "🔴";
+      color = "#f44336";
+      titulo = "🔴 Anomalía Detectada";
+    }
 
     toast.style.cssText = `
       position: fixed;
@@ -250,14 +316,15 @@ export class SistemaNotificaciones {
         <span style="font-size: 24px;">${icono}</span>
         <div style="flex: 1;">
           <div style="font-weight: bold; color: ${color}; margin-bottom: 5px;">
-            ${alerta.tipo === "UMBRAL" ? "⚠️ Umbral Superado" : "🔴 Anomalía Detectada"}
+            ${titulo}
           </div>
           <div style="font-size: 13px; color: #555;">
-            ${alerta.SensorNombre || alerta.mensaje}
+            ${alerta.SensorNombre || alerta.mensaje || ""}
           </div>
           <div style="font-size: 12px; color: #777; margin-top: 4px;">
-            ${alerta.NombreParametro}: ${Number(alerta.Valor_procesado || alerta.Valor).toFixed(2)} ${alerta.UnidadMedida}
+            ${alerta.NombreParametro || ""}: ${this.formatearValor(alerta)} ${alerta.UnidadMedida || ""}
           </div>
+          ${alerta.contexto ? `<div style="font-size: 11px; color: #666; margin-top: 4px; font-style: italic;">${alerta.contexto}</div>` : ""}
         </div>
         <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #999;">×</button>
       </div>
@@ -265,46 +332,128 @@ export class SistemaNotificaciones {
 
     document.body.appendChild(toast);
 
-    // Auto-cerrar después de 5 segundos
     setTimeout(() => {
       toast.style.animation = "slideOut 0.3s ease-out";
       setTimeout(() => toast.remove(), 300);
     }, 5000);
   }
 
+  formatearValor(alerta) {
+    const valor = alerta.Valor ?? alerta.Valor_original ?? alerta.Valor_procesado;
+    if (valor === null || valor === undefined) {
+      return "N/A";
+    }
+    return Number(valor).toFixed(2);
+  }
+
   async marcarComoLeida(alertaID) {
+    const idNum = Number(alertaID);
+    console.log(`📝 Marcando alerta ${idNum} como leída...`);
+
+    // Si ya está en vistas locales -> solo actualizar UI (aseguramos consistencia)
+    if (this.alertasVistasSet.has(idNum)) {
+      this.alertasPendientes = this.alertasPendientes.filter((a) => Number(a.AlertaUsuarioID) !== idNum);
+      this.actualizarIndicador();
+      this.renderPanel();
+      return;
+    }
+
+    // Optimista: marcar localmente y actualizar UI ya
+    this.marcarVistaLocal(idNum);
+
+    // Quitar de pendientes y actualizar indicador y UI
+    this.alertasPendientes = this.alertasPendientes.filter((a) => Number(a.AlertaUsuarioID) !== idNum);
+    this.actualizarIndicador();
+
+    // Remover elemento DOM con animación si existe
+    const elemento = this.panel.querySelector(`.alerta-item[data-id="${idNum}"]`);
+    if (elemento) {
+      elemento.style.transition = "opacity 0.18s, transform 0.18s";
+      elemento.style.opacity = "0";
+      elemento.style.transform = "translateX(20px)";
+      setTimeout(() => {
+        if (elemento && elemento.parentElement) elemento.remove();
+      }, 180);
+    } else {
+      // forzar render si no se encontró elemento
+      this.renderPanel();
+    }
+
+    // Llamada al backend (no bloqueamos la UI)
     try {
-      await fetch(`/api/alertas/${alertaID}/leer`, {
+      const response = await fetch(`/api/alertas/${idNum}/leer`, {
         method: "PATCH",
         credentials: "same-origin",
       });
 
-      // Agregar a vistas
-      this.alertasVistas.push(parseInt(alertaID));
-      this.guardarAlertasVistas();
+      if (!response.ok) {
+        throw new Error(`Respuesta ${response.status}`);
+      }
 
-      // Remover de pendientes
-      this.alertasPendientes = this.alertasPendientes.filter(
-        (a) => a.AlertaUsuarioID !== parseInt(alertaID)
-      );
-
-      this.actualizarIndicador();
-      this.renderPanel();
+      console.log(`✅ Alerta ${idNum} marcada en backend`);
     } catch (error) {
-      console.error("Error al marcar alerta:", error);
+      console.error("❌ Error al marcar alerta en backend:", error);
+      // En caso de fallo, revertimos la marca local (opcional)
+      // Aquí revertimos para mantener consistencia entre local y backend
+      if (this.alertasVistasSet.has(idNum)) {
+        this.alertasVistasSet.delete(idNum);
+        this.guardarAlertasVistas();
+      }
+      // volver a traer la alerta del servidor sería ideal; por simplicidad la rehacemos fetch de pendientes
+      await this.cargarAlertasPendientes();
+      this.renderPanel();
     }
   }
 
   async marcarTodasLeidas() {
-    const promises = this.alertasPendientes.map((a) =>
-      this.marcarComoLeida(a.AlertaUsuarioID)
-    );
+    if (this.alertasPendientes.length === 0) return;
 
-    await Promise.all(promises);
+    // Copia de pendientes actuales
+    const pendientes = [...this.alertasPendientes];
+
+    // Filtrar solo IDs que NO estén ya marcadas localmente
+    const idsParaMarcar = pendientes
+      .map((a) => Number(a.AlertaUsuarioID))
+      .filter((id) => !this.alertasVistasSet.has(id));
+
+    // Optimista: marcar localmente todos (añadir al set y persistir)
+    idsParaMarcar.forEach((id) => this.alertasVistasSet.add(Number(id)));
+    this.guardarAlertasVistas();
+
+    // Vaciar pendientes y actualizar UI ya
+    this.alertasPendientes = [];
+    this.actualizarIndicador();
+    this.renderPanel();
+
+    // Enviar PATCHs en paralelo solo para los que no estaban marcados localmente
+    try {
+      const results = await Promise.all(
+        idsParaMarcar.map((id) =>
+          fetch(`/api/alertas/${id}/leer`, {
+            method: "PATCH",
+            credentials: "same-origin",
+          })
+        )
+      );
+
+      const anyFail = results.some((r) => !r.ok);
+      if (anyFail) {
+        throw new Error("Al menos una petición PATCH falló");
+      }
+
+      console.log("✅ Todas las alertas marcadas en backend (por lote individual)");
+    } catch (error) {
+      console.error("❌ Error marcando todas las alertas en backend:", error);
+      // Revertir localmente si prefieres consistencia
+      // Aquí decidimos revertir las IDs que fallaron (para no mentir al usuario)
+      // Una estrategia posible: recargar pendientes del servidor para sincronizar
+      await this.cargarAlertasPendientes();
+      this.renderPanel();
+    }
   }
 }
 
-// Agregar estilos de animación
+/* estilos para toasts */
 const style = document.createElement("style");
 style.textContent = `
   @keyframes slideIn {

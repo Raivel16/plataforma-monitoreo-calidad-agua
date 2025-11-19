@@ -2,7 +2,13 @@ import { getConnection } from "../config/db_sqlserver.js";
 import sql from "mssql";
 
 export class AlertaModelo {
-  static async registrarAlerta({ umbralID = null, datoID, tipo, mensaje }) {
+  static async registrarAlerta({
+    umbralID = null,
+    datoID,
+    tipo,
+    mensaje,
+    contexto = null,
+  }) {
     try {
       const pool = await getConnection();
       const request = pool.request();
@@ -11,36 +17,44 @@ export class AlertaModelo {
       request.input("DatoID", sql.BigInt, datoID);
       request.input("FechaHoraAlerta", sql.DateTime2, new Date());
       request.input("EstadoNotificacion", sql.VarChar(50), "Enviado");
+      request.input("Tipo", sql.VarChar(20), tipo);
+      request.input("Contexto", sql.VarChar(500), contexto);
 
       const result = await request.execute("sp_InsertarRegistroAlerta");
       const registroAlertaID = result.recordset[0].RegistroAlertaID;
 
-      return { registroAlertaID, tipo, mensaje };
+      return { registroAlertaID, tipo, mensaje, contexto };
     } catch (error) {
       console.error("Error al registrar alerta:", error);
       throw error;
     }
   }
 
-  static async notificarUsuarios({ registroAlertaID, nivelesPermiso, tipo, mensaje, datoInfo }) {
+  static async notificarUsuarios({
+    registroAlertaID,
+    nivelesPermiso,
+    tipo,
+    mensaje,
+    datoInfo,
+  }) {
     try {
       const pool = await getConnection();
-      
+
       // Determinar nivel mínimo basado en el array de niveles
       const nivelMinimo = Math.min(...nivelesPermiso);
-      
+
       const request = pool.request();
       request.input("NivelMinimo", sql.Int, nivelMinimo);
-      
+
       const result = await request.execute("sp_ObtenerUsuariosPorNivel");
 
       const usuarios = result.recordset;
-      
+
       // Filtrar usuarios según los niveles específicos requeridos
-      const usuariosFiltrados = usuarios.filter(u => 
+      const usuariosFiltrados = usuarios.filter((u) =>
         nivelesPermiso.includes(u.NivelPermiso)
       );
-      
+
       const alertasCreadas = [];
 
       for (const usuario of usuariosFiltrados) {
@@ -50,11 +64,12 @@ export class AlertaModelo {
         req.input("FechaEnvio", sql.DateTime2, new Date());
         req.input("EstadoAlerta", sql.VarChar(50), "Pendiente");
 
-        await req.execute("sp_InsertarAlertaUsuario");
+        const result = await req.execute("sp_InsertarAlertaUsuario");
 
         alertasCreadas.push({
           UsuarioID: usuario.UsuarioID,
           NombreUsuario: usuario.NombreUsuario,
+          AlertaUsuarioID: result.recordset[0].AlertaUsuarioID,
           tipo,
           mensaje,
           ...datoInfo,
@@ -74,7 +89,9 @@ export class AlertaModelo {
       const request = pool.request();
 
       request.input("UsuarioID", sql.Int, usuarioID);
-      const result = await request.execute("sp_ObtenerAlertasPendientesUsuario");
+      const result = await request.execute(
+        "sp_ObtenerAlertasPendientesUsuario"
+      );
 
       return result.recordset;
     } catch (error) {

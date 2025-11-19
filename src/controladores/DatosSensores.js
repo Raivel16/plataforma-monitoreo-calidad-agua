@@ -116,19 +116,37 @@ export class DatosSensoresControlador {
       // 4️⃣ Emitir dato procesado
       io.emit("nuevaLectura", resultado);
 
-      // 5️⃣ Validar umbrales y detectar anomalías
-      const umbralViolado = await validarUmbrales(resultado);
+      // 5️⃣ Detectar anomalías PRIMERO (para capturar valores imposibles)
       const anomaliaDetectada = await detectarAnomalias(resultado);
+
+      // 6️⃣ Solo validar umbrales si NO es una anomalía por valor imposible
+      let umbralViolado = null;
+      if (!anomaliaDetectada || !anomaliaDetectada.valorImposible) {
+        umbralViolado = await validarUmbrales(resultado);
+
+        // Si hay umbral violado Y anomalía (cambio brusco), es contaminación crítica
+        if (umbralViolado && anomaliaDetectada) {
+          anomaliaDetectada.tipo = "CONTAMINACION_CRITICA";
+          anomaliaDetectada.contexto = `Cambio brusco detectado junto con superación de umbral. Posible evento de contaminación repentina que requiere atención inmediata.`;
+          anomaliaDetectada.mensaje = `🚨 CONTAMINACIÓN CRÍTICA: Cambio abrupto a ${resultado.Valor_procesado.toFixed(
+            2
+          )} ${resultado.UnidadMedida} y superación de umbral`;
+        }
+      }
 
       const alertasGeneradas = [];
 
-      // 6️⃣ Procesar alertas de umbral
-      if (umbralViolado) {
+      // 7️⃣ Procesar alertas de umbral (solo si no hay anomalía por valor imposible)
+      if (
+        umbralViolado &&
+        (!anomaliaDetectada || !anomaliaDetectada.valorImposible)
+      ) {
         const alerta = await AlertaModelo.registrarAlerta({
           umbralID: umbralViolado.umbralID,
           datoID: resultado.DatoID,
           tipo: "UMBRAL",
           mensaje: umbralViolado.mensaje,
+          contexto: umbralViolado.contexto,
         });
 
         const notificaciones = await AlertaModelo.notificarUsuarios({
@@ -141,49 +159,72 @@ export class DatosSensoresControlador {
             SensorNombre: resultado.Nombre,
             ParametroID: resultado.ParametroID,
             NombreParametro: resultado.NombreParametro,
-            Valor: resultado.Valor_procesado,
+            Valor: resultado.Valor_original,
             UnidadMedida: resultado.UnidadMedida,
             Timestamp: resultado.TimestampRegistro,
+            Contexto: umbralViolado.contexto,
           },
         });
 
         alertasGeneradas.push(...notificaciones);
       }
 
-      // 7️⃣ Procesar alertas de anomalía
+      // 8️⃣ Procesar alertas de anomalía o contaminación crítica
       if (anomaliaDetectada) {
+        // Determinar niveles de permiso según el tipo de alerta
+        const nivelesPermiso =
+          anomaliaDetectada.tipo === "CONTAMINACION_CRITICA"
+            ? [2, 3, 4] // Notificar a todos si es contaminación crítica
+            : [4]; // Solo administradores para anomalías normales
+
         const alerta = await AlertaModelo.registrarAlerta({
           umbralID: null,
           datoID: resultado.DatoID,
-          tipo: "ANOMALIA",
+          tipo: anomaliaDetectada.tipo,
           mensaje: anomaliaDetectada.mensaje,
+          contexto: anomaliaDetectada.contexto,
         });
 
         const notificaciones = await AlertaModelo.notificarUsuarios({
           registroAlertaID: alerta.registroAlertaID,
-          nivelesPermiso: [4],
-          tipo: "ANOMALIA",
+          nivelesPermiso,
+          tipo: anomaliaDetectada.tipo,
           mensaje: anomaliaDetectada.mensaje,
           datoInfo: {
             SensorID: resultado.SensorID,
             SensorNombre: resultado.Nombre,
             ParametroID: resultado.ParametroID,
             NombreParametro: resultado.NombreParametro,
-            Valor: resultado.Valor_procesado,
+            Valor: resultado.Valor_original,
             ValorEsperado: anomaliaDetectada.valorEsperado,
             Desviacion: anomaliaDetectada.desviacion,
             UnidadMedida: resultado.UnidadMedida,
             Timestamp: resultado.TimestampRegistro,
+            Contexto: anomaliaDetectada.contexto,
           },
         });
 
         alertasGeneradas.push(...notificaciones);
       }
 
-      // 8️⃣ Emitir alertas generadas
+      // 9️⃣ Emitir alertas generadas (normalizar nombres de campos)
       if (alertasGeneradas.length > 0) {
         alertasGeneradas.forEach((alerta) => {
-          io.emit("nuevaAlerta", alerta);
+          // Normalizar campos de SQL Server a JavaScript para socket.io
+          const alertaNormalizada = {
+            ...alerta,
+            tipo: alerta.tipo,
+            contexto: alerta.Contexto || alerta.contexto,
+            mensaje: alerta.mensaje,
+            SensorNombre: alerta.SensorNombre,
+            NombreParametro: alerta.NombreParametro,
+            Valor: alerta.Valor, // ✨ Usar el valor original enviado en datoInfo
+            UnidadMedida: alerta.UnidadMedida,
+            Timestamp: alerta.Timestamp,
+            FechaEnvio: new Date(),
+          };
+
+          io.emit("nuevaAlerta", alertaNormalizada);
         });
       }
 

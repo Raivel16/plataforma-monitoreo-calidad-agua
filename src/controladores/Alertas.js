@@ -4,13 +4,21 @@ export class AlertasControlador {
   static async obtenerPendientes(req, res) {
     try {
       const usuarioID = req.session?.usuario?.UsuarioID;
-      
+
       if (!usuarioID) {
         return res.status(401).json({ error: "No autenticado" });
       }
 
       const alertas = await AlertaModelo.obtenerAlertasPendientes(usuarioID);
-      res.json(alertas);
+
+      // Normalizar nombres de campos de SQL Server a formato JavaScript
+      const alertasNormalizadas = alertas.map((alerta) => ({
+        ...alerta,
+        tipo: alerta.Tipo || "ANOMALIA", // Usar Tipo de BD, fallback a ANOMALIA si es NULL
+        contexto: alerta.Contexto || null,
+      }));
+
+      res.json(alertasNormalizadas);
     } catch (error) {
       console.error("Error al obtener alertas:", error);
       res.status(500).json({ error: "Error al obtener alertas" });

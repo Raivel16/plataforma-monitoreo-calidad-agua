@@ -7,10 +7,8 @@ import { SistemaNotificaciones } from "./notificaciones.js"; // ✅ Nuevo
 let sesion = null;
 let sistemaNotificaciones = null; // ✅ Nuevo
 
-
 function ocultarSecciones() {
   const nivel = sesion?.NivelPermiso;
-
 
   const btnDatos = document.getElementById("btn-seccion-datos-sensores");
   const btnUsuarios = document.getElementById("btn-seccion-usuarios");
@@ -98,8 +96,26 @@ export async function inicializar() {
   sesion = await getSesion();
   if (sesion.logeado) {
     document.getElementById("nombreUsuario").textContent = sesion.NombreUsuario;
-    
-    // ✅ Inicializar sistema de notificaciones solo si está logeado
+
+    // ✅ Conectar Socket.IO GLOBALMENTE
+    if (typeof io !== "undefined") {
+      window.socket = io("http://localhost:3000");
+      console.log("🔌 Socket.IO conectado globalmente");
+
+      window.socket.on("connect", () => {
+        console.log("✅ Socket.IO: Conexión establecida");
+      });
+
+      window.socket.on("connect_error", (error) => {
+        console.error("❌ Socket.IO: Error de conexión", error);
+      });
+    } else {
+      console.warn(
+        "⚠️ Socket.IO no está cargado - verifique que socket.io.js esté incluido en el HTML"
+      );
+    }
+
+    // ✅ Inicializar sistema de notificaciones DESPUÉS de conectar socket
     sistemaNotificaciones = new SistemaNotificaciones();
     await sistemaNotificaciones.inicializar();
   } else {

@@ -14,7 +14,7 @@ export const datoSensorSchema = z.object({
   }),
   Valor_original: z.number(),
   Valor_procesado: z.number(),
-  Valor_normalizado: z.number().min(0).max(1),
+  Valor_normalizado: z.number(),
   Estado: z.enum(["crudo", "procesado", "descartado"]).default("crudo"),
 });
 

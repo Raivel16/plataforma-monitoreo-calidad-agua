@@ -53,5 +53,5 @@ Proyecto del curso de Diseño de Software.
 
 
 
-  arreglar porque se conviertes en anomolias al actualizar
-  ver bien las funciones de umbral y anomalia no funcionan correctamente 
+ no se borran visualmente las notificaciones
+ se esta trabajando el analisis del umbral y la alerta con el valor procesado (debe ser con el original  o no, para diagnosticar correctamente o la funcion procesar que no cambie solo normalice.) 

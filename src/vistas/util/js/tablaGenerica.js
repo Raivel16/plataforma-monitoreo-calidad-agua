@@ -15,7 +15,6 @@ export function configurarTabla({
   mapearFila = mapear;
 }
 
-
 export function renderPagina() {
   tbody.innerHTML = "";
 
@@ -31,8 +30,6 @@ export function renderPagina() {
   renderControles();
 }
 
-
-
 export function renderControles() {
   const cont = document.getElementById("paginacion");
   cont.innerHTML = "";
@@ -41,7 +38,9 @@ export function renderControles() {
   if (totalPaginas <= 1) return;
 
   if (paginaActual > 1)
-    cont.innerHTML += `<button data-pag="${paginaActual - 1}">Anterior</button>`;
+    cont.innerHTML += `<button data-pag="${
+      paginaActual - 1
+    }">Anterior</button>`;
 
   for (let i = 1; i <= totalPaginas; i++)
     cont.innerHTML += `
@@ -50,7 +49,9 @@ export function renderControles() {
       </button>`;
 
   if (paginaActual < totalPaginas)
-    cont.innerHTML += `<button data-pag="${paginaActual + 1}">Siguiente</button>`;
+    cont.innerHTML += `<button data-pag="${
+      paginaActual + 1
+    }">Siguiente</button>`;
 
   cont.querySelectorAll("button").forEach((btn) =>
     btn.addEventListener("click", () => {
@@ -95,21 +96,17 @@ async function cargarLecturasIniciales(apiUrl) {
     }
   } catch (err) {
     const ph = tbody.querySelector(".cargando");
-    if (ph)
-      ph.textContent = "No se pueden obtener los datos en este momento.";
+    if (ph) ph.textContent = "No se pueden obtener los datos en este momento.";
     console.error(err);
   }
 }
-
 
 export async function filtrarDatos(filtro, apiUrl) {
   await recargarDatosDesdeBD(apiUrl);
 
   filtro = filtro.toLowerCase();
   registrosGlobal = registrosGlobal.filter((item) =>
-    Object.values(item).some((v) =>
-      String(v).toLowerCase().includes(filtro)
-    )
+    Object.values(item).some((v) => String(v).toLowerCase().includes(filtro))
   );
 
   paginaActual = 1;
@@ -117,7 +114,13 @@ export async function filtrarDatos(filtro, apiUrl) {
 }
 
 export async function conectarSocket() {
-  const socket = io("http://localhost:3000");
+  // Usar el socket global si existe, sino crear uno local
+  const socket = window.socket || io("http://localhost:3000");
+
+  // Si no había socket global, crearlo
+  if (!window.socket) {
+    window.socket = socket;
+  }
 
   socket.on("nuevaLectura", (lectura) => {
     if (lectura && typeof lectura === "object") {
@@ -126,17 +129,11 @@ export async function conectarSocket() {
     }
   });
 
-  // ✅ Nuevo: escuchar alertas
-  socket.on("nuevaAlerta", (alerta) => {
-    window.dispatchEvent(new CustomEvent("nuevaAlerta", { detail: alerta }));
-  });
-
   socket.on("connect_error", () => {
     const ph = tbody?.querySelector(".cargando");
     if (ph) ph.textContent = "Error de conexión con el servidor.";
   });
 }
-
 
 export async function init({ apiUrl, selectorTbody, mapearFilaFn }) {
   configurarTabla({
