@@ -6,6 +6,7 @@ export async function logout() {
     method: "POST",
     credentials: "same-origin",
   });
+  sessionStorage.removeItem("animacionesMostradas");
   window.location.href = "/";
 }
 

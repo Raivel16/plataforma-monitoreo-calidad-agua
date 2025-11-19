@@ -1,5 +1,7 @@
+/* global sessionStorage */
 // notificacion.js
 const ALERTAS_VISTAS_KEY = "alertasVistas";
+const ANIMACIONES_MOSTRADAS_KEY = "animacionesMostradas";
 
 export class SistemaNotificaciones {
   constructor() {
@@ -9,6 +11,8 @@ export class SistemaNotificaciones {
     this.alertasVistasSet = new Set(this.alertasVistas.map((v) => Number(v)));
     this.indicador = null;
     this.panel = null;
+    // Verificar si es la primera carga de la sesión
+    this.esPrimeraVez = !sessionStorage.getItem(ANIMACIONES_MOSTRADAS_KEY);
   }
 
   cargarAlertasVistas() {
@@ -151,8 +155,12 @@ export class SistemaNotificaciones {
 
       this.actualizarIndicador();
 
-      if (this.alertasPendientes.length > 0) {
+      // Solo mostrar animaciones en el primer inicio de sesión
+      if (this.alertasPendientes.length > 0 && this.esPrimeraVez) {
         this.mostrarToasts();
+        // Marcar que ya se mostraron las animaciones en esta sesión
+        sessionStorage.setItem(ANIMACIONES_MOSTRADAS_KEY, "true");
+        this.esPrimeraVez = false;
       }
     } catch (error) {
       console.error("Error al cargar alertas:", error);
