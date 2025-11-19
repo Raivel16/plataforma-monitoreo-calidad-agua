@@ -47,14 +47,14 @@ export class SistemaNotificaciones {
   }
 
   crearIndicador() {
-    const userMenu = document.querySelector(".user-menu");
+    const userMenu = document.querySelector(".notif-badge");
 
     this.indicador = document.createElement("div");
     this.indicador.className = "notif-badge";
     this.indicador.style.cssText = `
       position: absolute;
-      top: -5px;
-      right: -5px;
+      top: 0px;
+      right: 0px;
       background: #ff4444;
       color: white;
       border-radius: 50%;
@@ -81,7 +81,7 @@ export class SistemaNotificaciones {
     this.panel.className = "notif-panel";
     this.panel.style.cssText = `
       position: fixed;
-      top: 70px;
+      top: 120px;
       right: 40px;
       width: 400px;
       max-height: 500px;
@@ -204,14 +204,23 @@ export class SistemaNotificaciones {
   }
 
   renderPanel() {
-
     this.panel.innerHTML = `
       <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="margin: 0; font-size: 16px;">Notificaciones (${this.alertasPendientes.length})</h3>
-        ${this.alertasPendientes.length > 0 ? `<button id="marcar-todas-leidas" style="background: #1f526b; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">Marcar todas como leídas</button>` : ""}
+        <h3 style="margin: 0; font-size: 16px;">Notificaciones (${
+          this.alertasPendientes.length
+        })</h3>
+        ${
+          this.alertasPendientes.length > 0
+            ? `<button id="marcar-todas-leidas" style="background: #1f526b; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">Marcar todas como leídas</button>`
+            : ""
+        }
       </div>
       <div style="overflow-y: auto; flex: 1; padding: 10px;">
-        ${this.alertasPendientes.length === 0 ? '<p style="text-align: center; color: #999; padding: 20px;">No hay notificaciones pendientes</p>' : this.alertasPendientes.map((a) => this.renderAlerta(a)).join("")}
+        ${
+          this.alertasPendientes.length === 0
+            ? '<p style="text-align: center; color: #999; padding: 20px;">No hay notificaciones pendientes</p>'
+            : this.alertasPendientes.map((a) => this.renderAlerta(a)).join("")
+        }
       </div>
     `;
 
@@ -256,11 +265,22 @@ export class SistemaNotificaciones {
               ${alerta.SensorNombre || alerta.mensaje || ""}
             </div>
             <div style="font-size: 12px; color: #777;">
-              ${alerta.NombreParametro || ""}: ${this.formatearValor(alerta)} ${alerta.UnidadMedida || ""}
+              ${alerta.NombreParametro || ""}: ${this.formatearValor(alerta)} ${
+      alerta.UnidadMedida || ""
+    }
             </div>
-            ${alerta.contexto ? `<div style="font-size: 11px; color: #666; margin-top: 4px; font-style: italic;">${alerta.contexto}</div>` : ""}
+            ${
+              alerta.contexto
+                ? `<div style="font-size: 11px; color: #666; margin-top: 4px; font-style: italic;">${alerta.contexto}</div>`
+                : ""
+            }
             <div style="font-size: 11px; color: #999; margin-top: 4px;">
-              ${alerta.Timestamp || (alerta.FechaEnvio ? new Date(alerta.FechaEnvio).toLocaleString() : "")}
+              ${
+                alerta.Timestamp ||
+                (alerta.FechaEnvio
+                  ? new Date(alerta.FechaEnvio).toLocaleString()
+                  : "")
+              }
             </div>
           </div>
         </div>
@@ -322,9 +342,15 @@ export class SistemaNotificaciones {
             ${alerta.SensorNombre || alerta.mensaje || ""}
           </div>
           <div style="font-size: 12px; color: #777; margin-top: 4px;">
-            ${alerta.NombreParametro || ""}: ${this.formatearValor(alerta)} ${alerta.UnidadMedida || ""}
+            ${alerta.NombreParametro || ""}: ${this.formatearValor(alerta)} ${
+      alerta.UnidadMedida || ""
+    }
           </div>
-          ${alerta.contexto ? `<div style="font-size: 11px; color: #666; margin-top: 4px; font-style: italic;">${alerta.contexto}</div>` : ""}
+          ${
+            alerta.contexto
+              ? `<div style="font-size: 11px; color: #666; margin-top: 4px; font-style: italic;">${alerta.contexto}</div>`
+              : ""
+          }
         </div>
         <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #999;">×</button>
       </div>
@@ -339,7 +365,8 @@ export class SistemaNotificaciones {
   }
 
   formatearValor(alerta) {
-    const valor = alerta.Valor ?? alerta.Valor_original ?? alerta.Valor_procesado;
+    const valor =
+      alerta.Valor ?? alerta.Valor_original ?? alerta.Valor_procesado;
     if (valor === null || valor === undefined) {
       return "N/A";
     }
@@ -352,7 +379,9 @@ export class SistemaNotificaciones {
 
     // Si ya está en vistas locales -> solo actualizar UI (aseguramos consistencia)
     if (this.alertasVistasSet.has(idNum)) {
-      this.alertasPendientes = this.alertasPendientes.filter((a) => Number(a.AlertaUsuarioID) !== idNum);
+      this.alertasPendientes = this.alertasPendientes.filter(
+        (a) => Number(a.AlertaUsuarioID) !== idNum
+      );
       this.actualizarIndicador();
       this.renderPanel();
       return;
@@ -362,11 +391,19 @@ export class SistemaNotificaciones {
     this.marcarVistaLocal(idNum);
 
     // Quitar de pendientes y actualizar indicador y UI
-    this.alertasPendientes = this.alertasPendientes.filter((a) => Number(a.AlertaUsuarioID) !== idNum);
+    this.alertasPendientes = this.alertasPendientes.filter(
+      (a) => Number(a.AlertaUsuarioID) !== idNum
+    );
     this.actualizarIndicador();
 
+    if (this.panel.style.display === "flex") {
+      this.renderPanel();
+    }
+
     // Remover elemento DOM con animación si existe
-    const elemento = this.panel.querySelector(`.alerta-item[data-id="${idNum}"]`);
+    const elemento = this.panel.querySelector(
+      `.alerta-item[data-id="${idNum}"]`
+    );
     if (elemento) {
       elemento.style.transition = "opacity 0.18s, transform 0.18s";
       elemento.style.opacity = "0";
@@ -441,7 +478,9 @@ export class SistemaNotificaciones {
         throw new Error("Al menos una petición PATCH falló");
       }
 
-      console.log("✅ Todas las alertas marcadas en backend (por lote individual)");
+      console.log(
+        "✅ Todas las alertas marcadas en backend (por lote individual)"
+      );
     } catch (error) {
       console.error("❌ Error marcando todas las alertas en backend:", error);
       // Revertir localmente si prefieres consistencia
