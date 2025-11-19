@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_9iY9Y64Sm4
 createdAt: 2025-10-29T03:47:11.105603300
-updatedAt: 2025-11-19T04:46:31.022463400
+updatedAt: 2025-11-19T05:21:57.625031300
 workspaceId: wk_TV6JMdJDX5
 folderId: fl_s6XHXmPBXz
 authentication: {}
@@ -12,7 +12,7 @@ body:
     {
       "SensorID": 1,
       "ParametroID": 3,
-      "valor": -80,
+      "valor": 3,
       "TimestampEnvio": "2025-11-17 04:50:03.9990000"
     }
 bodyType: application/json
