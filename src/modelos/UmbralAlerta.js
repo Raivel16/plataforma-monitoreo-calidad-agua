@@ -23,4 +23,8 @@ export class UmbralAlerta {
 
   
   //funciones de consulta
+  // obtenerTodos(),
+  // obtenerPorId(),
+  // crear(),
+  // actualizar(),
 }

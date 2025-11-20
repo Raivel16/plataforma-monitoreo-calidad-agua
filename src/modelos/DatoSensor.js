@@ -5,20 +5,6 @@ import sql from "mssql";
 
 // src/modelos/DatosSensoresModelo.js
 export class DatoSensorModelo {
-  static datos = [
-    {
-      DatoID: 1,
-      SensorID: 2,
-      ParametroID: 5,
-      Valor_original: 7.4,
-      Valor_procesado: 7.4,
-      Valor_normalizado: 0.07400000000000001,
-      Estado: "procesado",
-      TimestampEnvio: "2025-10-23T20:00:00.000Z",
-      TimestampRegistro: "2025-10-24T20:03:13.804Z",
-    },
-  ];
-
   constructor({
     DatoID = null,
     SensorID = null,
@@ -155,14 +141,4 @@ export class DatoSensorModelo {
     }
   }
 
-  static async obtenerPorSensor({ SensorID }) {
-    return this.datos.filter((d) => d.SensorID === Number(SensorID));
-  }
-
-  static async eliminar({ id }) {
-    const index = this.datos.findIndex((d) => d.DatoID === Number(id));
-    if (index === -1) return false;
-    this.datos.splice(index, 1);
-    return true;
-  }
 }

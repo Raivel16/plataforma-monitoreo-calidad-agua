@@ -22,14 +22,20 @@ Proyecto del curso de Diseño de Software.
      -  alto: TODOS LOS PERMISOS
 
 - [ ] Seccion de datos
+- [ ] cambiar poner pagina de filtro como index y permitir que solo a esa accedan los otros roles
+- [ ] bloquear acceso a pagina ingesta en backend y en frontend
 - poner para configurar umbrales en los parametros
-- implementar que se detecten anomalias
+
+- [X] implementar que se detecten anomalias
+
+
+
 
 - [ ] Seccion de visualizacion
 - Cambiar que se mida la calidad del agua con ultimos 5 datos no solo 1.
 
 
-- [ ] Seccion de notificaciones
+- [X] Seccion de notificaciones
 - Implementar de notificaciones
 - Usuarios:
   - Listar notificaciones
@@ -39,6 +45,9 @@ Proyecto del curso de Diseño de Software.
   - Enviar notificacion manual
   - Marcar notificacion como leida
   - Suscribir todas las páginas a un evento notificaciones para recibir notificaciones en tiempo real
+
+
+
 
 
 

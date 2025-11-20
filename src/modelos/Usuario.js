@@ -141,12 +141,4 @@ export class UsuarioModelo {
       throw error;
     }
   }
-
-  static async eliminar({ UsuarioID }) {
-    const index = usuarios.findIndex((u) => u.UsuarioID === Number(UsuarioID));
-    if (index === -1) return false;
-
-    usuarios.splice(index, 1);
-    return true;
-  }
 }
