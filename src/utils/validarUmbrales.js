@@ -57,6 +57,25 @@ export async function validarUmbrales(dato) {
           "Umbral excedido. Requiere atención."
         : "Umbral excedido. Requiere atención.";
 
+      // 🆕 Calcular severidad de la violación
+      let diferencial = 0;
+      if (umbralViolado.TipoUmbral === "MAXIMO") {
+        // Cuánto excede el valor máximo permitido
+        diferencial =
+          (dato.Valor_original - umbralViolado.ValorCritico) /
+          umbralViolado.ValorCritico;
+      } else if (umbralViolado.TipoUmbral === "MINIMO") {
+        // Cuánto está por debajo del valor mínimo permitido
+        diferencial =
+          (umbralViolado.ValorCritico - dato.Valor_original) /
+          umbralViolado.ValorCritico;
+      }
+
+      // Factor de severidad: 3.0 (3x el umbral) separa MODERADA de EXTREMA
+      const FACTOR_SEVERIDAD = 3.0;
+      const severidad =
+        diferencial >= FACTOR_SEVERIDAD ? "EXTREMA" : "MODERADA";
+
       // Crear mensaje mejorado con contexto
       const mensaje = `${
         umbralViolado.MensajeAlerta
@@ -71,6 +90,8 @@ export async function validarUmbrales(dato) {
         parametro: dato.ParametroID,
         tipoUmbral: umbralViolado.TipoUmbral,
         valorCritico: umbralViolado.ValorCritico,
+        severidad, // 🆕 MODERADA o EXTREMA
+        diferencial: diferencial.toFixed(2), // 🆕 Porcentaje de exceso
       };
     }
 

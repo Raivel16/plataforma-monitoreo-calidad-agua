@@ -79,7 +79,7 @@ GO
         EstadoOperativo BIT NOT NULL DEFAULT 1 -- 1=Activo, 0=Inactivo/Error (Booleano)
     );
 
-        -- 1) Tabla para estado de sensores (consecutivas anomalias)
+    -- 1) Tabla para estado de sensores (consecutivas anomalias)
     IF OBJECT_ID('SensorEstados') IS NULL
     BEGIN
     CREATE TABLE SensorEstados (

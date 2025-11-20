@@ -116,44 +116,47 @@ export class DatosSensoresControlador {
       // 4️⃣ Emitir dato procesado
       io.emit("nuevaLectura", resultado);
 
-      // 5️⃣ Detectar anomalías PRIMERO (para capturar valores imposibles)
+      // 5️⃣ Detectar anomalías (solo valores físicamente imposibles)
       const anomaliaDetectada = await detectarAnomalias(resultado);
 
-      // 6️⃣ Solo validar umbrales si NO es una anomalía por valor imposible
+      // 6️⃣ Validar umbrales (solo si NO es un valor imposible)
       let umbralViolado = null;
-      if (!anomaliaDetectada || !anomaliaDetectada.valorImposible) {
+      if (!anomaliaDetectada) {
         umbralViolado = await validarUmbrales(resultado);
-
-        // Si hay umbral violado Y anomalía (cambio brusco), es contaminación crítica
-        if (umbralViolado && anomaliaDetectada) {
-          anomaliaDetectada.tipo = "CONTAMINACION_CRITICA";
-          anomaliaDetectada.contexto = `Cambio brusco detectado junto con superación de umbral. Posible evento de contaminación repentina que requiere atención inmediata.`;
-          anomaliaDetectada.mensaje = `🚨 CONTAMINACIÓN CRÍTICA: Cambio abrupto a ${resultado.Valor_procesado.toFixed(
-            2
-          )} ${resultado.UnidadMedida} y superación de umbral`;
-        }
       }
 
       const alertasGeneradas = [];
 
-      // 7️⃣ Procesar alertas de umbral (solo si no hay anomalía por valor imposible)
-      if (
-        umbralViolado &&
-        (!anomaliaDetectada || !anomaliaDetectada.valorImposible)
-      ) {
+      // 7️⃣ Procesar alertas de umbral o contaminación crítica
+      if (umbralViolado) {
+        // Determinar tipo según severidad
+        const tipoAlerta =
+          umbralViolado.severidad === "EXTREMA"
+            ? "CONTAMINACION_CRITICA"
+            : "UMBRAL";
+
+        // Ajustar mensaje si es extremo
+        let mensajeFinal = umbralViolado.mensaje;
+        let contextoFinal = umbralViolado.contexto;
+
+        if (tipoAlerta === "CONTAMINACION_CRITICA") {
+          mensajeFinal = `🚨 CONTAMINACIÓN CRÍTICA: Superación extrema del umbral (${umbralViolado.diferencial}x) - ${umbralViolado.mensaje}`;
+          contextoFinal = `${umbralViolado.contexto} El valor excede el umbral en más de ${umbralViolado.diferencial} veces, requiere acción inmediata.`;
+        }
+
         const alerta = await AlertaModelo.registrarAlerta({
           umbralID: umbralViolado.umbralID,
           datoID: resultado.DatoID,
-          tipo: "UMBRAL",
-          mensaje: umbralViolado.mensaje,
-          contexto: umbralViolado.contexto,
+          tipo: tipoAlerta,
+          mensaje: mensajeFinal,
+          contexto: contextoFinal,
         });
 
         const notificaciones = await AlertaModelo.notificarUsuarios({
           registroAlertaID: alerta.registroAlertaID,
-          nivelesPermiso: [2, 3, 4],
-          tipo: "UMBRAL",
-          mensaje: umbralViolado.mensaje,
+          nivelesPermiso: [2, 3, 4], // Tanto UMBRAL como CONTAMINACION_CRITICA a todos
+          tipo: tipoAlerta,
+          mensaje: mensajeFinal,
           datoInfo: {
             SensorID: resultado.SensorID,
             SensorNombre: resultado.Nombre,
@@ -162,33 +165,27 @@ export class DatosSensoresControlador {
             Valor: resultado.Valor_original,
             UnidadMedida: resultado.UnidadMedida,
             Timestamp: resultado.TimestampRegistro,
-            Contexto: umbralViolado.contexto,
+            Contexto: contextoFinal,
           },
         });
 
         alertasGeneradas.push(...notificaciones);
       }
 
-      // 8️⃣ Procesar alertas de anomalía o contaminación crítica
+      // 8️⃣ Procesar alertas de anomalía (solo valores imposibles - fallas de sensor)
       if (anomaliaDetectada) {
-        // Determinar niveles de permiso según el tipo de alerta
-        const nivelesPermiso =
-          anomaliaDetectada.tipo === "CONTAMINACION_CRITICA"
-            ? [2, 3, 4] // Notificar a todos si es contaminación crítica
-            : [4]; // Solo administradores para anomalías normales
-
         const alerta = await AlertaModelo.registrarAlerta({
           umbralID: null,
           datoID: resultado.DatoID,
-          tipo: anomaliaDetectada.tipo,
+          tipo: "ANOMALIA",
           mensaje: anomaliaDetectada.mensaje,
           contexto: anomaliaDetectada.contexto,
         });
 
         const notificaciones = await AlertaModelo.notificarUsuarios({
           registroAlertaID: alerta.registroAlertaID,
-          nivelesPermiso,
-          tipo: anomaliaDetectada.tipo,
+          nivelesPermiso: [4], // Solo administradores para anomalías
+          tipo: "ANOMALIA",
           mensaje: anomaliaDetectada.mensaje,
           datoInfo: {
             SensorID: resultado.SensorID,
@@ -196,35 +193,59 @@ export class DatosSensoresControlador {
             ParametroID: resultado.ParametroID,
             NombreParametro: resultado.NombreParametro,
             Valor: resultado.Valor_original,
-            ValorEsperado: anomaliaDetectada.valorEsperado,
-            Desviacion: anomaliaDetectada.desviacion,
             UnidadMedida: resultado.UnidadMedida,
             Timestamp: resultado.TimestampRegistro,
             Contexto: anomaliaDetectada.contexto,
+            RangoMin: anomaliaDetectada.rangoMin,
+            RangoMax: anomaliaDetectada.rangoMax,
           },
         });
 
         alertasGeneradas.push(...notificaciones);
       }
-
-      // 9️⃣ Emitir alertas generadas (normalizar nombres de campos)
+      // 9️⃣ Emitir alertas generadas UNA SOLA VEZ (no por cada usuario)
       if (alertasGeneradas.length > 0) {
-        alertasGeneradas.forEach((alerta) => {
-          // Normalizar campos de SQL Server a JavaScript para socket.io
-          const alertaNormalizada = {
-            ...alerta,
-            tipo: alerta.tipo,
-            contexto: alerta.Contexto || alerta.contexto,
-            mensaje: alerta.mensaje,
-            SensorNombre: alerta.SensorNombre,
-            NombreParametro: alerta.NombreParametro,
-            Valor: alerta.Valor, // ✨ Usar el valor original enviado en datoInfo
-            UnidadMedida: alerta.UnidadMedida,
-            Timestamp: alerta.Timestamp,
-            FechaEnvio: new Date(),
-          };
+        // Agrupar alertas por tipo de alerta (UMBRAL, ANOMALIA, CONTAMINACION_CRITICA)
+        // Cada grupo representa una única alerta real que debe emitirse
+        const alertasUnicas = new Map();
 
-          io.emit("nuevaAlerta", alertaNormalizada);
+        alertasGeneradas.forEach((alerta) => {
+          // Usar el registroAlertaID como clave única (misma alerta a múltiples usuarios)
+          const key = `${alerta.tipo}-${alerta.mensaje}`;
+
+          if (!alertasUnicas.has(key)) {
+            // Normalizar campos de SQL Server a JavaScript para socket.io
+            const alertaNormalizada = {
+              AlertaUsuarioID: alerta.AlertaUsuarioID, // Primer usuario para compatibilidad
+              tipo: alerta.tipo, // ✅ Mantener el tipo original (UMBRAL/ANOMALIA/CONTAMINACION_CRITICA)
+              contexto: alerta.Contexto || alerta.contexto,
+              mensaje: alerta.mensaje,
+              SensorNombre: alerta.SensorNombre,
+              NombreParametro: alerta.NombreParametro,
+              Valor: alerta.Valor, // ✨ Usar el valor original enviado en datoInfo
+              UnidadMedida: alerta.UnidadMedida,
+              Timestamp: alerta.Timestamp,
+              FechaEnvio: new Date(),
+              UsuariosAfectados: [], // Lista de usuarios que reciben esta alerta
+            };
+
+            alertasUnicas.set(key, alertaNormalizada);
+          }
+
+          // Agregar usuario a la lista de afectados
+          alertasUnicas.get(key).UsuariosAfectados.push({
+            UsuarioID: alerta.UsuarioID,
+            NombreUsuario: alerta.NombreUsuario,
+            AlertaUsuarioID: alerta.AlertaUsuarioID,
+          });
+        });
+
+        // Emitir SOLO UNA VEZ cada alerta única
+        alertasUnicas.forEach((alerta) => {
+          console.log(
+            `📡 Emitiendo alerta tipo "${alerta.tipo}" a ${alerta.UsuariosAfectados.length} usuario(s)`
+          );
+          io.emit("nuevaAlerta", alerta);
         });
       }
 
