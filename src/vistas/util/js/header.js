@@ -12,6 +12,7 @@ export function inicializarMenuUsuario() {
     userBtn.classList.toggle("active");
   });
 
+  
   logout.addEventListener("click", logoutFunc);
 
   /*

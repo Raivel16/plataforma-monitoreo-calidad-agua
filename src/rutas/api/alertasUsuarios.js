@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { AlertasControlador } from "../../controladores/Alertas.js";
 
 export const alertasUsuariosRouter = Router();
 
@@ -7,6 +8,12 @@ export const alertasUsuariosRouter = Router();
 alertasUsuariosRouter.get("/", (req, res) => {
   res.send("Listar todas las alertas de usuarios");
 });
+
+// ✅ Corregir las rutas
+alertasUsuariosRouter.get("/pendientes", AlertasControlador.obtenerPendientes);
+alertasUsuariosRouter.patch("/:id/leer", AlertasControlador.marcarLeida);
+
+
 
 alertasUsuariosRouter.get("/:id", (req, res) => {
   res.send(`Obtener detalle de la alerta de usuario con ID ${req.params.id}`);

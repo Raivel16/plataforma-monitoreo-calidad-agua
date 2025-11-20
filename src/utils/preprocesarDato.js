@@ -31,7 +31,12 @@ export function preprocesarDato(dato) {
     estado = "descartado";
   }
 
-  const valorProcesado = Math.max(min, Math.min(max, valorOriginal || 0));
+  // ✨ CAMBIO: Ya no hacemos clamping - preservamos el valor original
+  // El valor procesado ahora es igual al original (sin recortar)
+  const valorProcesado = valorOriginal || 0;
+
+  // Normalizamos para visualización, pero permitimos valores fuera de rango
+  // Si el valor está fuera de rango, la normalización puede ser <0 o >1
   const valorNormalizado = (valorProcesado - min) / (max - min);
 
   return {

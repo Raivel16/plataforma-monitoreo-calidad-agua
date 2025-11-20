@@ -22,14 +22,20 @@ Proyecto del curso de Diseño de Software.
      -  alto: TODOS LOS PERMISOS
 
 - [ ] Seccion de datos
+- [ ] cambiar poner pagina de filtro como index y permitir que solo a esa accedan los otros roles
+- [ ] bloquear acceso a pagina ingesta en backend y en frontend
 - poner para configurar umbrales en los parametros
-- implementar que se detecten anomalias
+
+- [X] implementar que se detecten anomalias
+
+
+
 
 - [ ] Seccion de visualizacion
 - Cambiar que se mida la calidad del agua con ultimos 5 datos no solo 1.
 
 
-- [ ] Seccion de notificaciones
+- [X] Seccion de notificaciones
 - Implementar de notificaciones
 - Usuarios:
   - Listar notificaciones
@@ -42,6 +48,9 @@ Proyecto del curso de Diseño de Software.
 
 
 
+
+
+
 - [ ] Seccion de Predicciones
 - Usuarios:
   - Listar predicciones
@@ -50,3 +59,8 @@ Proyecto del curso de Diseño de Software.
   - Listar predicciones
   - Crear prediccion
   - Medir precision de predicciones
+
+
+
+ no se borran visualmente las notificaciones
+ se esta trabajando el analisis del umbral y la alerta con el valor procesado (debe ser con el original  o no, para diagnosticar correctamente o la funcion procesar que no cambie solo normalice.) 

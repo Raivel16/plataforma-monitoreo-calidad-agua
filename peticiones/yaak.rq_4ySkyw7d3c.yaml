@@ -1,19 +1,19 @@
 type: http_request
 model: http_request
-id: rq_9iY9Y64Sm4
-createdAt: 2025-10-29T03:47:11.105603300
-updatedAt: 2025-11-20T03:38:24.087508300
+id: rq_4ySkyw7d3c
+createdAt: 2025-11-20T03:39:38.464757
+updatedAt: 2025-11-20T05:10:36.847532200
 workspaceId: wk_TV6JMdJDX5
-folderId: fl_s6XHXmPBXz
+folderId: fl_as7g8fL2ci
 authentication: {}
 authenticationType: null
 body:
   text: |-
     {
-      "SensorID": 1,
-      "ParametroID": 1,
-      "valor": 9,
-      "TimestampEnvio": "2025-11-17 04:50:03.9990000"
+      "ParametroID": 4,
+      "SensorID": 2,
+      "valor": 1500,
+      "TimestampEnvio": "2025-11-19T23:00:00"
     }
 bodyType: application/json
 description: ''
@@ -21,9 +21,9 @@ headers:
 - enabled: true
   name: Content-Type
   value: application/json
-  id: WChx3xamGT
+  id: WYvvzzszXs
 method: POST
-name: Registrar nuevo sensor
-sortPriority: 2000.0
+name: ''
+sortPriority: 1999.9999
 url: http://localhost:3000/api/datos
 urlParameters: []
