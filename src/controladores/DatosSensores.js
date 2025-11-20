@@ -10,6 +10,8 @@ import { detectarAnomalias } from "../utils/detectarAnomalias.js";
 
 import { DatoSensorModelo } from "../modelos/DatoSensor.js";
 import { AlertaModelo } from "../modelos/Alerta.js";
+import { RegistroAlertaModelo } from "../modelos/RegistroAlerta.js"; // 🆕 NUEVO
+import { AnomaliaModelo } from "../modelos/anomalia.js"; // 🆕 NUEVO
 
 import { validarDatosDatoSensor } from "../schemas/datoSensor.js";
 import { formatZodError } from "../utils/formatZodError.js";
@@ -144,11 +146,12 @@ export class DatosSensoresControlador {
           contextoFinal = `${umbralViolado.contexto} El valor excede el umbral en más de ${umbralViolado.diferencial} veces, requiere acción inmediata.`;
         }
 
-        const alerta = await AlertaModelo.registrarAlerta({
+        // 🆕 Usar RegistroAlertaModelo en lugar de AlertaModelo
+        const alerta = await RegistroAlertaModelo.registrarAlerta({
           umbralID: umbralViolado.umbralID,
+          anomaliaID: null, // 🆕 No es anomalía
           datoID: resultado.DatoID,
           tipo: tipoAlerta,
-          mensaje: mensajeFinal,
           contexto: contextoFinal,
         });
 
@@ -174,11 +177,19 @@ export class DatosSensoresControlador {
 
       // 8️⃣ Procesar alertas de anomalía (solo valores imposibles - fallas de sensor)
       if (anomaliaDetectada) {
-        const alerta = await AlertaModelo.registrarAlerta({
+        // 🆕 1. Registrar en tabla Anomalias
+        const anomaliaID = await AnomaliaModelo.registrarAnomalia({
+          datoID: resultado.DatoID,
+          tipo: "SENSOR_DEFECTUOSO",
+          descripcion: anomaliaDetectada.contexto,
+        });
+
+        // 🆕 2. Registrar en tabla RegistroAlertas vinculando la anomalía
+        const alerta = await RegistroAlertaModelo.registrarAlerta({
           umbralID: null,
+          anomaliaID, // 🆕 Vincular con anomalía registrada
           datoID: resultado.DatoID,
           tipo: "ANOMALIA",
-          mensaje: anomaliaDetectada.mensaje,
           contexto: anomaliaDetectada.contexto,
         });
 
@@ -203,6 +214,7 @@ export class DatosSensoresControlador {
 
         alertasGeneradas.push(...notificaciones);
       }
+
       // 9️⃣ Emitir alertas generadas UNA SOLA VEZ (no por cada usuario)
       if (alertasGeneradas.length > 0) {
         // Agrupar alertas por tipo de alerta (UMBRAL, ANOMALIA, CONTAMINACION_CRITICA)
@@ -240,12 +252,18 @@ export class DatosSensoresControlador {
           });
         });
 
-        // Emitir SOLO UNA VEZ cada alerta única
+        // 🆕 Emitir con eventos diferenciados según tipo (para filtrado por permiso en frontend)
         alertasUnicas.forEach((alerta) => {
           console.log(
             `📡 Emitiendo alerta tipo "${alerta.tipo}" a ${alerta.UsuariosAfectados.length} usuario(s)`
           );
-          io.emit("nuevaAlerta", alerta);
+
+          // Diferenciar eventos según tipo para filtrado por permisos en frontend
+          if (alerta.tipo === "ANOMALIA") {
+            io.emit("nuevaAnomalia", alerta); // Solo nivel 4
+          } else {
+            io.emit("nuevaAlertaUmbral", alerta); // Niveles 2, 3, 4
+          }
         });
       }
 

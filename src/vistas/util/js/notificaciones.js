@@ -13,6 +13,7 @@ export class SistemaNotificaciones {
     this.panel = null;
     // Verificar si es la primera carga de la sesión
     this.esPrimeraVez = !sessionStorage.getItem(ANIMACIONES_MOSTRADAS_KEY);
+    this.nivelPermiso = null; // 🆕 Almacenar nivel de permiso del usuario
   }
 
   cargarAlertasVistas() {
@@ -45,9 +46,31 @@ export class SistemaNotificaciones {
   }
 
   async inicializar() {
+    // 🆕 Obtener nivel de permiso del usuario desde la sesión
+    await this.obtenerNivelPermiso();
+
     this.crearIndicador();
     await this.cargarAlertasPendientes();
     this.escucharNuevasAlertas();
+  }
+
+  // 🆕 Método para obtener el nivel de permiso desde la sesión
+  async obtenerNivelPermiso() {
+    try {
+      const res = await fetch("/api/auth/session", {
+        credentials: "same-origin",
+      });
+      if (!res.ok) {
+        this.nivelPermiso = 0; // Usuario no autenticado
+        return;
+      }
+      const sesion = await res.json();
+      this.nivelPermiso = sesion?.NivelPermiso || 0;
+      console.log(`🔑 Nivel de permiso del usuario: ${this.nivelPermiso}`);
+    } catch (error) {
+      console.error("Error al obtener nivel de permiso:", error);
+      this.nivelPermiso = 0;
+    }
   }
 
   crearIndicador() {
@@ -171,21 +194,45 @@ export class SistemaNotificaciones {
     if (typeof window.socket !== "undefined" && window.socket) {
       console.log("✅ Socket.io conectado - escuchando nuevas alertas");
 
-      window.socket.on("nuevaAlerta", (alerta) => {
-        console.log("📬 Nueva alerta recibida:", alerta);
+      // 🆕 Conectar a eventos según nivel de permiso
 
-        this.alertasPendientes.unshift(alerta);
-        this.actualizarIndicador();
-        this.mostrarToastIndividual(alerta);
+      // Alertas de umbral (niveles 2, 3, 4)
+      if (this.nivelPermiso >= 2) {
+        window.socket.on("nuevaAlertaUmbral", (alerta) => {
+          console.log("📬 Nueva alerta de umbral recibida:", alerta);
+          this.procesarNuevaAlerta(alerta);
+        });
+      }
 
-        if (this.panel.style.display === "flex") {
-          this.renderPanel();
-        }
-      });
+      // Anomalías (solo nivel 4)
+      if (this.nivelPermiso >= 4) {
+        window.socket.on("nuevaAnomalia", (alerta) => {
+          console.log("🔴 Nueva anomalía recibida:", alerta);
+          this.procesarNuevaAlerta(alerta);
+        });
+      }
+
+      // Mensaje informativo si no tiene permisos
+      if (this.nivelPermiso < 2) {
+        console.warn(
+          "⚠️ Usuario sin permiso para recibir notificaciones en tiempo real"
+        );
+      }
     } else {
       console.warn(
         "⚠️ Socket.io no está disponible - notificaciones en tiempo real deshabilitadas"
       );
+    }
+  }
+
+  // 🆕 Método centralizado para procesar nuevas alertas
+  procesarNuevaAlerta(alerta) {
+    this.alertasPendientes.unshift(alerta);
+    this.actualizarIndicador();
+    this.mostrarToastIndividual(alerta);
+
+    if (this.panel.style.display === "flex") {
+      this.renderPanel();
     }
   }
 

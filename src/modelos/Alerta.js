@@ -2,33 +2,8 @@ import { getConnection } from "../config/db_sqlserver.js";
 import sql from "mssql";
 
 export class AlertaModelo {
-  static async registrarAlerta({
-    umbralID = null,
-    datoID,
-    tipo,
-    mensaje,
-    contexto = null,
-  }) {
-    try {
-      const pool = await getConnection();
-      const request = pool.request();
-
-      request.input("UmbralID", sql.Int, umbralID);
-      request.input("DatoID", sql.BigInt, datoID);
-      request.input("FechaHoraAlerta", sql.DateTime2, new Date());
-      request.input("EstadoNotificacion", sql.VarChar(50), "Enviado");
-      request.input("Tipo", sql.VarChar(20), tipo);
-      request.input("Contexto", sql.VarChar(500), contexto);
-
-      const result = await request.execute("sp_InsertarRegistroAlerta");
-      const registroAlertaID = result.recordset[0].RegistroAlertaID;
-
-      return { registroAlertaID, tipo, mensaje, contexto };
-    } catch (error) {
-      console.error("Error al registrar alerta:", error);
-      throw error;
-    }
-  }
+  // El método registrarAlerta fue movido a RegistroAlertaModelo
+  // para mejor separación de responsabilidades
 
   static async notificarUsuarios({
     registroAlertaID,

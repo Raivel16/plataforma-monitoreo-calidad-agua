@@ -79,18 +79,6 @@ GO
         EstadoOperativo BIT NOT NULL DEFAULT 1 -- 1=Activo, 0=Inactivo/Error (Booleano)
     );
 
-    -- 1) Tabla para estado de sensores (consecutivas anomalias)
-    IF OBJECT_ID('SensorEstados') IS NULL
-    BEGIN
-    CREATE TABLE SensorEstados (
-    SensorID INT NOT NULL,
-    ParametroID INT NOT NULL,
-    ConsecutivasAnomalias INT NOT NULL DEFAULT 0,
-    UltimaAnomalia DATETIME2 NULL,
-    EstadoSensor VARCHAR(20) NOT NULL DEFAULT 'NORMAL', -- NORMAL, POSIBLE_DANADO, DANADO
-    CONSTRAINT PK_SensorEstados PRIMARY KEY (SensorID, ParametroID)
-    );
-    END
     GO
 
     -- 3.2. TABLA DATOSSENSORES (Modificada de Lecturas - HU003, HU002)
@@ -125,10 +113,19 @@ GO
         MensajeAlerta VARCHAR(255)
     );
 
+ CREATE TABLE Anomalias(
+        AnomaliaID BIGINT PRIMARY KEY IDENTITY(1,1),
+        DatoID BIGINT NOT NULL FOREIGN KEY REFERENCES DatosSensores(DatoID),
+        Tipo VARCHAR(50) NOT NULL,
+        Descripcion VARCHAR(255),
+        Fecha_Detectada DATETIME2 NOT NULL,
+        Estado BIT NOT NULL DEFAULT 1
+    );
     -- 4.2. TABLA REGISTROALERTAS (HU010, HU014 - Trazabilidad de Alertas)
     CREATE TABLE RegistroAlertas (
         RegistroAlertaID BIGINT PRIMARY KEY IDENTITY(1,1),
         UmbralID INT NULL FOREIGN KEY REFERENCES UmbralesAlerta(UmbralID),
+        AnomaliaID BIGINT NULL FOREIGN KEY REFERENCES Anomalias(AnomaliaID),
         DatoID BIGINT NOT NULL FOREIGN KEY REFERENCES DatosSensores(DatoID), -- Dato que causó la alerta
         FechaHoraAlerta DATETIME2 NOT NULL,
         EstadoNotificacion VARCHAR(50) NOT NULL, -- Ej: 'Pendiente', 'Enviado', 'Error'
@@ -145,14 +142,7 @@ GO
         EstadoAlerta VARCHAR(50) NOT NULL -- Ej: 'Pendiente', 'Revisada', 'Atendida'
     );
 
-     CREATE TABLE Anomalias(
-        AnomaliaID BIGINT PRIMARY KEY IDENTITY(1,1),
-        DatoID BIGINT NOT NULL FOREIGN KEY REFERENCES DatosSensores(DatoID),
-        Tipo VARCHAR(50) NOT NULL,
-        Descripcion VARCHAR(255),
-        Fecha_Detectada DATETIME2 NOT NULL,
-        Estado BIT NOT NULL DEFAULT 1
-    );
+    
 
 
     -- 4.3. TABLA PREDICCIONES (HU004, HU006 - Resultados de IA)
@@ -255,10 +245,6 @@ AS
 BEGIN
   PRINT 'Conexión exitosa';
 END;
-GO
-
-
-USE MonitoreoAguaJunin;
 GO
 
 
@@ -878,21 +864,56 @@ GO
 --ALERTAS UMBRALES
 
 
+CREATE PROCEDURE sp_InsertarAnomalia
+    @DatoID BIGINT,
+    @Tipo VARCHAR(50),
+    @Descripcion VARCHAR(255)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    INSERT INTO Anomalias (DatoID, Tipo, Descripcion, Fecha_Detectada, Estado)
+    VALUES (@DatoID, @Tipo, @Descripcion, GETDATE(), 1);
+    
+    SELECT SCOPE_IDENTITY() AS AnomaliaID;
+END;
+GO
+
 -- Procedimiento para insertar registro de alerta
+-- Agregar parámetro @AnomaliaID
 CREATE OR ALTER PROCEDURE sp_InsertarRegistroAlerta
     @UmbralID INT = NULL,
+    @AnomaliaID BIGINT = NULL,  -- 🆕 NUEVO
     @DatoID BIGINT,
     @FechaHoraAlerta DATETIME2,
-    @EstadoNotificacion VARCHAR(50) = 'Pendiente',
+    @EstadoNotificacion VARCHAR(50),
     @Tipo VARCHAR(20) = NULL,
     @Contexto VARCHAR(500) = NULL
 AS
 BEGIN
-    INSERT INTO RegistroAlertas (UmbralID, DatoID, FechaHoraAlerta, EstadoNotificacion, Tipo, Contexto)
-    VALUES (@UmbralID, @DatoID, @FechaHoraAlerta, @EstadoNotificacion, @Tipo, @Contexto);
+    SET NOCOUNT ON;
+    
+    INSERT INTO RegistroAlertas (
+        UmbralID, 
+        AnomaliaID,  -- 🆕 NUEVO
+        DatoID, 
+        FechaHoraAlerta, 
+        EstadoNotificacion, 
+        Tipo, 
+        Contexto
+    )
+    VALUES (
+        @UmbralID, 
+        @AnomaliaID,  -- 🆕 NUEVO
+        @DatoID, 
+        @FechaHoraAlerta, 
+        @EstadoNotificacion, 
+        @Tipo, 
+        @Contexto
+    );
     
     SELECT SCOPE_IDENTITY() AS RegistroAlertaID;
-END
+END;
 GO
 
 -- Procedimiento para insertar alerta a usuario
