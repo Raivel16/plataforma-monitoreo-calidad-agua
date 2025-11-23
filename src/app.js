@@ -23,27 +23,42 @@ app.use(cookieParser());
 app.use(verificarSesion);
 app.use(morgan("dev"));
 
-
-
 app.get("/datos-sensores/sensores.html", verificarPermiso(4), (req, res) => {
-  res.sendFile(path.join(__dirname, "vistas", "datos-sensores", "sensores.html"));
+  res.sendFile(
+    path.join(__dirname, "vistas", "datos-sensores", "sensores.html")
+  );
 });
 
 app.get("/datos-sensores/parametros.html", verificarPermiso(4), (req, res) => {
-  res.sendFile(path.join(__dirname, "vistas", "datos-sensores", "parametros.html"));
+  res.sendFile(
+    path.join(__dirname, "vistas", "datos-sensores", "parametros.html")
+  );
 });
 
+app.get("/datos-sensores/umbrales.html", verificarPermiso(4), (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "vistas", "datos-sensores", "umbrales.html")
+  );
+});
+
+app.get("/datos-sensores/ingesta.html", verificarPermiso(4), (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "vistas", "datos-sensores", "ingesta.html")
+  );
+});
 
 // 📂 Rutas protegidas (deben montarse antes de servir archivos estáticos)
-app.use("/datos-sensores", verificarPermiso(3), (req, res) => {
+// 📂 Rutas protegidas (deben montarse antes de servir archivos estáticos)
+app.use("/datos-sensores", verificarPermiso(2), (req, res, next) => {
+  // Nivel base 2 para entrar a la sección
 
-  // 🔹 Redirigir si falta la barra final (para que carguen bien los CSS/JS)
+  // 🔹 Redirigir si falta la barra final
   if (req.originalUrl === "/datos-sensores") {
     return res.redirect(req.originalUrl + "/");
   }
-  
-  // Normalizamos la ruta para permitir /datos-sensores o /datos-sensores/*
-  const requestedPath = req.path === "/" ? "/index.html" : req.path;
+
+  // Normalizamos la ruta
+  let requestedPath = req.path === "/" ? "/index.html" : req.path;
   const archivo = requestedPath.replace(/^\//, "");
   const rutaArchivo = path.join(__dirname, "vistas", "datos-sensores", archivo);
 
@@ -53,12 +68,6 @@ app.use("/datos-sensores", verificarPermiso(3), (req, res) => {
 
   res.sendFile(rutaArchivo);
 });
-
-
-
-
-
-
 
 // 📂 Rutas estáticas públicas (montar después de rutas protegidas para evitar bypass)
 app.use("/", express.static(path.join(__dirname, "vistas")));

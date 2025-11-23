@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_4ySkyw7d3c
 createdAt: 2025-11-20T03:39:38.464757
-updatedAt: 2025-11-20T05:10:36.847532200
+updatedAt: 2025-11-20T21:32:14.221964300
 workspaceId: wk_TV6JMdJDX5
 folderId: fl_as7g8fL2ci
 authentication: {}
@@ -10,9 +10,9 @@ authenticationType: null
 body:
   text: |-
     {
-      "ParametroID": 4,
+      "ParametroID": 1,
       "SensorID": 2,
-      "valor": 1500,
+      "valor": 13,
       "TimestampEnvio": "2025-11-19T23:00:00"
     }
 bodyType: application/json

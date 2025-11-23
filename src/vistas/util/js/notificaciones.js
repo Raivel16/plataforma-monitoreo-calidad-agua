@@ -81,7 +81,7 @@ export class SistemaNotificaciones {
     this.indicador.style.cssText = `
       position: absolute;
       top: 0px;
-      right: 0px;
+      right: -25px;
       background: #ff4444;
       color: white;
       border-radius: 50%;
@@ -123,7 +123,7 @@ export class SistemaNotificaciones {
 
     document.body.appendChild(this.panel);
 
-    this.indicador.addEventListener("click", (e) => {
+    userMenu.addEventListener("click", (e) => {
       e.stopPropagation();
       this.togglePanel();
     });

@@ -20,7 +20,7 @@
     <!-- Estilos CSS  Específicos-->
     <link rel="stylesheet" href="datSensor.css" />
 
-    <script type="module" src="parametros.js"></script>
+    <script type="module" src="umbrales.js"></script>
 
     <script src="/socket.io/socket.io.js"></script>
   </head>
@@ -71,17 +71,17 @@
           <li id="btn-subseccion-sensores" data-href="./sensores.html">
             Sensores
           </li>
-          <li id="btn-subseccion-parametros" class="active">Parámetros</li>
-          <li id="btn-subseccion-umbrales" data-href="./umbrales.html">
-            Umbrales
+          <li id="btn-subseccion-parametros" data-href="./parametros.html">
+            Parámetros
           </li>
+          <li id="btn-subseccion-umbrales" class="active">Umbrales</li>
         </ul>
       </aside>
       <button id="toggle-btn" class="toggle-btn">&#9776;</button>
 
       <main id="main-content" class="content">
         <div class="contenedor-seccion">
-          <h2>Parámetros</h2>
+          <h2>Umbrales de Alerta</h2>
           <nav class="operaciones">
             <input
               id="input-busqueda"
@@ -96,13 +96,16 @@
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Nombre</th>
-                  <th>Unidad de Medida</th>
+                  <th>Parámetro</th>
+                  <th>Unidad</th>
+                  <th>Valor Crítico</th>
+                  <th>Tipo</th>
+                  <th>Mensaje</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td colspan="10" class="cargando">Cargando datos...</td>
+                  <td colspan="6" class="cargando">Cargando datos...</td>
                 </tr>
               </tbody>
             </table>
