@@ -1,9 +1,9 @@
-import { init, conectarSocket } from "../util/js/tablaGenerica.js";
+import { filtrarDatos, init } from "../util/js/tablaGenerica.js";
 import { inicializar, ocultarSubSeccionesDatosSensores } from "../util/js/inicializar.js";
 
 await inicializar();
 
-const apiUrl = "http://localhost:3000/api/datos/ultimos";
+const apiUrl = "http://localhost:3000/api/datos/";
 
 init({
   apiUrl,
@@ -28,6 +28,9 @@ init({
             `,
 });
 
-conectarSocket();
+document.getElementById("btn-buscar").addEventListener("click", async () => {
+  const filtro = document.getElementById("input-busqueda").value.trim();
+  await filtrarDatos(filtro, apiUrl);
+});
 
 ocultarSubSeccionesDatosSensores();

@@ -995,11 +995,20 @@ END
 GO
 
 -- Procedimiento para obtener umbrales
-CREATE OR ALTER PROCEDURE sp_ObtenerUmbrales
+CREATE PROCEDURE sp_ObtenerUmbrales
 AS
 BEGIN
-    SELECT UmbralID, ParametroID, ValorCritico, TipoUmbral, MensajeAlerta
-    FROM UmbralesAlerta;
-END
+    SELECT 
+        u.UmbralID,
+        u.ParametroID,
+        p.NombreParametro,
+        p.UnidadMedida,
+        u.ValorCritico,
+        u.TipoUmbral,
+        u.MensajeAlerta
+    FROM 
+        UmbralesAlerta u
+    INNER JOIN 
+        Parametros p ON u.ParametroID = p.ParametroID;
+END;
 GO
-

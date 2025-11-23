@@ -2,53 +2,15 @@
 Proyecto del curso de Diseño de Software.
 
 
-
-- [x] Seccion de usuarios
-- [x] Implementar de usuarios
-  - [x] Listar usuarios
-  - [x] Crear usuario
-  - [x] Modificar usuario (ver si hay algun campo de desabilitar)
-  
-- [x] Implementar de Roles 
-- [x] (verificar en vista si aparecen los usuarios segun el rol unicamente debe aparecer cierto tipo de rol corregir de alguna forma los procedimientos almacenados que validan o responden eso)
-  - [x] añadir roles  
-  - [x] Modificar roles
-  - [x] Listar roles
-  - [x] Implementar de alguna forma el nivel de permisos y que el backend verifique por el nivel y no el rol
-  -  [x] Nivel de permisos
-     -  muy bajo: solo visualizacion y prediccion
-     -  bajo: solo visualizacion, prediccion acceso a notificaciones
-     -  medio: solo visualizacion, prediccion, notificaciones, Datos Sensores (solo filtro (renombrar por Datos), poner de primero filtro ingesta de segundo)
-     -  alto: TODOS LOS PERMISOS
-
-- [ ] Seccion de datos
+- En Seccion de datos
 - [ ] cambiar poner pagina de filtro como index y permitir que solo a esa accedan los otros roles
+- [ ] Poner pagina de ingesta como ingesta y que solo accedan los admiinistradores
+
+
 - [ ] bloquear acceso a pagina ingesta en backend y en frontend
-- poner para configurar umbrales en los parametros
-
-- [X] implementar que se detecten anomalias
 
 
-
-
-- [ ] Seccion de visualizacion
-- Cambiar que se mida la calidad del agua con ultimos 5 datos no solo 1.
-
-
-- [X] Seccion de notificaciones
-- Implementar de notificaciones
-- Usuarios:
-  - Listar notificaciones
-  - Marcar notificacion como leida
-- Administradores:
-  - Listar notificaciones
-  - Enviar notificacion manual
-  - Marcar notificacion como leida
-  - Suscribir todas las páginas a un evento notificaciones para recibir notificaciones en tiempo real
-
-
-
-
+- [ ] poner una página en la seccion de datos sensores para mostrar en tablas los umbrales configurados (parecido a la pagina de parametros), implementar el controlador y el modelo que obtendra los datos así como el procedimiento almacenado que devolverá los datos.
 
 
 - [ ] Seccion de Predicciones
@@ -61,6 +23,3 @@ Proyecto del curso de Diseño de Software.
   - Medir precision de predicciones
 
 
-
- no se borran visualmente las notificaciones
- se esta trabajando el analisis del umbral y la alerta con el valor procesado (debe ser con el original  o no, para diagnosticar correctamente o la funcion procesar que no cambie solo normalice.) 

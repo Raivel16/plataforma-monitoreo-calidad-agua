@@ -51,8 +51,7 @@
       <a href="/prediccion" id="btn-seccion-predicciones">PREDICCIONES</a>
       <a href="/visualizacion" id="btn-seccion-visualizacion">VISUALIZACIÓN</a>
       <a href="/usuarios" id="btn-seccion-usuarios">USUARIOS</a>
-      <a href="" id="btn-seccion-notificaciones">NOTIFICACIONES </a>
-      <span class="notif-badge"></span>
+      <a id="btn-seccion-notificaciones" class="notif-badge">NOTIFICACIONES</a>
     </nav>
 
     <div class="container">
@@ -62,17 +61,36 @@
           <button id="home-btn" class="menu-btn">&#9776;</button>
         </div>
         <ul id="listaOpciones">
-          <li id="btn-subseccion-ingesta"    class="active">Ingesta de Datos</li>
-          <li id="btn-subseccion-filtro"     data-href="./filtroDatos.html">Filtro de Datos</li>
-          <li id="btn-subseccion-sensores"   data-href="./sensores.html">Sensores</li>
-          <li id="btn-subseccion-parametros" data-href="./parametros.html">Parámetros</li>
+          <li id="btn-subseccion-ingesta" data-href="./ingesta.html">
+            Ingesta de Datos
+          </li>
+          <li id="btn-subseccion-filtro" class="active">Filtro de Datos</li>
+          <li id="btn-subseccion-sensores" data-href="./sensores.html">
+            Sensores
+          </li>
+          <li id="btn-subseccion-parametros" data-href="./parametros.html">
+            Parámetros
+          </li>
+          <li id="btn-subseccion-umbrales" data-href="./umbrales.html">
+            Umbrales
+          </li>
         </ul>
       </aside>
       <button id="toggle-btn" class="toggle-btn">&#9776;</button>
 
       <main id="main-content" class="content">
         <div class="contenedor-seccion">
-          <h2>📊 Ingesta de Datos de Sensores</h2>
+          <h2>📊 Filtrar Datos de Sensores</h2>
+          <div class="filtro-busqueda">
+            <input
+              id="input-busqueda"
+              type="text"
+              placeholder="Buscar..."
+              class="input-busqueda"
+            />
+            <button id="btn-buscar">Buscar</button>
+          </div>
+
           <div class="tabla-container">
             <table id="tablaSensores">
               <thead>

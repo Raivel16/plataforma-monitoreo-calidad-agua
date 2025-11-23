@@ -64,12 +64,14 @@ export function ocultarSubSeccionesDatosSensores() {
   const btnFiltro = document.getElementById("btn-subseccion-filtro");
   const btnSensores = document.getElementById("btn-subseccion-sensores");
   const btnParametros = document.getElementById("btn-subseccion-parametros");
+  const btnUmbrales = document.getElementById("btn-subseccion-umbrales");
 
   // Primero ocultamos todo
   btnIngesta.style.display = "none";
   btnFiltro.style.display = "none";
   btnSensores.style.display = "none";
   btnParametros.style.display = "none";
+  btnUmbrales.style.display = "none";
 
   // Si no hay sesión → solo visualización pública
   if (!nivel) {
@@ -79,15 +81,16 @@ export function ocultarSubSeccionesDatosSensores() {
   // ==== Nivel 3: Medio ====
   // ver filtro y ingesta
   if (nivel >= 3) {
-    btnIngesta.style.display = "block";
     btnFiltro.style.display = "block";
   }
 
   // ==== Nivel 4: Alto ====
   // ver filtro, sensores y parametros
   if (nivel >= 4) {
+    btnIngesta.style.display = "none";
     btnSensores.style.display = "block";
     btnParametros.style.display = "block";
+    btnUmbrales.style.display = "block";
   }
 }
 

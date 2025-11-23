@@ -1,3 +1,5 @@
+import { getConnection } from "../config/db_sqlserver.js";
+
 export class UmbralAlerta {
   /**
    * Crea una nueva umbral de alerta.
@@ -21,10 +23,17 @@ export class UmbralAlerta {
     this.MensajeAlerta = MensajeAlerta;
   }
 
-  
-  //funciones de consulta
-  // obtenerTodos(),
-  // obtenerPorId(),
-  // crear(),
-  // actualizar(),
+
+  static async obtenerTodos() {
+    try {
+      const pool = await getConnection();
+      const result = await pool
+        .request()
+        .execute("sp_ObtenerUmbrales");
+      return result.recordset;
+    } catch (error) {
+      console.error("❌ Error al obtener todos los umbrals:", error);
+      throw error;
+    }
+  }
 }
