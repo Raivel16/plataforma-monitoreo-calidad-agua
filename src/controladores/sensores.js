@@ -47,6 +47,12 @@ export class SensoresControlador {
             datosHistoricos: datosPrediccion,
           });
 
+
+          // logica para registrar la prediccion
+          
+
+
+
           return {
             ...s,
             Datos: datos,
