@@ -1,5 +1,8 @@
 import { filtrarDatos, init } from "../util/js/tablaGenerica.js";
-import { inicializar, ocultarSubSeccionesDatosSensores } from "../util/js/inicializar.js";
+import {
+  inicializar,
+  ocultarSubSeccionesDatosSensores,
+} from "../util/js/inicializar.js";
 
 await inicializar();
 
@@ -26,6 +29,7 @@ init({
                 <td>${lectura.Valor_normalizado.toFixed(4) ?? "-"}</td>
               </tr>
             `,
+  ordenarPor: (a, b) => b.DatoID - a.DatoID,
 });
 
 document.getElementById("btn-buscar").addEventListener("click", async () => {

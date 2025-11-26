@@ -1,6 +1,7 @@
 import { SensorModelo } from "../modelos/Sensor.js";
 import { DatoSensorModelo } from "../modelos/DatoSensor.js";
 import { ServicioIASimulada } from "../servicios/ServicioIASimulada.js";
+import { PrediccionModelo } from "../modelos/prediccion.js";
 
 import {
   validarDatosSensor,
@@ -45,6 +46,15 @@ export class SensoresControlador {
 
           const prediccion = await ServicioIASimulada.generarPrediccion({
             datosHistoricos: datosPrediccion,
+          });
+
+          // logica para registrar la prediccion
+          await PrediccionModelo.crear({
+            SensorID: s.SensorID,
+            FechaHoraPrediccion: prediccion.FechaHoraPrediccion,
+            ValorPredicho: prediccion.ValorPredicho,
+            ProbabilidadRiesgo: prediccion.ProbabilidadRiesgo,
+            Explicacion: prediccion.Explicacion,
           });
 
           return {

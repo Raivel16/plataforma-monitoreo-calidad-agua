@@ -4,15 +4,18 @@ let porPagina = 20;
 
 let tbody = null;
 let mapearFila = null; // 👈 función que arma la fila según la tabla
+let sortFn = null; // 👈 función de ordenamiento personalizada
 
 export function configurarTabla({
   selectorTbody,
   filasPorPagina = 20,
   mapear,
+  ordenarPor, // 🆕 Nuevo parámetro
 }) {
   tbody = document.querySelector(selectorTbody);
   porPagina = filasPorPagina;
   mapearFila = mapear;
+  sortFn = ordenarPor;
 }
 
 export function renderPagina() {
@@ -65,7 +68,11 @@ function mostrarRegistrosIniciales(lista) {
   const placeholderRow = tbody.querySelector(".cargando");
   if (placeholderRow) placeholderRow.remove();
 
-  registrosGlobal = lista.reverse();
+  if (sortFn) {
+    registrosGlobal = lista.sort(sortFn);
+  } else {
+    registrosGlobal = lista.reverse();
+  }
   renderPagina();
 }
 
@@ -73,7 +80,14 @@ export async function recargarDatosDesdeBD(apiUrl) {
   try {
     const res = await fetch(apiUrl);
     if (!res.ok) throw new Error("Falló petición");
-    registrosGlobal = (await res.json()).reverse();
+    const datos = await res.json();
+
+    if (sortFn) {
+      registrosGlobal = datos.sort(sortFn);
+    } else {
+      registrosGlobal = datos.reverse();
+    }
+
     paginaActual = 1;
     return true;
   } catch (err) {
@@ -125,6 +139,10 @@ export async function conectarSocket() {
   socket.on("nuevaLectura", (lectura) => {
     if (lectura && typeof lectura === "object") {
       registrosGlobal.unshift(lectura);
+      // Si hay ordenamiento personalizado, reordenar todo
+      if (sortFn) {
+        registrosGlobal.sort(sortFn);
+      }
       renderPagina();
     }
   });
@@ -135,10 +153,16 @@ export async function conectarSocket() {
   });
 }
 
-export async function init({ apiUrl, selectorTbody, mapearFilaFn }) {
+export async function init({
+  apiUrl,
+  selectorTbody,
+  mapearFilaFn,
+  ordenarPor,
+}) {
   configurarTabla({
     selectorTbody,
     mapear: mapearFilaFn,
+    ordenarPor,
   });
 
   cargarLecturasIniciales(apiUrl);

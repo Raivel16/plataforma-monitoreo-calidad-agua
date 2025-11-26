@@ -87,7 +87,7 @@ export function ocultarSubSeccionesDatosSensores() {
   // ==== Nivel 4: Alto ====
   // ver filtro, sensores y parametros
   if (nivel >= 4) {
-    btnIngesta.style.display = "none";
+    btnIngesta.style.display = "block";
     btnSensores.style.display = "block";
     btnParametros.style.display = "block";
     btnUmbrales.style.display = "block";

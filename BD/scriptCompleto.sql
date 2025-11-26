@@ -151,7 +151,8 @@ GO
         SensorID INT NOT NULL FOREIGN KEY REFERENCES Sensores(SensorID),
         FechaHoraPrediccion DATETIME2 NOT NULL, -- Momento futuro de la predicción
         ValorPredicho VARCHAR(50), -- Ej: 'BUENO', 'MALO'
-        ProbabilidadRiesgo DECIMAL(5,2) -- Probabilidad asociada al riesgo (0.00 a 100.00)
+        ProbabilidadRiesgo DECIMAL(5,2), -- Probabilidad asociada al riesgo (0.00 a 100.00)
+        Explicacion VARCHAR(500) -- Explicación de la predicción
     );
 
    
@@ -183,6 +184,10 @@ GO
 
 -- Insertando Usuarios
 INSERT INTO Usuarios (RolID, NombreUsuario, Correo, ContrasenaHash, Activo) VALUES(1, 'admin', 'raivellorenzo.valiente@gmail.com', '$2a$10$veZ8cibHpGfDLgmEAinXcu6gQDOg.5iU3B4C/DFfx4jm8dnuxsLEC', 1)
+
+INSERT INTO Usuarios (RolID, NombreUsuario, Correo, ContrasenaHash, Activo) VALUES(2, 'investigador', 'investigador@gmail.com', '$2a$10$lVj1aC2z3wYBYpqNIgwryO2BkFrxEg38v5eiP4WhEZIgkcGjWl91K', 1)
+
+INSERT INTO Usuarios (RolID, NombreUsuario, Correo, ContrasenaHash, Activo) VALUES(3, 'usuario', 'usuario@gmail.com', '$2a$10$lVj1aC2z3wYBYpqNIgwryO2BkFrxEg38v5eiP4WhEZIgkcGjWl91K', 1)
 
 GO
 
@@ -283,80 +288,81 @@ GO
 
 -- --PREDICCIONES y ANOMALIAS
 
--- -- 8. Procedimiento para obtener todas las predicciones con filtro
--- CREATE PROCEDURE sp_ObtenerPredicciones
---     @SensorID_Filtro INT = NULL,
---     @FechaInicio DATETIME2 = NULL,
---     @FechaFin DATETIME2 = NULL
--- AS
--- BEGIN
---     SELECT
---         p.PrediccionID, s.Nombre AS Sensor, p.FechaHoraPrediccion, p.ModeloUsado, p.ValorPredicho, p.ProbabilidadRiesgo
---     FROM
---         Predicciones p
---     INNER JOIN Sensores s ON p.SensorID = s.SensorID
---     WHERE
---         (@SensorID_Filtro IS NULL OR p.SensorID = @SensorID_Filtro)
---         AND (@FechaInicio IS NULL OR p.FechaHoraPrediccion >= @FechaInicio)
---         AND (@FechaFin IS NULL OR p.FechaHoraPrediccion <= @FechaFin);
--- END
--- GO
+-- 8. Procedimiento para obtener todas las predicciones con filtro
+CREATE PROCEDURE sp_ObtenerPredicciones
+    @SensorID_Filtro INT = NULL,
+    @FechaInicio DATETIME2 = NULL,
+    @FechaFin DATETIME2 = NULL
+AS
+BEGIN
+    SELECT
+        p.PrediccionID, s.Nombre AS Sensor, p.FechaHoraPrediccion, p.ValorPredicho, p.ProbabilidadRiesgo, p.Explicacion
+    FROM
+        Predicciones p
+    INNER JOIN Sensores s ON p.SensorID = s.SensorID
+    WHERE
+        (@SensorID_Filtro IS NULL OR p.SensorID = @SensorID_Filtro)
+        AND (@FechaInicio IS NULL OR p.FechaHoraPrediccion >= @FechaInicio)
+        AND (@FechaFin IS NULL OR p.FechaHoraPrediccion <= @FechaFin)
+    ORDER BY p.FechaHoraPrediccion DESC;
+END
+GO
 
--- -- 9. Procedimiento para obtener una predicción en específico por id
--- CREATE PROCEDURE sp_ObtenerPrediccionPorID
---     @PrediccionID BIGINT
--- AS
--- BEGIN
---     SELECT
---         p.PrediccionID, s.Nombre AS Sensor, p.FechaHoraPrediccion, p.ModeloUsado, p.ValorPredicho, p.ProbabilidadRiesgo
---     FROM
---         Predicciones p
---     INNER JOIN Sensores s ON p.SensorID = s.SensorID
---     WHERE
---         p.PrediccionID = @PrediccionID;
--- END
--- GO
+-- 9. Procedimiento para obtener una predicción en específico por id
+CREATE PROCEDURE sp_ObtenerPrediccionPorID
+    @PrediccionID BIGINT
+AS
+BEGIN
+    SELECT
+        p.PrediccionID, s.Nombre AS Sensor, p.FechaHoraPrediccion, p.ValorPredicho, p.ProbabilidadRiesgo, p.Explicacion
+    FROM
+        Predicciones p
+    INNER JOIN Sensores s ON p.SensorID = s.SensorID
+    WHERE
+        p.PrediccionID = @PrediccionID;
+END
+GO
 
--- -- 10. Procedimiento para obtener ultimas predicciones (una por sensor)
--- CREATE PROCEDURE sp_ObtenerUltimasPredicciones
--- AS
--- BEGIN
---     -- Utiliza una CTE para encontrar el ID de la última predicción de cada sensor
---     WITH UltimasPredicciones AS (
---         SELECT
---             PrediccionID,
---             ROW_NUMBER() OVER(PARTITION BY SensorID ORDER BY FechaHoraPrediccion DESC) as rn
---         FROM
---             Predicciones
---     )
---     SELECT
---         p.PrediccionID, s.Nombre AS Sensor, p.FechaHoraPrediccion, p.ModeloUsado, p.ValorPredicho, p.ProbabilidadRiesgo
---     FROM
---         Predicciones p
---     INNER JOIN Sensores s ON p.SensorID = s.SensorID
---     INNER JOIN UltimasPredicciones up ON p.PrediccionID = up.PrediccionID
---     WHERE
---         up.rn = 1;
--- END
--- GO
+-- 10. Procedimiento para obtener ultimas predicciones (una por sensor)
+CREATE PROCEDURE sp_ObtenerUltimasPredicciones
+AS
+BEGIN
+    -- Utiliza una CTE para encontrar el ID de la última predicción de cada sensor
+    WITH UltimasPredicciones AS (
+        SELECT
+            PrediccionID,
+            ROW_NUMBER() OVER(PARTITION BY SensorID ORDER BY FechaHoraPrediccion DESC) as rn
+        FROM
+            Predicciones
+    )
+    SELECT
+        p.PrediccionID, s.SensorID, s.Nombre AS Sensor, p.FechaHoraPrediccion, p.ValorPredicho, p.ProbabilidadRiesgo, p.Explicacion
+    FROM
+        Predicciones p
+    INNER JOIN Sensores s ON p.SensorID = s.SensorID
+    INNER JOIN UltimasPredicciones up ON p.PrediccionID = up.PrediccionID
+    WHERE
+        up.rn = 1;
+END
+GO
 
--- -- 11. Procedimiento para insertar predicción
--- CREATE PROCEDURE sp_InsertarPrediccion
---     @SensorID INT,
---     @FechaHoraPrediccion DATETIME2,
---     @ModeloUsado VARCHAR(50) = NULL,
---     @ValorPredicho VARCHAR(50),
---     @ProbabilidadRiesgo DECIMAL(5,2)
--- AS
--- BEGIN
---     INSERT INTO Predicciones (
---         SensorID, FechaHoraPrediccion, ModeloUsado, ValorPredicho, ProbabilidadRiesgo
---     )
---     VALUES (
---         @SensorID, @FechaHoraPrediccion, @ModeloUsado, @ValorPredicho, @ProbabilidadRiesgo
---     );
--- END
--- GO
+-- 11. Procedimiento para insertar predicción
+CREATE PROCEDURE sp_InsertarPrediccion
+    @SensorID INT,
+    @FechaHoraPrediccion DATETIME2,
+    @ValorPredicho VARCHAR(50),
+    @ProbabilidadRiesgo DECIMAL(5,2),
+    @Explicacion VARCHAR(500) = NULL
+AS
+BEGIN
+    INSERT INTO Predicciones (
+        SensorID, FechaHoraPrediccion, ValorPredicho, ProbabilidadRiesgo, Explicacion
+    )
+    VALUES (
+        @SensorID, @FechaHoraPrediccion, @ValorPredicho, @ProbabilidadRiesgo, @Explicacion
+    );
+END
+GO
 
 
 

@@ -7,9 +7,10 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY, // 👈 Se guarda en .env (no se expone al cliente)
 });
 
-console.log("🔑 Clave Groq:", process.env.GROQ_API_KEY ? "Cargada" : "No cargada");
-
-
+console.log(
+  "🔑 Clave Groq:",
+  process.env.GROQ_API_KEY ? "Cargada" : "No cargada"
+);
 
 export class ServicioIA {
   /**
@@ -24,7 +25,38 @@ export class ServicioIA {
 
     // Solo analizamos los últimos 10 registros
     const ultimos = datosHistoricos.slice(-10);
-    const textoDatos = JSON.stringify(ultimos, null, 2);
+
+    // Transformar datos crudos (con ParametroID) a formato legible para la IA
+    // Agrupamos por TimestampRegistro para reconstruir "lecturas completas" si es posible,
+    // o simplemente enviamos una lista de mediciones individuales si no están sincronizadas.
+    // Dado que el prompt espera un array de objetos con {ph, turbidez, ...}, intentaremos agrupar.
+
+    const lecturasAgrupadas = {};
+
+    ultimos.forEach((d) => {
+      const timestamp = d.TimestampRegistro;
+      if (!lecturasAgrupadas[timestamp]) {
+        lecturasAgrupadas[timestamp] = {};
+      }
+
+      // Mapeo de IDs a nombres (mismo que en ServicioIASimulada)
+      const parametros = {
+        1: "ph",
+        2: "turbidez",
+        3: "oxigeno",
+        4: "conductividad",
+        5: "temperatura",
+      };
+
+      const nombreParametro = parametros[d.ParametroID];
+      if (nombreParametro) {
+        lecturasAgrupadas[timestamp][nombreParametro] =
+          parseFloat(d.Valor_procesado) || parseFloat(d.Valor_original) || 0;
+      }
+    });
+
+    const datosEstructurados = Object.values(lecturasAgrupadas);
+    const textoDatos = JSON.stringify(datosEstructurados, null, 2);
 
     const messages = [
       {
@@ -35,6 +67,7 @@ export class ServicioIA {
                 - pH (ideal entre 6.5 y 8.5)
                 - Turbidez (ideal menor a 5 NTU)
                 - Oxígeno disuelto (ideal mayor a 5 mg/L)
+                - Conductividad (ideal menor a 500 µS/cm)
                 - Temperatura (ideal entre 20 y 25 °C)
                 Responde SIEMPRE en formato JSON con:
                 {
@@ -49,8 +82,8 @@ export class ServicioIA {
         role: "user",
         content: `
 [
-  {"ph":7.2,"turbidez":1.2,"temperatura":21.4,"oxigeno":8.3},
-  {"ph":7.0,"turbidez":1.5,"temperatura":22.1,"oxigeno":8.1}
+  {"ph":7.2,"turbidez":1.2,"temperatura":21.4,"oxigeno":8.3,"conductividad":120},
+  {"ph":7.0,"turbidez":1.5,"temperatura":22.1,"oxigeno":8.1,"conductividad":120}
 ]
         `.trim(),
       },
@@ -67,8 +100,8 @@ export class ServicioIA {
         role: "user",
         content: `
 [
-  {"ph":6.3,"turbidez":6.8,"temperatura":24.5,"oxigeno":4.2},
-  {"ph":6.1,"turbidez":7.1,"temperatura":24.8,"oxigeno":4.0}
+  {"ph":6.3,"turbidez":6.8,"temperatura":24.5,"oxigeno":4.2,"conductividad":120},
+  {"ph":6.1,"turbidez":7.1,"temperatura":24.8,"oxigeno":4.0,"conductividad":120}
 ]
         `.trim(),
       },
@@ -89,7 +122,7 @@ export class ServicioIA {
     ];
 
     const completion = await groq.chat.completions.create({
-      model: "openai/gpt-oss-20b",
+      model: "llama-3.3-70b-versatile",
       messages,
     });
 
