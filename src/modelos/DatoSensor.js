@@ -1,8 +1,6 @@
 import { getConnection } from "../config/db_sqlserver.js";
 import sql from "mssql";
 
-
-
 // src/modelos/DatosSensoresModelo.js
 export class DatoSensorModelo {
   constructor({
@@ -74,6 +72,35 @@ export class DatoSensorModelo {
     }
   }
 
+  static async obtenerPorSensor({ SensorID, limit = 100 }) {
+    try {
+      // Reutilizamos obtenerTodos que ya llama al SP sp_ObtenerDatosSensores
+      // El SP soporta filtrado por SensorID y ordenamiento DESC por defecto.
+      // El SP tiene un flag @UltimosDiez, pero si queremos un límite custom (ej: 50),
+      // tendremos que manejarlo aquí o modificar el SP.
+      // Por ahora, usaremos obtenerTodos y haremos slice si es necesario,
+      // ya que el SP devuelve hasta 1000000 filas si UltimosDiez es false.
+      // Para optimizar, podríamos pasar UltimosDiez=true si limit <= 10.
+
+      const ultimosDiez = limit <= 10;
+
+      const datos = await this.obtenerTodos({
+        sensorID: SensorID,
+        ultimosDiez: ultimosDiez,
+      });
+
+      // Si el SP devuelve más de lo necesario (o si limit > 10 pero < total), cortamos.
+      if (limit && datos.length > limit) {
+        return datos.slice(0, limit);
+      }
+
+      return datos;
+    } catch (error) {
+      console.error("❌ Error al obtener datos por sensor:", error);
+      throw error;
+    }
+  }
+
   async crear() {
     // Generamos el timestamp de registro justo antes de la inserción
     this.TimestampRegistro = new Date();
@@ -140,5 +167,4 @@ export class DatoSensorModelo {
       throw new Error(`Error al crear el dato del sensor: ${err.message}`);
     }
   }
-
 }

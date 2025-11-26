@@ -1,94 +1,82 @@
-import { ServicioIA } from "../servicios/ServicioIA.js";
-import { DatoSensorModelo } from "./DatoSensor.js";
+import { getConnection } from "../config/db_sqlserver.js";
+import sql from "mssql";
 
 export class PrediccionModelo {
-  static predicciones = [
-    {
-      PrediccionID: 1,
-      SensorID: 2,
-      FechaHoraPrediccion: "2024-01-01T10:00:00Z",
-      ValorPredicho: "Bueno",
-      ProbabilidadRiesgo: 5.0,
-    },
-    {
-      PrediccionID: 2,
-      SensorID: 3,
-      FechaHoraPrediccion: "2024-01-02T11:00:00Z",
-      ValorPredicho: "Regular",
-      ProbabilidadRiesgo: 15.5,
-    },
-    {
-      PrediccionID: 3,
-      SensorID: 2,
-      FechaHoraPrediccion: "2024-01-03T12:00:00Z",
-      ValorPredicho: "Malo",
-      ProbabilidadRiesgo: 25.0,
-    },
-  ];
+  static async listarPredicciones({ SensorID = null }) {
+    try {
+      const pool = await getConnection();
+      const request = pool.request();
 
-  static async listarPredicciones() {
-    // Aquí iría la lógica para obtener el historial de predicciones desde la base de datos
-    return this.predicciones;
-  }
+      if (SensorID) {
+        request.input("SensorID_Filtro", sql.Int, SensorID);
+      }
 
-  static async obtenerPrediccionPorId({ id }) {
-    // Aquí iría la lógica para obtener una predicción específica desde la base de datos
-    return this.predicciones.find(
-      (prediccion) => prediccion.PrediccionID === parseInt(id)
-    );
-  }
-
-  static async generarPrediccion({ SensorID }) {
-    //obtener datos historicos del sensor desde BD si es necesario
-    const datosHistoricos = []; // Simulación de datos históricos
-
-    // pasar datos a api IA y obtener respuesta;
-    const nuevaPrediccion = await ServicioIA.generarPrediccion({
-      datosHistoricos,
-    });
-
-    // Aquí iría la lógica para guardar la nueva predicción en la base de datos
-    const nuevaPrediccionGuardada = {
-      PrediccionID: this.predicciones.length + 1,
-      SensorID,
-      ...nuevaPrediccion,
-    };
-
-    this.predicciones.push(nuevaPrediccionGuardada);
-    return nuevaPrediccionGuardada;
-  }
-
-  static async eliminarPrediccion({ id }) {
-    // Aquí iría la lógica para eliminar una predicción de la base de datos
-    const index = this.predicciones.findIndex(
-      (prediccion) => prediccion.PrediccionID === parseInt(id)
-    );
-    if (index !== -1) {
-      this.predicciones.splice(index, 1);
-      return true;
-    } else {
-      return false;
+      const result = await request.execute("sp_ObtenerPredicciones");
+      return result.recordset;
+    } catch (error) {
+      console.error("❌ Error al obtener predicciones:", error);
+      throw error;
     }
   }
 
-  static async calcularPrecision({ SensorID }) {
-    // Aquí iría la lógica para calcular la precisión de las predicciones
+  static async obtenerPrediccionPorId({ id }) {
+    try {
+      const pool = await getConnection();
+      const request = pool.request();
+      request.input("PrediccionID", sql.BigInt, id);
+      const result = await request.execute("sp_ObtenerPrediccionPorID");
+      return result.recordset[0];
+    } catch (error) {
+      console.error("❌ Error al obtener predicción:", error);
+      throw error;
+    }
+  }
 
-    const datosRealesObtenidos = await DatoSensorModelo.obtenerPorSensor({
-      SensorID,
-    });
-    const datosPredicciones = this.predicciones.filter(
-      (prediccion) => prediccion.SensorID === SensorID
-    );
+  static async crear({
+    SensorID,
+    FechaHoraPrediccion,
+    ValorPredicho,
+    ProbabilidadRiesgo,
+    Explicacion,
+  }) {
+    try {
+      const pool = await getConnection();
+      const request = pool.request();
 
-    const datosReales = datosRealesObtenidos.map((dato) => ({
-      Valor: dato.Valor_procesado,
-      Timestamp: dato.TimestampRegistro,
-    }));
+      request.input("SensorID", sql.Int, SensorID);
+      request.input("FechaHoraPrediccion", sql.DateTime2, FechaHoraPrediccion);
+      request.input("ValorPredicho", sql.VarChar(50), ValorPredicho);
+      request.input(
+        "ProbabilidadRiesgo",
+        sql.Decimal(5, 2),
+        ProbabilidadRiesgo
+      );
+      request.input("Explicacion", sql.VarChar(500), Explicacion);
 
-    return await ServicioIA.calcularPrecision({
-      datosReales,
-      datosPredicciones,
-    });
+      await request.execute("sp_InsertarPrediccion");
+
+      return {
+        SensorID,
+        FechaHoraPrediccion,
+        ValorPredicho,
+        ProbabilidadRiesgo,
+        Explicacion,
+      };
+    } catch (error) {
+      console.error("❌ Error al crear predicción:", error);
+      throw error;
+    }
+  }
+
+  static async obtenerUltimasPredicciones() {
+    try {
+      const pool = await getConnection();
+      const request = pool.request();
+      const result = await request.execute("sp_ObtenerUltimasPredicciones");
+      return result.recordset;
+    } catch (error) {
+      console.error("❌ Error al obtener últimas predicciones:", error);
+      throw error;
+    }
   }
 }

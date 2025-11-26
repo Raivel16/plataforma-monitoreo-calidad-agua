@@ -5,7 +5,10 @@ export const prediccionesRouter = Router();
 
 // Definir las rutas para predicciones
 prediccionesRouter.get("/", PrediccionesControlador.listarPredicciones);
+prediccionesRouter.get(
+  "/mapa",
+  PrediccionesControlador.obtenerSensoresConPrediccion
+);
 prediccionesRouter.get("/:id", PrediccionesControlador.obtenerPrediccion);
-prediccionesRouter.post("/", PrediccionesControlador.generarPrediccion);
-prediccionesRouter.delete("/:id", PrediccionesControlador.eliminarPrediccion);
-prediccionesRouter.delete("/precision", PrediccionesControlador.calcularPrecision);
+prediccionesRouter.post("/generar", PrediccionesControlador.generarPrediccion);
+prediccionesRouter.get("/precision", PrediccionesControlador.calcularPrecision);

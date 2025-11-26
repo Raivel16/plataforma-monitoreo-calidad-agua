@@ -120,4 +120,24 @@ export class ServicioIASimulada {
       Explicacion: explicacion,
     };
   }
+
+  /**
+   * Calcula la precisión de las predicciones comparando con datos reales.
+   * @param {Array} datosReales - Datos reales del sensor.
+   * @param {Array} predicciones - Predicciones realizadas.
+   * @returns {Object} Resultado con precisión y detalles.
+   */
+  static async calcularPrecision({ datosReales, predicciones }) {
+    // Simulación de cálculo de precisión
+    // En un escenario real, se compararían los valores predichos con los reales en el mismo timestamp
+
+    // Para la simulación, generamos un valor aleatorio entre 70% y 99%
+    const precision = Math.floor(Math.random() * (99 - 70 + 1)) + 70;
+
+    return {
+      Precision: precision,
+      Mensaje: `La precisión calculada basada en ${predicciones.length} predicciones y ${datosReales.length} datos reales es del ${precision}%.`,
+      Detalles: "Cálculo simulado basado en coincidencia de tendencias.",
+    };
+  }
 }

@@ -26,6 +26,7 @@ init({
                 <td>${lectura.Valor_normalizado.toFixed(4) ?? "-"}</td>
               </tr>
             `,
+  ordenarPor: (a, b) => b.DatoID - a.DatoID,
 });
 
 conectarSocket();
