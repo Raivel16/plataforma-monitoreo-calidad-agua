@@ -111,7 +111,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const listaPredicciones = document.getElementById("listaPredicciones");
       if (listaPredicciones) {
         listaPredicciones.innerHTML =
-          '<p class="mensaje-vacio">Seleccione un sensor</p>';
+          '<p id="mensaje-vacio" class="mensaje-vacio">Seleccione un sensor</p>';
       }
     } catch (error) {
       console.error("Error cargando mapa:", error);
@@ -194,7 +194,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   btnGenerar.addEventListener("click", async () => {
     if (!sensorSeleccionado) {
-      alert("Seleccione un sensor primero.");
+      document.getElementById("mensaje-vacio").style.color = "red";
       return;
     }
 
@@ -207,7 +207,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (res.ok) {
         const nuevaPrediccion = await res.json();
-        alert("Predicción generada correctamente.");
         cargarHistorialPredicciones(sensorSeleccionado.SensorID);
       } else {
         alert("Error al generar predicción.");
