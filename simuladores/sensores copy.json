@@ -1,0 +1,21 @@
+[
+ 
+  { "id": 1, "ParametroID": 1, "min": 6.8, "max": 7.5 }, 
+  { "id": 1, "ParametroID": 2, "min": 0, "max": 3 },
+  { "id": 1, "ParametroID": 3, "min": 6, "max": 8 }, 
+  { "id": 1, "ParametroID": 4, "min": 500, "max": 1000 }, 
+  { "id": 1, "ParametroID": 5, "min": 22, "max": 25 }, 
+
+
+  { "id": 2, "ParametroID": 1, "min": 6.2, "max": 8.8 },
+  { "id": 2, "ParametroID": 2, "min": 0, "max": 8 },
+  { "id": 2, "ParametroID": 3, "min": 4, "max": 6 }, 
+  { "id": 2, "ParametroID": 4, "min": 1000, "max": 1800 }, 
+  { "id": 2, "ParametroID": 5, "min": 18, "max": 28 }, 
+
+  { "id": 3, "ParametroID": 1, "min": 4.5, "max": 5.8 }, 
+  { "id": 3, "ParametroID": 2, "min": 20, "max": 50 }, 
+  { "id": 3, "ParametroID": 3, "min": 0, "max": 3 }, 
+  { "id": 3, "ParametroID": 4, "min": 2500, "max": 5000 }, 
+  { "id": 3, "ParametroID": 5, "min": 10, "max": 15 } 
+]

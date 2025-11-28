@@ -53,22 +53,22 @@ export class AlertaModelo {
         });
 
         // 📧 Enviar correo electrónico
-        if (usuario.Correo) {
-          await ServicioEmail.enviarAlerta({
-            email: usuario.Correo,
-            nombre: usuario.NombreUsuario,
-            asunto: `🚨 Alerta de Calidad del Agua: ${tipo}`,
-            mensaje: `
-              Hola ${usuario.NombreUsuario},<br><br>
-              Se ha detectado una alerta de tipo <strong>${tipo}</strong>.<br>
-              <strong>Mensaje:</strong> ${mensaje}<br>
-              <strong>Sensor:</strong> ${datoInfo.SensorNombre}<br>
-              <strong>Valor:</strong> ${datoInfo.Valor} ${datoInfo.UnidadMedida}<br>
-              <br>
-              Por favor, revisa la plataforma para más detalles.
-            `,
-          });
-        }
+        // if (usuario.Correo) {
+        //   await ServicioEmail.enviarAlerta({
+        //     email: usuario.Correo,
+        //     nombre: usuario.NombreUsuario,
+        //     asunto: `🚨 Alerta de Calidad del Agua: ${tipo}`,
+        //     mensaje: `
+        //       Hola ${usuario.NombreUsuario},<br><br>
+        //       Se ha detectado una alerta de tipo <strong>${tipo}</strong>.<br>
+        //       <strong>Mensaje:</strong> ${mensaje}<br>
+        //       <strong>Sensor:</strong> ${datoInfo.SensorNombre}<br>
+        //       <strong>Valor:</strong> ${datoInfo.Valor} ${datoInfo.UnidadMedida}<br>
+        //       <br>
+        //       Por favor, revisa la plataforma para más detalles.
+        //     `,
+        //   });
+        // }
       }
 
       return alertasCreadas;

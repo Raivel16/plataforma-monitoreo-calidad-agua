@@ -42,7 +42,7 @@ export class RegistroAlertaModelo {
       request.input("DatoID", sql.BigInt, datoID);
       request.input("FechaHoraAlerta", sql.DateTime2, new Date());
       request.input("EstadoNotificacion", sql.VarChar(50), "Enviado");
-      request.input("Tipo", sql.VarChar(20), tipo);
+      request.input("Tipo", sql.VarChar(50), tipo);
       request.input("Contexto", sql.VarChar(500), contexto);
 
       const result = await request.execute("sp_InsertarRegistroAlerta");

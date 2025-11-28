@@ -129,7 +129,7 @@ GO
         DatoID BIGINT NOT NULL FOREIGN KEY REFERENCES DatosSensores(DatoID), -- Dato que causó la alerta
         FechaHoraAlerta DATETIME2 NOT NULL,
         EstadoNotificacion VARCHAR(50) NOT NULL, -- Ej: 'Pendiente', 'Enviado', 'Error'
-        Tipo VARCHAR(20) NULL, -- UMBRAL, ANOMALIA, CONTAMINACION_CRITICA
+        Tipo VARCHAR(50) NULL, -- UMBRAL, ANOMALIA, CONTAMINACION_CRITICA
         Contexto VARCHAR(500) NULL -- Información contextual sobre la alerta
     );
 

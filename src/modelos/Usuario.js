@@ -3,8 +3,6 @@ import bcrypt from "bcrypt";
 import { getConnection } from "../config/db_sqlserver.js";
 import sql from "mssql";
 
-import { usuarios } from "./bd_local/usuarios.js";
-
 export class UsuarioModelo {
   constructor({
     UsuarioID = null,

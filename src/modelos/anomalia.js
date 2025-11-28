@@ -14,15 +14,6 @@ export class AnomaliaModelo {
     this.Fecha_Detectada = Fecha_Detectada;
     this.Estado = Estado;
   }
-
-  /**
-   * Registra una nueva anomalía en la base de datos
-   * @param {Object} params - Parámetros de la anomalía
-   * @param {number} params.datoID - ID del dato que causó la anomalía
-   * @param {string} params.tipo - Tipo de anomalía (ej: "SENSOR_DEFECTUOSO")
-   * @param {string} params.descripcion - Descripción detallada de la anomalía
-   * @returns {Promise<number>} - ID de la anomalía creada
-   */
   static async registrarAnomalia({ datoID, tipo, descripcion }) {
     try {
       const { getConnection } = await import("../config/db_sqlserver.js");

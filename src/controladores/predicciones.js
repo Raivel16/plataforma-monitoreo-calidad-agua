@@ -83,6 +83,9 @@ export class PrediccionesControlador {
         SensorID: sensorId,
       });
 
+      console.log("Datos reales:", datosReales);
+      console.log("Predicciones:", predicciones);
+
       const resultado = await ServicioIASimulada.calcularPrecision({
         datosReales,
         predicciones,
