@@ -9,6 +9,6 @@ prediccionesRouter.get(
   "/mapa",
   PrediccionesControlador.obtenerSensoresConPrediccion
 );
+prediccionesRouter.get("/precision", PrediccionesControlador.calcularPrecision);
 prediccionesRouter.get("/:id", PrediccionesControlador.obtenerPrediccion);
 prediccionesRouter.post("/generar", PrediccionesControlador.generarPrediccion);
-prediccionesRouter.get("/precision", PrediccionesControlador.calcularPrecision);
